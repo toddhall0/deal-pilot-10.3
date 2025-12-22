@@ -135,9 +135,61 @@ model Deal {
   updatedAt       DateTime     @updatedAt
   closedAt        DateTime?
 
+  transactionSummary TransactionSummary?
+
   @@index([clientId])
   @@index([status])
   @@index([createdById])
+}
+
+model TransactionSummary {
+  id                  String    @id @default(cuid())
+
+  dealId              String    @unique
+  deal                Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  contractDate        DateTime?
+  effectiveDate       DateTime?
+
+  buyerName           String?
+  buyerEntity         String?
+  buyerAddress        String?
+  sellerName          String?
+  sellerEntity        String?
+  sellerAddress       String?
+
+  purchasePrice       Decimal?  @db.Decimal(14, 2)
+  pricePerUnit        Decimal?  @db.Decimal(14, 2)
+  priceAdjustable     Boolean   @default(false)
+  priceAdjustmentBasis String?
+
+  initialDeposit      Decimal?  @db.Decimal(14, 2)
+  initialDepositDue   DateTime?
+  additionalDeposits  Json?
+
+  feasibilityPeriodDays Int?
+  feasibilityExpiration DateTime?
+  closingDate         DateTime?
+  outsideClosingDate  DateTime?
+
+  contingencies       Json?
+  dueDiligenceItems   Json?
+  closingDocuments    Json?
+  specialProvisions   Json?
+
+  titleCompany        String?
+  escrowAgent         String?
+  surveyRequirements  String?
+
+  prorationDate       DateTime?
+  prorationItems      Json?
+
+  rawAnalysis         Json?
+  version             Int       @default(1)
+  analyzedAt          DateTime  @default(now())
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 }
 
 model Account {
