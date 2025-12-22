@@ -74,6 +74,20 @@ enum TaskPriority {
   URGENT
 }
 
+enum DocumentCategory {
+  CONTRACT
+  AMENDMENT
+  DUE_DILIGENCE
+  TITLE
+  SURVEY
+  ENVIRONMENTAL
+  FINANCIAL
+  LEGAL
+  CORRESPONDENCE
+  CLOSING
+  OTHER
+}
+
 model User {
   id            String     @id @default(cuid())
   email         String     @unique
@@ -97,6 +111,7 @@ model User {
   createdDeals  Deal[]    @relation("CreatedBy")
   assignedTasks Task[]    @relation("AssignedTo")
   createdTasks  Task[]    @relation("TaskCreatedBy")
+  documents     Document[]
 }
 
 model Firm {
@@ -165,6 +180,7 @@ model Deal {
   transactionSummary TransactionSummary?
   timeline        Timeline?
   tasks           Task[]
+  documents       Document[]
 
   @@index([clientId])
   @@index([status])
@@ -308,6 +324,71 @@ model Task {
   @@index([assigneeId])
   @@index([status])
   @@index([dueDate])
+}
+
+model DocumentFolder {
+  id          String           @id @default(cuid())
+
+  dealId      String
+
+  parentId    String?
+  parent      DocumentFolder?  @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children    DocumentFolder[] @relation("FolderHierarchy")
+
+  name        String
+  description String?
+
+  documents   Document[]
+
+  sortOrder   Int              @default(0)
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([dealId])
+  @@index([parentId])
+}
+
+model Document {
+  id                String           @id @default(cuid())
+
+  dealId            String
+  deal              Deal             @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  folderId          String?
+  folder            DocumentFolder?  @relation(fields: [folderId], references: [id])
+
+  name              String
+  originalName      String
+  description       String?
+
+  category          DocumentCategory @default(OTHER)
+  subcategory       String?
+
+  fileType          String
+  fileSize          Int
+  fileUrl           String
+  fileKey           String
+
+  version           Int              @default(1)
+  previousVersionId String?
+  previousVersion   Document?        @relation("DocumentVersions", fields: [previousVersionId], references: [id])
+  newerVersions     Document[]       @relation("DocumentVersions")
+
+  uploadedById      String
+  uploadedBy        User             @relation(fields: [uploadedById], references: [id])
+
+  isAnalyzed        Boolean          @default(false)
+  isPrimaryContract Boolean          @default(false)
+
+  sortOrder         Int              @default(0)
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([dealId])
+  @@index([category])
+  @@index([folderId])
 }
 
 model Account {
