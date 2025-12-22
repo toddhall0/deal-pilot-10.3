@@ -88,6 +88,15 @@ enum DocumentCategory {
   OTHER
 }
 
+enum DepositStatus {
+  SCHEDULED
+  DUE
+  PAID
+  APPLIED_TO_PURCHASE
+  REFUNDED
+  FORFEITED
+}
+
 model User {
   id            String     @id @default(cuid())
   email         String     @unique
@@ -183,6 +192,7 @@ model Deal {
   tasks           Task[]
   documents       Document[]
   notes           Note[]
+  financials      DealFinancials?
 
   @@index([clientId])
   @@index([status])
@@ -416,6 +426,71 @@ model Note {
 
   @@index([dealId])
   @@index([authorId])
+}
+
+model DealFinancials {
+  id                    String    @id @default(cuid())
+
+  dealId                String    @unique
+  deal                  Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  contractPrice         Decimal?  @db.Decimal(14, 2)
+  currentPrice          Decimal?  @db.Decimal(14, 2)
+
+  deposits              Deposit[]
+
+  dueDiligenceBudget    Decimal?  @db.Decimal(14, 2)
+  dueDiligenceSpent     Decimal?  @db.Decimal(14, 2)
+
+  estimatedClosingCosts Decimal?  @db.Decimal(14, 2)
+  actualClosingCosts    Decimal?  @db.Decimal(14, 2)
+
+  lineItems             FinancialLineItem[]
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Deposit {
+  id              String         @id @default(cuid())
+
+  financialsId    String
+  financials      DealFinancials @relation(fields: [financialsId], references: [id], onDelete: Cascade)
+
+  name            String
+  amount          Decimal        @db.Decimal(14, 2)
+  dueDate         DateTime
+
+  status          DepositStatus  @default(SCHEDULED)
+  paidDate        DateTime?
+  paidAmount      Decimal?       @db.Decimal(14, 2)
+
+  condition       String?
+  notes           String?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model FinancialLineItem {
+  id              String         @id @default(cuid())
+
+  financialsId    String
+  financials      DealFinancials @relation(fields: [financialsId], references: [id], onDelete: Cascade)
+
+  category        String
+  name            String
+  description     String?
+
+  estimatedAmount Decimal?       @db.Decimal(14, 2)
+  actualAmount    Decimal?       @db.Decimal(14, 2)
+
+  vendor          String?
+  invoiceNumber   String?
+  paidDate        DateTime?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model Account {
