@@ -112,6 +112,7 @@ model User {
   assignedTasks Task[]    @relation("AssignedTo")
   createdTasks  Task[]    @relation("TaskCreatedBy")
   documents     Document[]
+  notes         Note[]
 }
 
 model Firm {
@@ -181,6 +182,7 @@ model Deal {
   timeline        Timeline?
   tasks           Task[]
   documents       Document[]
+  notes           Note[]
 
   @@index([clientId])
   @@index([status])
@@ -389,6 +391,31 @@ model Document {
   @@index([dealId])
   @@index([category])
   @@index([folderId])
+}
+
+model Note {
+  id          String    @id @default(cuid())
+
+  dealId      String
+  deal        Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+
+  title       String?
+  content     String    @db.Text
+  plainText   String?   @db.Text
+
+  isPinned    Boolean   @default(false)
+
+  category    String?
+  tags        String[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([dealId])
+  @@index([authorId])
 }
 
 model Account {
