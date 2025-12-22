@@ -58,6 +58,22 @@ enum MilestoneStatus {
   NOT_APPLICABLE
 }
 
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  BLOCKED
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
 model User {
   id            String     @id @default(cuid())
   email         String     @unique
@@ -79,6 +95,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   createdDeals  Deal[]    @relation("CreatedBy")
+  assignedTasks Task[]    @relation("AssignedTo")
+  createdTasks  Task[]    @relation("TaskCreatedBy")
 }
 
 model Firm {
@@ -146,6 +164,7 @@ model Deal {
 
   transactionSummary TransactionSummary?
   timeline        Timeline?
+  tasks           Task[]
 
   @@index([clientId])
   @@index([status])
@@ -237,11 +256,57 @@ model Milestone {
   sortOrder       Int             @default(0)
   reminderDays    Int[]
 
+  tasks           Task[]
+
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
   @@index([timelineId])
   @@index([parentId])
+  @@index([dueDate])
+}
+
+model Task {
+  id              String        @id @default(cuid())
+
+  dealId          String
+  deal            Deal          @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  milestoneId     String?
+  milestone       Milestone?    @relation(fields: [milestoneId], references: [id])
+
+  parentId        String?
+  parent          Task?         @relation("TaskHierarchy", fields: [parentId], references: [id])
+  subtasks        Task[]        @relation("TaskHierarchy")
+
+  title           String
+  description     String?       @db.Text
+
+  status          TaskStatus    @default(TODO)
+  priority        TaskPriority  @default(MEDIUM)
+
+  dueDate         DateTime?
+  startDate       DateTime?
+  completedAt     DateTime?
+
+  assigneeId      String?
+  assignee        User?         @relation("AssignedTo", fields: [assigneeId], references: [id])
+
+  createdById     String
+  createdBy       User          @relation("TaskCreatedBy", fields: [createdById], references: [id])
+
+  category        String?
+  tags            String[]
+  customFields    Json?
+
+  sortOrder       Int           @default(0)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([dealId])
+  @@index([assigneeId])
+  @@index([status])
   @@index([dueDate])
 }
 
