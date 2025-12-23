@@ -120,6 +120,9 @@ export default function RegisterPage() {
               required
               disabled={isLoading}
             />
+            <p className="text-xs text-gray-500">
+              Min 8 characters with uppercase, lowercase, and number
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
