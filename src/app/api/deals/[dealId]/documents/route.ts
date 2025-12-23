@@ -1,0 +1,131 @@
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { uploadFile, generateFileKey, validateFile, getSignedDownloadUrl } from "@/lib/storage"
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ dealId: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { dealId } = await params
+    const { searchParams } = new URL(request.url)
+    const category = searchParams.get("category")
+    const folderId = searchParams.get("folderId")
+
+    const where: any = { dealId }
+    if (category) where.category = category
+    if (folderId) where.folderId = folderId
+
+    const documents = await prisma.document.findMany({
+      where,
+      include: {
+        uploadedBy: {
+          select: { id: true, name: true },
+        },
+        folder: true,
+      },
+      orderBy: [
+        { sortOrder: "asc" },
+        { createdAt: "desc" },
+      ],
+    })
+
+    // Generate signed URLs for each document
+    const documentsWithUrls = await Promise.all(
+      documents.map(async (doc) => ({
+        ...doc,
+        downloadUrl: await getSignedDownloadUrl(doc.fileKey),
+      }))
+    )
+
+    return NextResponse.json(documentsWithUrls)
+  } catch (error) {
+    console.error("Error fetching documents:", error)
+    return NextResponse.json(
+      { error: "Failed to fetch documents" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ dealId: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { dealId } = await params
+    const formData = await request.formData()
+    const file = formData.get("file") as File
+    const category = (formData.get("category") as string) || "OTHER"
+    const description = formData.get("description") as string
+    const folderId = formData.get("folderId") as string | null
+
+    if (!file) {
+      return NextResponse.json({ error: "No file provided" }, { status: 400 })
+    }
+
+    // Validate file
+    const validation = validateFile({ type: file.type, size: file.size })
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
+    }
+
+    // Convert file to buffer
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+
+    // Generate unique file key
+    const fileKey = generateFileKey(dealId, category, file.name)
+
+    // Upload to S3
+    await uploadFile(buffer, fileKey, file.type)
+
+    // Create database record
+    const document = await prisma.document.create({
+      data: {
+        dealId,
+        name: file.name,
+        originalName: file.name,
+        description,
+        category: category as any,
+        fileType: file.type,
+        fileSize: file.size,
+        fileUrl: fileKey, // We store the key, generate signed URL on fetch
+        fileKey,
+        uploadedById: session.user.id,
+        folderId: folderId || null,
+      },
+      include: {
+        uploadedBy: {
+          select: { id: true, name: true },
+        },
+      },
+    })
+
+    // Generate download URL
+    const downloadUrl = await getSignedDownloadUrl(fileKey)
+
+    return NextResponse.json(
+      { ...document, downloadUrl },
+      { status: 201 }
+    )
+  } catch (error) {
+    console.error("Error uploading document:", error)
+    return NextResponse.json(
+      { error: "Failed to upload document" },
+      { status: 500 }
+    )
+  }
+}
