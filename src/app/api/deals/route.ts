@@ -126,6 +126,26 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Create default document folders
+    const defaultFolders = [
+      { name: "Purchase Agreement", sortOrder: 1 },
+      { name: "Amendments", sortOrder: 2 },
+      { name: "Due Diligence", sortOrder: 3 },
+      { name: "Title", sortOrder: 4 },
+      { name: "Survey", sortOrder: 5 },
+      { name: "Environmental", sortOrder: 6 },
+      { name: "Financial Documents", sortOrder: 7 },
+      { name: "Closing Documents", sortOrder: 8 },
+      { name: "Correspondence", sortOrder: 9 },
+    ]
+
+    await prisma.documentFolder.createMany({
+      data: defaultFolders.map((folder) => ({
+        ...folder,
+        dealId: deal.id,
+      })),
+    })
+
     return NextResponse.json(deal, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
