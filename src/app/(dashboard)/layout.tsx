@@ -23,6 +23,12 @@ export default async function DashboardLayout({
           </div>
           <nav className="mt-4 px-2">
             <a
+              href="/dashboard"
+              className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+            >
+              Dashboard
+            </a>
+            <a
               href="/deals"
               className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
             >
