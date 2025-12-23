@@ -97,6 +97,13 @@ enum DepositStatus {
   FORFEITED
 }
 
+enum NotificationFrequency {
+  REALTIME
+  DAILY
+  WEEKLY
+  NONE
+}
+
 model User {
   id            String     @id @default(cuid())
   email         String     @unique
@@ -122,6 +129,8 @@ model User {
   createdTasks  Task[]    @relation("TaskCreatedBy")
   documents     Document[]
   notes         Note[]
+  preferences   UserPreferences?
+  notifications Notification[]
 }
 
 model Firm {
@@ -491,6 +500,49 @@ model FinancialLineItem {
 
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+}
+
+model UserPreferences {
+  id                    String                @id @default(cuid())
+
+  userId                String                @unique
+  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  emailNotifications    Boolean               @default(true)
+  taskReminders         Boolean               @default(true)
+  deadlineAlerts        Boolean               @default(true)
+
+  notificationFrequency NotificationFrequency @default(REALTIME)
+  dailySummaryTime      String?
+  weeklySummaryDay      Int?
+
+  defaultDealView       String                @default("list")
+  defaultTaskView       String                @default("list")
+  timezone              String                @default("America/Los_Angeles")
+  dateFormat            String                @default("MM/dd/yyyy")
+
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+}
+
+model Notification {
+  id          String    @id @default(cuid())
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        String
+  title       String
+  message     String
+  link        String?
+
+  isRead      Boolean   @default(false)
+  readAt      DateTime?
+
+  entityType  String?
+  entityId    String?
+
+  createdAt   DateTime  @default(now())
 }
 
 model Account {
