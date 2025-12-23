@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TasksTab } from "@/components/deals/TasksTab"
+import { DocumentsTab } from "@/components/deals/DocumentsTab"
 
 async function getDeal(id: string) {
   const deal = await prisma.deal.findUnique({
@@ -201,14 +202,7 @@ export default async function DealDetailPage({
         </TabsContent>
 
         <TabsContent value="documents" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Documents</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-500">Documents content coming soon...</p>
-            </CardContent>
-          </Card>
+          <DocumentsTab dealId={deal.id} />
         </TabsContent>
 
         <TabsContent value="notes" className="mt-6">
