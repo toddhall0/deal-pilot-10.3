@@ -1,58 +1,60 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
+import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
-import { hashPassword } from "@/lib/password"
+import { z } from "zod"
 
-export async function POST(request: Request) {
+const registerSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+})
+
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, name } = body
+    const { name, email, password } = registerSchema.parse(body)
 
-    if (!email || !password || !name) {
-      return NextResponse.json(
-        { error: "Email, password, and name are required" },
-        { status: 400 }
-      )
-    }
-
-    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
     })
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "An account with this email already exists" },
+        { error: "User with this email already exists" },
         { status: 400 }
       )
     }
 
-    // Hash password and create user
-    const passwordHash = await hashPassword(password)
+    const passwordHash = await bcrypt.hash(password, 12)
 
     const user = await prisma.user.create({
       data: {
-        email,
         name,
+        email,
         passwordHash,
         role: "CLIENT",
-        status: "ACTIVE", // For development; in production, you might want PENDING
+        status: "ACTIVE",
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-      }
     })
 
     return NextResponse.json(
-      { message: "Account created successfully", user },
+      { message: "User created successfully", userId: user.id },
       { status: 201 }
     )
   } catch (error) {
-    console.error("Registration error:", error)
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.errors[0].message },
+        { status: 400 }
+      )
+    }
     return NextResponse.json(
-      { error: "An error occurred during registration" },
+      { error: "Something went wrong" },
       { status: 500 }
     )
   }
