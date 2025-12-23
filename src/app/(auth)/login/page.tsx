@@ -31,7 +31,10 @@ function LoginForm() {
         email,
         password,
         redirect: false,
+        callbackUrl,
       })
+
+      console.log("SignIn result:", result)
 
       if (result?.error) {
         toast({
@@ -39,11 +42,11 @@ function LoginForm() {
           description: result.error,
           variant: "destructive",
         })
-      } else {
-        router.push(callbackUrl)
-        router.refresh()
+      } else if (result?.ok) {
+        window.location.href = callbackUrl
       }
-    } catch {
+    } catch (error) {
+      console.error("SignIn error:", error)
       toast({
         title: "Error",
         description: "An unexpected error occurred",
