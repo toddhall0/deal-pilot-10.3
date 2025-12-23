@@ -1,11 +1,11 @@
-import { PrismaAdapter } from "@auth/prisma-adapter"
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "./prisma"
 import { comparePassword } from "./password"
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
+  // Note: Don't use PrismaAdapter with CredentialsProvider + JWT strategy
+  // The adapter is for OAuth providers that need to store sessions in DB
   providers: [
     CredentialsProvider({
       name: "credentials",
