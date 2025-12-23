@@ -545,6 +545,32 @@ model Notification {
   createdAt   DateTime  @default(now())
 }
 
+model ActivityLog {
+  id          String    @id @default(cuid())
+
+  userId      String?
+
+  dealId      String?
+
+  action      String
+  entityType  String
+  entityId    String
+  entityName  String?
+
+  changes     Json?
+  metadata    Json?
+
+  ipAddress   String?
+  userAgent   String?
+
+  createdAt   DateTime  @default(now())
+
+  @@index([dealId])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
