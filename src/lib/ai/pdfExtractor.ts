@@ -1,9 +1,7 @@
-// Use dynamic require for CommonJS module compatibility
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require("pdf-parse")
-
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
+    // Dynamic import to avoid build-time canvas dependency issues
+    const pdfParse = (await import("pdf-parse")).default
     const data = await pdfParse(buffer)
     return data.text
   } catch (error) {
