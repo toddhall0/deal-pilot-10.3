@@ -7,8 +7,8 @@ const nextConfig: NextConfig = {
   },
   // Disable static page generation at build time
   output: "standalone",
-  // Externalize pdf-parse to avoid canvas dependency issues during build
-  serverExternalPackages: ["pdf-parse"],
+  // Externalize pdf packages to avoid canvas dependency issues during build
+  serverExternalPackages: ["pdf-parse", "pdfjs-dist"],
 };
 
 export default nextConfig;

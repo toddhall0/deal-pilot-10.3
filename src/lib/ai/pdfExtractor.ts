@@ -1,9 +1,30 @@
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
-    // Dynamic import to avoid build-time canvas dependency issues
-    const pdfParse = (await import("pdf-parse")).default
-    const data = await pdfParse(buffer)
-    return data.text
+    // Dynamic import to avoid build-time issues
+    const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs")
+
+    // Convert Buffer to Uint8Array
+    const data = new Uint8Array(buffer)
+
+    // Load the PDF document
+    const loadingTask = pdfjsLib.getDocument({ data })
+    const pdf = await loadingTask.promise
+
+    const textContent: string[] = []
+
+    // Extract text from each page
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i)
+      const content = await page.getTextContent()
+      const pageText = content.items
+        .map((item: { str?: string }) => item.str || "")
+        .join(" ")
+      textContent.push(pageText)
+    }
+
+    await pdf.destroy()
+
+    return textContent.join("\n\n")
   } catch (error) {
     console.error("PDF extraction error:", error)
     throw new Error("Failed to extract text from PDF")
