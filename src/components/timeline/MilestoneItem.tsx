@@ -38,6 +38,7 @@ interface Milestone {
   dueDate: string
   completedDate: string | null
   status: string
+  parentId: string | null
   children?: Milestone[]
 }
 
