@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    // Limit workers to prevent resource exhaustion on Railway
+    cpus: 1,
+  },
+  // Disable static page generation at build time
+  output: "standalone",
 };
 
 export default nextConfig;
