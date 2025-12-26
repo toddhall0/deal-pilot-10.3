@@ -1,8 +1,10 @@
-import * as pdfParse from "pdf-parse"
+// Use dynamic require for CommonJS module compatibility
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse = require("pdf-parse")
 
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
-    const data = await pdfParse.default(buffer)
+    const data = await pdfParse(buffer)
     return data.text
   } catch (error) {
     console.error("PDF extraction error:", error)
