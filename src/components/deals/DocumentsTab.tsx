@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { DocumentUploader } from "@/components/documents/DocumentUploader"
+import { AnalysisDialog } from "@/components/analysis"
 import {
   Upload,
   FileIcon,
@@ -28,6 +29,7 @@ import {
   Download,
   Trash2,
   Star,
+  Sparkles,
 } from "lucide-react"
 
 interface Document {
@@ -40,6 +42,7 @@ interface Document {
   fileSize: number
   downloadUrl: string
   isPrimaryContract: boolean
+  isAnalyzed: boolean
   uploadedBy: { id: string; name: string }
   createdAt: string
 }
@@ -201,6 +204,9 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                       {doc.isPrimaryContract && (
                         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                       )}
+                      {doc.isAnalyzed && (
+                        <Sparkles className="h-4 w-4 text-purple-500" />
+                      )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="secondary" className="text-xs">
@@ -231,6 +237,20 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                           Download
                         </a>
                       </DropdownMenuItem>
+                      {doc.fileType === "application/pdf" && (
+                        <AnalysisDialog
+                          dealId={dealId}
+                          documentId={doc.id}
+                          documentName={doc.name}
+                          isAnalyzed={doc.isAnalyzed}
+                          trigger={
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              {doc.isAnalyzed ? "View Analysis" : "Analyze Contract"}
+                            </DropdownMenuItem>
+                          }
+                        />
+                      )}
                       {doc.category === "CONTRACT" && !doc.isPrimaryContract && (
                         <DropdownMenuItem onClick={() => handleSetPrimary(doc.id)}>
                           <Star className="mr-2 h-4 w-4" />

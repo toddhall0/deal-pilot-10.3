@@ -400,6 +400,8 @@ model Document {
   uploadedBy        User             @relation(fields: [uploadedById], references: [id])
 
   isAnalyzed        Boolean          @default(false)
+  analysisResult    Json?
+  analyzedAt        DateTime?
   isPrimaryContract Boolean          @default(false)
 
   sortOrder         Int              @default(0)

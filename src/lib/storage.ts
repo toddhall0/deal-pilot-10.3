@@ -82,6 +82,22 @@ export async function deleteFile(fileKey: string): Promise<void> {
   await s3Client.send(command)
 }
 
+export async function getFileBuffer(fileKey: string): Promise<Buffer> {
+  const command = new GetObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: fileKey,
+  })
+
+  const response = await s3Client.send(command)
+  const byteArray = await response.Body?.transformToByteArray()
+
+  if (!byteArray) {
+    throw new Error("Failed to read file from storage")
+  }
+
+  return Buffer.from(byteArray)
+}
+
 export function getFileExtension(filename: string): string {
   return filename.split(".").pop()?.toLowerCase() || ""
 }
