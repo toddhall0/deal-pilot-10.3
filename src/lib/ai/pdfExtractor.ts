@@ -16,9 +16,10 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i)
       const content = await page.getTextContent()
-      const pageText = content.items
-        .filter((item): item is { str: string } => "str" in item)
-        .map((item) => item.str)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pageText = (content.items as any[])
+        .map((item) => item.str || "")
+        .filter(Boolean)
         .join(" ")
       textContent.push(pageText)
     }
