@@ -3,8 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getFileBuffer } from "@/lib/storage"
-import { extractTextFromBuffer } from "@/lib/ai/pdfExtractor"
-import { analyzeContract, summarizeAnalysis } from "@/lib/ai/contractAnalysis"
+import { analyzeContract } from "@/lib/ai/contractAnalysis"
 import { ContractAnalysisResult } from "@/types/analysis"
 import { Prisma } from "@prisma/client"
 
@@ -44,18 +43,8 @@ export async function POST(
     // Download file from storage
     const fileBuffer = await getFileBuffer(document.fileKey)
 
-    // Extract text from document
-    const extractedText = await extractTextFromBuffer(fileBuffer, document.fileType)
-
-    if (!extractedText || extractedText.trim().length < 100) {
-      return NextResponse.json(
-        { error: "Could not extract enough text from document. The document may be scanned or image-based." },
-        { status: 400 }
-      )
-    }
-
-    // Analyze contract with Claude
-    const analysisResult = await analyzeContract(extractedText)
+    // Analyze contract with Claude (handles text extraction internally)
+    const analysisResult = await analyzeContract(fileBuffer, document.fileType)
 
     // Update document with analysis
     await prisma.document.update({
@@ -67,13 +56,9 @@ export async function POST(
       },
     })
 
-    // Generate summary
-    const summary = summarizeAnalysis(analysisResult)
-
     return NextResponse.json({
       success: true,
       analysis: analysisResult,
-      summary,
     })
   } catch (error) {
     console.error("Analysis error:", error)
@@ -123,11 +108,9 @@ export async function GET(
     }
 
     const analysisResult = document.analysisResult as unknown as ContractAnalysisResult
-    const summary = summarizeAnalysis(analysisResult)
 
     return NextResponse.json({
       analysis: analysisResult,
-      summary,
       analyzedAt: document.analyzedAt,
     })
   } catch (error) {
