@@ -36,10 +36,7 @@ export async function GET(
           orderBy: { dueDate: "asc" },
         },
         lineItems: {
-          orderBy: [
-            { category: "asc" },
-            { sortOrder: "asc" },
-          ],
+          orderBy: { category: "asc" },
         },
       },
     })
