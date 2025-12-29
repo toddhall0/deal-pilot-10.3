@@ -30,6 +30,9 @@ interface TransactionSummaryData {
   // Add other fields as needed
 }
 
+// Using a flexible type to accommodate Prisma's Decimal type
+type DecimalLike = number | { toNumber(): number } | null
+
 interface Deal {
   id: string
   type: string
@@ -39,8 +42,10 @@ interface Deal {
   propertyCity?: string | null
   propertyState?: string | null
   propertyZip?: string | null
-  acreage?: number | null
-  squareFootage?: number | null
+  acreage?: DecimalLike
+  squareFootage?: DecimalLike
+  lotCount?: number | null
+  unitCount?: number | null
   documents?: Document[]
   tasks?: Task[]
   timeline?: {
