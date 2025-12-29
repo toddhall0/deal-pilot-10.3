@@ -37,7 +37,7 @@ export async function GET(
     })
 
     // Add document count to each folder
-    const foldersWithCount = folders.map((folder) => ({
+    const foldersWithCount = folders.map((folder: typeof folders[number]) => ({
       ...folder,
       documentCount: folder.documents.length,
     }))

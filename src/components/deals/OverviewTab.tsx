@@ -24,10 +24,9 @@ interface Task {
 }
 
 interface TransactionSummaryData {
-  buyerName?: string
-  sellerName?: string
-  purchasePrice?: number
-  // Add other fields as needed
+  buyerName?: string | null
+  sellerName?: string | null
+  purchasePrice?: number | null
 }
 
 // Using a flexible type to accommodate Prisma's Decimal type

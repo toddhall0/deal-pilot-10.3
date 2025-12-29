@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma"
 import { getFileBuffer } from "@/lib/storage"
 import { analyzeContract } from "@/lib/ai/contractAnalysis"
 import { ContractAnalysisResult } from "@/types/analysis"
-import { Prisma } from "@prisma/client"
 
 export async function POST(
   request: NextRequest,
@@ -51,7 +50,7 @@ export async function POST(
       where: { id: documentId },
       data: {
         isAnalyzed: true,
-        analysisResult: JSON.parse(JSON.stringify(analysisResult)) as Prisma.InputJsonValue,
+        analysisResult: JSON.parse(JSON.stringify(analysisResult)),
         analyzedAt: new Date(),
       },
     })

@@ -3,12 +3,14 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ContractAnalysisResult } from "@/types/analysis"
-import { Prisma } from "@prisma/client"
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type JsonValue = Record<string, any> | any[] | undefined
 
 // Helper to convert arrays/objects to Prisma JSON type
-function toJson<T>(value: T | null | undefined): Prisma.InputJsonValue | undefined {
+function toJson<T>(value: T | null | undefined): JsonValue {
   if (value === null || value === undefined) return undefined
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue
+  return JSON.parse(JSON.stringify(value))
 }
 
 export async function GET(

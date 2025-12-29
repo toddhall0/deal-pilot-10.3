@@ -34,22 +34,22 @@ interface RawAnalysis {
 }
 
 interface Summary {
-  buyerName?: string
-  buyerEntity?: string
-  sellerName?: string
-  sellerEntity?: string
-  purchasePrice?: number
-  priceAdjustable?: boolean
-  initialDeposit?: number
-  initialDepositDue?: string
-  additionalDeposits?: Deposit[]
-  effectiveDate?: string
-  closingDate?: string
-  feasibilityPeriodDays?: number
-  feasibilityExpiration?: string
-  titleCompany?: string
-  escrowAgent?: string
-  rawAnalysis?: RawAnalysis
+  buyerName?: string | null
+  buyerEntity?: string | null
+  sellerName?: string | null
+  sellerEntity?: string | null
+  purchasePrice?: number | null
+  priceAdjustable?: boolean | null
+  initialDeposit?: number | null
+  initialDepositDue?: string | null
+  additionalDeposits?: Deposit[] | null
+  effectiveDate?: string | null
+  closingDate?: string | null
+  feasibilityPeriodDays?: number | null
+  feasibilityExpiration?: string | null
+  titleCompany?: string | null
+  escrowAgent?: string | null
+  rawAnalysis?: RawAnalysis | null
 }
 
 interface TransactionSummaryProps {
@@ -79,7 +79,7 @@ export function TransactionSummary({ summary }: TransactionSummaryProps) {
     }).format(amount)
   }
 
-  const formatDate = (date: string | undefined) => {
+  const formatDate = (date: string | null | undefined) => {
     if (!date) return "—"
     return new Date(date).toLocaleDateString("en-US", {
       month: "short",

@@ -61,7 +61,7 @@ export async function GET(
     }
 
     // Build hierarchical structure (only top-level milestones with nested children)
-    const topLevelMilestones = timeline.milestones.filter(m => !m.parentId)
+    const topLevelMilestones = timeline.milestones.filter((m: typeof timeline.milestones[number]) => !m.parentId)
 
     return NextResponse.json({
       id: timeline.id,

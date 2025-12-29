@@ -39,7 +39,7 @@ export default async function DealsPage() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {deals.map((deal) => (
+          {deals.map((deal: typeof deals[number]) => (
             <Link key={deal.id} href={`/deals/${deal.id}`}>
               <Card className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardHeader className="pb-2">

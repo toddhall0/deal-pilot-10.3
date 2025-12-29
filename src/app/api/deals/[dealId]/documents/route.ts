@@ -39,7 +39,7 @@ export async function GET(
 
     // Generate signed URLs for each document
     const documentsWithUrls = await Promise.all(
-      documents.map(async (doc) => ({
+      documents.map(async (doc: typeof documents[number]) => ({
         ...doc,
         downloadUrl: await getSignedDownloadUrl(doc.fileKey),
       }))
