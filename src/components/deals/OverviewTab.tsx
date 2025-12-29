@@ -33,20 +33,20 @@ interface TransactionSummaryData {
 interface Deal {
   id: string
   type: string
-  propertyName?: string
-  propertyType?: string
-  propertyAddress?: string
-  propertyCity?: string
-  propertyState?: string
-  propertyZip?: string
-  acreage?: number
-  squareFootage?: number
+  propertyName?: string | null
+  propertyType?: string | null
+  propertyAddress?: string | null
+  propertyCity?: string | null
+  propertyState?: string | null
+  propertyZip?: string | null
+  acreage?: number | null
+  squareFootage?: number | null
   documents?: Document[]
   tasks?: Task[]
   timeline?: {
     milestones?: unknown[]
-  }
-  transactionSummary?: TransactionSummaryData
+  } | null
+  transactionSummary?: TransactionSummaryData | null
 }
 
 interface OverviewTabProps {
