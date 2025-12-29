@@ -6,8 +6,8 @@ import { ContractAnalysisResult } from "@/types/analysis"
 import { Prisma } from "@prisma/client"
 
 // Helper to convert arrays/objects to Prisma JSON type
-function toJson<T>(value: T | null | undefined): Prisma.InputJsonValue | null {
-  if (value === null || value === undefined) return null
+function toJson<T>(value: T | null | undefined): Prisma.InputJsonValue | undefined {
+  if (value === null || value === undefined) return undefined
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue
 }
 
