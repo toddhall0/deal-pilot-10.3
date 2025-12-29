@@ -42,16 +42,16 @@ export async function GET(
     })
 
     if (!financials) {
-      // Get deal for purchase price
-      const deal = await prisma.deal.findUnique({
-        where: { id: dealId },
+      // Get transaction summary for purchase price if available
+      const summary = await prisma.transactionSummary.findUnique({
+        where: { dealId },
         select: { purchasePrice: true },
       })
 
       financials = await prisma.dealFinancials.create({
         data: {
           dealId,
-          purchasePrice: deal?.purchasePrice || null,
+          purchasePrice: summary?.purchasePrice || null,
         },
         include: {
           deposits: true,
