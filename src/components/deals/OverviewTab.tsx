@@ -23,14 +23,14 @@ interface Task {
   status: string
 }
 
+// Using a flexible type to accommodate Prisma's Decimal type
+type DecimalLike = number | { toNumber(): number } | null
+
 interface TransactionSummaryData {
   buyerName?: string | null
   sellerName?: string | null
-  purchasePrice?: number | null
+  purchasePrice?: DecimalLike
 }
-
-// Using a flexible type to accommodate Prisma's Decimal type
-type DecimalLike = number | { toNumber(): number } | null
 
 interface Deal {
   id: string

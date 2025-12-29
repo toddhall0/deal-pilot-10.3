@@ -33,14 +33,17 @@ interface RawAnalysis {
   warnings?: string[]
 }
 
+// Flexible type to accommodate Prisma's Decimal type
+type DecimalLike = number | { toNumber(): number } | null
+
 interface Summary {
   buyerName?: string | null
   buyerEntity?: string | null
   sellerName?: string | null
   sellerEntity?: string | null
-  purchasePrice?: number | null
+  purchasePrice?: DecimalLike
   priceAdjustable?: boolean | null
-  initialDeposit?: number | null
+  initialDeposit?: DecimalLike
   initialDepositDue?: string | null
   additionalDeposits?: Deposit[] | null
   effectiveDate?: string | null
