@@ -3,6 +3,13 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ContractAnalysisResult } from "@/types/analysis"
+import { Prisma } from "@prisma/client"
+
+// Helper to convert arrays/objects to Prisma JSON type
+function toJson<T>(value: T | null | undefined): Prisma.InputJsonValue | null {
+  if (value === null || value === undefined) return null
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue
+}
 
 export async function GET(
   request: NextRequest,
@@ -68,7 +75,7 @@ export async function POST(
       // Deposits
       initialDeposit: result.deposits?.[0]?.amount || null,
       initialDepositDue: result.deposits?.[0]?.dueDate ? new Date(result.deposits[0].dueDate) : null,
-      additionalDeposits: result.deposits?.slice(1) || null,
+      additionalDeposits: toJson(result.deposits?.slice(1)),
 
       // Timeline
       feasibilityPeriodDays: result.feasibilityPeriodDays || null,
@@ -81,14 +88,14 @@ export async function POST(
       escrowAgent: result.escrowAgent || null,
 
       // JSON fields
-      contingencies: result.contingencies || null,
-      dueDiligenceItems: result.dueDiligenceItems || null,
-      closingDocuments: result.closingDocuments || null,
-      specialProvisions: result.specialProvisions || null,
-      prorationItems: result.prorationItems || null,
+      contingencies: toJson(result.contingencies),
+      dueDiligenceItems: toJson(result.dueDiligenceItems),
+      closingDocuments: toJson(result.closingDocuments),
+      specialProvisions: toJson(result.specialProvisions),
+      prorationItems: toJson(result.prorationItems),
 
       // Raw analysis
-      rawAnalysis: result,
+      rawAnalysis: toJson(result),
     }
 
     // Upsert transaction summary
