@@ -7,6 +7,7 @@ import { TasksTab } from "@/components/deals/TasksTab"
 import { DocumentsTab } from "@/components/deals/DocumentsTab"
 import { NotesTab } from "@/components/deals/NotesTab"
 import { TimelineTab } from "@/components/deals/TimelineTab"
+import { OverviewTab } from "@/components/deals/OverviewTab"
 
 async function getDeal(id: string) {
   const deal = await prisma.deal.findUnique({
@@ -92,100 +93,7 @@ export default async function DealDetailPage({
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Deal Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Deal Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Type</span>
-                  <span>{deal.type}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Status</span>
-                  <span>{deal.status.replace("_", " ")}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Client</span>
-                  <span>{deal.client.name}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Property Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Property Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {deal.propertyName && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Name</span>
-                    <span>{deal.propertyName}</span>
-                  </div>
-                )}
-                {deal.propertyType && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Type</span>
-                    <span>{deal.propertyType}</span>
-                  </div>
-                )}
-                {deal.propertyAddress && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Address</span>
-                    <span>
-                      {deal.propertyAddress}
-                      {deal.propertyCity && `, ${deal.propertyCity}`}
-                      {deal.propertyState && `, ${deal.propertyState}`}
-                      {deal.propertyZip && ` ${deal.propertyZip}`}
-                    </span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Recent Tasks */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Tasks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {deal.tasks.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No tasks yet</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {deal.tasks.map((task) => (
-                      <li key={task.id} className="text-sm">
-                        {task.title}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Recent Documents */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Documents</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {deal.documents.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No documents yet</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {deal.documents.map((doc) => (
-                      <li key={doc.id} className="text-sm">
-                        {doc.name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+          <OverviewTab deal={deal} />
         </TabsContent>
 
         <TabsContent value="timeline" className="mt-6">
