@@ -5,15 +5,12 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
 const updateFinancialsSchema = z.object({
-  purchasePrice: z.number().optional(),
-  earnestMoney: z.number().optional(),
-  optionFee: z.number().optional(),
-  dueDiligenceFee: z.number().optional(),
-  closingCostsBuyer: z.number().optional(),
-  closingCostsSeller: z.number().optional(),
-  prorationDate: z.string().optional().nullable(),
-  prorationMethod: z.enum(["CALENDAR_DAY", "BUSINESS_DAY", "THIRTY_DAY"]).optional(),
-  notes: z.string().optional().nullable(),
+  contractPrice: z.number().optional().nullable(),
+  currentPrice: z.number().optional().nullable(),
+  dueDiligenceBudget: z.number().optional().nullable(),
+  dueDiligenceSpent: z.number().optional().nullable(),
+  estimatedClosingCosts: z.number().optional().nullable(),
+  actualClosingCosts: z.number().optional().nullable(),
 })
 
 export async function GET(
@@ -51,7 +48,7 @@ export async function GET(
       financials = await prisma.dealFinancials.create({
         data: {
           dealId,
-          purchasePrice: summary?.purchasePrice || null,
+          contractPrice: summary?.purchasePrice || null,
         },
         include: {
           deposits: true,
@@ -84,19 +81,13 @@ export async function PATCH(
     const body = await request.json()
     const data = updateFinancialsSchema.parse(body)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateData: any = { ...data }
-    if (data.prorationDate) {
-      updateData.prorationDate = new Date(data.prorationDate)
-    }
-
     const financials = await prisma.dealFinancials.upsert({
       where: { dealId },
       create: {
         dealId,
-        ...updateData,
+        ...data,
       },
-      update: updateData,
+      update: data,
       include: {
         deposits: true,
         lineItems: true,
