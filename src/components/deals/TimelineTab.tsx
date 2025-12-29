@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MilestoneItem } from "@/components/timeline/MilestoneItem"
 import { MilestoneEditor } from "@/components/timeline/MilestoneEditor"
-import { Plus, Calendar, CheckCircle, Clock, AlertTriangle } from "lucide-react"
+import { Plus, Calendar, CheckCircle, Clock, AlertTriangle, Sparkles, Loader2 } from "lucide-react"
 
 interface Milestone {
   id: string
@@ -34,6 +34,7 @@ export function TimelineTab({ dealId }: TimelineTabProps) {
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null)
   const [parentIdForNew, setParentIdForNew] = useState<string | null>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
 
   useEffect(() => {
     fetchTimeline()
@@ -67,6 +68,33 @@ export function TimelineTab({ dealId }: TimelineTabProps) {
     setEditingMilestone(null)
     setParentIdForNew(null)
     setIsEditorOpen(true)
+  }
+
+  async function handleGenerateFromAnalysis() {
+    if (!confirm("This will create milestones based on the contract analysis. Continue?")) {
+      return
+    }
+
+    setIsGenerating(true)
+    try {
+      const response = await fetch(`/api/deals/${dealId}/generate-timeline`, {
+        method: "POST",
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        alert(data.message)
+        fetchTimeline()
+      } else {
+        const error = await response.json()
+        alert(error.error || "Failed to generate timeline")
+      }
+    } catch (error) {
+      console.error("Failed to generate timeline:", error)
+      alert("Failed to generate timeline")
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   // Calculate stats
@@ -155,10 +183,29 @@ export function TimelineTab({ dealId }: TimelineTabProps) {
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Timeline</h2>
-        <Button onClick={handleNewMilestone}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Milestone
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleGenerateFromAnalysis}
+            disabled={isGenerating}
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate from Contract
+              </>
+            )}
+          </Button>
+          <Button onClick={handleNewMilestone}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Milestone
+          </Button>
+        </div>
       </div>
 
       {/* Milestones List */}
