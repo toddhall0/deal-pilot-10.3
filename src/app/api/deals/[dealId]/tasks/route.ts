@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
+import { createNotification } from "@/lib/notifications/notificationService"
 
 const createTaskSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -65,6 +66,12 @@ export async function POST(
     const body = await request.json()
     const data = createTaskSchema.parse(body)
 
+    // Get deal info for notification
+    const deal = await prisma.deal.findUnique({
+      where: { id: dealId },
+      select: { dealNumber: true },
+    })
+
     const task = await prisma.task.create({
       data: {
         ...data,
@@ -78,6 +85,24 @@ export async function POST(
         },
       },
     })
+
+    // Send notification if task is assigned
+    if (task.assigneeId && task.assigneeId !== session.user.id) {
+      await createNotification({
+        type: "TASK_ASSIGNED",
+        userId: task.assigneeId,
+        title: task.title,
+        message: "You have been assigned a new task",
+        dealId,
+        taskId: task.id,
+        actionUrl: `/deals/${dealId}?tab=tasks`,
+        metadata: {
+          dealNumber: deal?.dealNumber,
+          dueDate: task.dueDate?.toLocaleDateString(),
+          assignedBy: session.user.name,
+        },
+      })
+    }
 
     return NextResponse.json(task, { status: 201 })
   } catch (error) {

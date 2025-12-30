@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { uploadFile, generateFileKey, validateFile, getSignedDownloadUrl } from "@/lib/storage"
+import { notifyDealTeam } from "@/lib/notifications/notificationService"
 
 export async function GET(
   request: NextRequest,
@@ -92,6 +93,12 @@ export async function POST(
     // Upload to S3
     await uploadFile(buffer, fileKey, file.type)
 
+    // Get deal info for notification
+    const deal = await prisma.deal.findUnique({
+      where: { id: dealId },
+      select: { dealNumber: true },
+    })
+
     // Create database record
     const document = await prisma.document.create({
       data: {
@@ -111,6 +118,20 @@ export async function POST(
         uploadedBy: {
           select: { id: true, name: true },
         },
+      },
+    })
+
+    // Notify deal team about new document
+    await notifyDealTeam(dealId, {
+      type: "DOCUMENT_UPLOADED",
+      title: "New Document Uploaded",
+      message: `${document.name} has been uploaded`,
+      documentId: document.id,
+      actionUrl: `/deals/${dealId}?tab=documents`,
+      metadata: {
+        dealNumber: deal?.dealNumber,
+        documentName: document.name,
+        uploadedBy: session.user.name,
       },
     })
 
