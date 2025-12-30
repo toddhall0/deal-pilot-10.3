@@ -1,31 +1,27 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { StatCard } from "./StatCard"
 import { DealsChart } from "./DealsChart"
 import { StatusPieChart } from "./StatusPieChart"
 import { UpcomingMilestones } from "./UpcomingMilestones"
 import { RecentActivity } from "./RecentActivity"
-import { Building2, DollarSign, Clock, CheckCircle } from "lucide-react"
+import {
+  Briefcase,
+  DollarSign,
+  CheckSquare,
+  AlertTriangle,
+} from "lucide-react"
 
-interface DashboardStats {
-  activeDeals: number
-  activeDealsChange: number
-  totalValue: number
-  totalValueChange: number
-  pendingTasks: number
-  pendingTasksChange: number
-  closedThisMonth: number
-  closedThisMonthChange: number
-  chartData: {
-    month: string
-    count: number
-    value: number
-  }[]
-  statusData: {
-    status: string
-    count: number
-  }[]
+interface DealsByStatus {
+  status: string
+  count: number
+}
+
+interface DealsByMonth {
+  month: string
+  count: number
+  value: number
 }
 
 interface Milestone {
@@ -54,11 +50,24 @@ interface ActivityItem {
   dealId: string | null
 }
 
+interface DashboardStats {
+  totalDeals: number
+  totalValue: number
+  pendingTasks: number
+  overdueTasks: number
+  dealsByStatus: DealsByStatus[]
+  dealsByMonth: DealsByMonth[]
+  upcomingMilestones: Milestone[]
+}
+
+interface ActivityData {
+  activities: ActivityItem[]
+}
+
 export function DashboardContent() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [milestones, setMilestones] = useState<Milestone[]>([])
-  const [activities, setActivities] = useState<ActivityItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const [activity, setActivity] = useState<ActivityData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
@@ -68,123 +77,96 @@ export function DashboardContent() {
           fetch("/api/dashboard/activity"),
         ])
 
-        if (statsRes.ok) {
-          const data = await statsRes.json()
-          setStats(data)
-          // Extract milestones from stats if included
-          if (data.upcomingMilestones) {
-            setMilestones(data.upcomingMilestones)
-          }
-        }
+        const statsData = await statsRes.json()
+        const activityData = await activityRes.json()
 
-        if (activityRes.ok) {
-          const data = await activityRes.json()
-          setActivities(data)
-        }
+        setStats(statsData)
+        setActivity(activityData)
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error)
       } finally {
-        setLoading(false)
+        setIsLoading(false)
       }
     }
 
     fetchData()
   }, [])
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`
+  const formatCurrency = (amount: number) => {
+    if (amount >= 1000000000) {
+      return `$${(amount / 1000000000).toFixed(1)}B`
     }
-    if (value >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(1)}M`
     }
-    return `$${value}`
+    if (amount >= 1000) {
+      return `$${(amount / 1000).toFixed(0)}K`
+    }
+    return `$${amount}`
   }
 
-  if (loading) {
-    return <div className="animate-pulse">Loading dashboard data...</div>
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="h-32 bg-gray-100 rounded-lg animate-pulse" />
+        ))}
+      </div>
+    )
   }
+
+  const activeDeals = stats?.dealsByStatus
+    ?.filter((d) => !["CLOSED", "TERMINATED"].includes(d.status))
+    .reduce((sum, d) => sum + d.count, 0) || 0
 
   return (
     <div className="space-y-6">
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stat Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Active Deals"
-          value={stats?.activeDeals ?? 0}
-          icon={Building2}
+          title="Total Deals"
+          value={stats?.totalDeals || 0}
+          subtitle={`${activeDeals} active`}
+          icon={Briefcase}
           iconColor="text-blue-600"
-          trend={
-            stats?.activeDealsChange
-              ? {
-                  value: Math.abs(stats.activeDealsChange),
-                  label: "vs last month",
-                  isPositive: stats.activeDealsChange >= 0,
-                }
-              : undefined
-          }
         />
         <StatCard
           title="Total Value"
-          value={formatCurrency(stats?.totalValue ?? 0)}
+          value={formatCurrency(stats?.totalValue || 0)}
+          subtitle="All deals"
           icon={DollarSign}
           iconColor="text-green-600"
-          trend={
-            stats?.totalValueChange
-              ? {
-                  value: Math.abs(stats.totalValueChange),
-                  label: "vs last month",
-                  isPositive: stats.totalValueChange >= 0,
-                }
-              : undefined
-          }
         />
         <StatCard
           title="Pending Tasks"
-          value={stats?.pendingTasks ?? 0}
-          icon={Clock}
-          iconColor="text-orange-600"
-          trend={
-            stats?.pendingTasksChange
-              ? {
-                  value: Math.abs(stats.pendingTasksChange),
-                  label: "vs last month",
-                  isPositive: stats.pendingTasksChange <= 0, // Less pending is positive
-                }
-              : undefined
-          }
+          value={stats?.pendingTasks || 0}
+          subtitle="To be completed"
+          icon={CheckSquare}
+          iconColor="text-purple-600"
         />
         <StatCard
-          title="Closed This Month"
-          value={stats?.closedThisMonth ?? 0}
-          icon={CheckCircle}
-          iconColor="text-emerald-600"
-          trend={
-            stats?.closedThisMonthChange
-              ? {
-                  value: Math.abs(stats.closedThisMonthChange),
-                  label: "vs last month",
-                  isPositive: stats.closedThisMonthChange >= 0,
-                }
-              : undefined
-          }
+          title="Overdue Tasks"
+          value={stats?.overdueTasks || 0}
+          subtitle="Needs attention"
+          icon={AlertTriangle}
+          iconColor="text-red-600"
         />
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <DealsChart data={stats?.chartData ?? []} />
+          <DealsChart data={stats?.dealsByMonth || []} />
         </div>
         <div>
-          <StatusPieChart data={stats?.statusData ?? []} />
+          <StatusPieChart data={stats?.dealsByStatus || []} />
         </div>
       </div>
 
-      {/* Activity Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <UpcomingMilestones milestones={milestones} />
-        <RecentActivity activities={activities} />
+      {/* Bottom Row */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <UpcomingMilestones milestones={stats?.upcomingMilestones || []} />
+        <RecentActivity activities={activity?.activities || []} />
       </div>
     </div>
   )
