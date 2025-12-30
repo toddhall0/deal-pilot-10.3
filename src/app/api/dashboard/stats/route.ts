@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     // Get total deals count
     const totalDeals = await prisma.deal.count({
       where: {
-        status: { not: "CANCELLED" },
+        status: { not: "TERMINATED" },
       },
     })
 
