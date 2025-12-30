@@ -1,0 +1,68 @@
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const unreadOnly = searchParams.get("unread") === "true"
+    const limit = parseInt(searchParams.get("limit") || "20")
+    const cursor = searchParams.get("cursor")
+
+    const where: any = {
+      userId: session.user.id,
+    }
+
+    if (unreadOnly) {
+      where.read = false
+    }
+
+    const notifications = await prisma.notification.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: limit + 1,
+      ...(cursor && {
+        cursor: { id: cursor },
+        skip: 1,
+      }),
+      include: {
+        deal: {
+          select: { id: true, dealNumber: true, propertyName: true },
+        },
+      },
+    })
+
+    // Check if there are more results
+    const hasMore = notifications.length > limit
+    if (hasMore) {
+      notifications.pop()
+    }
+
+    // Get unread count
+    const unreadCount = await prisma.notification.count({
+      where: {
+        userId: session.user.id,
+        read: false,
+      },
+    })
+
+    return NextResponse.json({
+      notifications,
+      unreadCount,
+      hasMore,
+      nextCursor: hasMore ? notifications[notifications.length - 1]?.id : null,
+    })
+  } catch (error) {
+    console.error("Error fetching notifications:", error)
+    return NextResponse.json(
+      { error: "Failed to fetch notifications" },
+      { status: 500 }
+    )
+  }
+}
