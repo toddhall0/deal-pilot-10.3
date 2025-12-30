@@ -26,12 +26,14 @@ import {
   Users,
   CheckSquare,
   Flag,
+  Receipt,
   Download,
   Loader2,
 } from "lucide-react"
 import { REPORT_CONFIGS, ReportType, ReportFormat } from "@/types/reports"
 import { generateDealSummaryPDF, generateDealSummaryExcel } from "@/lib/reports/dealSummaryReport"
 import { generatePipelinePDF, generatePipelineExcel } from "@/lib/reports/pipelineReport"
+import { generateClosingStatementPDF } from "@/lib/reports/closingStatementReport"
 import { downloadPDF } from "@/lib/reports/pdfGenerator"
 import { downloadExcel } from "@/lib/reports/excelGenerator"
 import { downloadCSV, generateCSV } from "@/lib/reports/csvGenerator"
@@ -44,6 +46,7 @@ const ICONS: Record<string, any> = {
   Users,
   CheckSquare,
   Flag,
+  Receipt,
 }
 
 interface ReportGeneratorProps {
@@ -106,6 +109,8 @@ export function ReportGenerator({
             pdf = generateDealSummaryPDF(reportData.data)
           } else if (selectedReport === "PIPELINE_SUMMARY") {
             pdf = generatePipelinePDF(reportData.data)
+          } else if (selectedReport === "CLOSING_STATEMENT") {
+            pdf = generateClosingStatementPDF(reportData.data)
           }
           if (pdf) {
             downloadPDF(pdf, `${filename}.pdf`)

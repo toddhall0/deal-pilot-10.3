@@ -2,6 +2,7 @@ export type ReportType =
   | "DEAL_SUMMARY"
   | "DEAL_TIMELINE"
   | "DEAL_FINANCIALS"
+  | "CLOSING_STATEMENT"
   | "PIPELINE_SUMMARY"
   | "CLIENT_PORTFOLIO"
   | "TASK_LIST"
@@ -43,6 +44,14 @@ export const REPORT_CONFIGS: Record<ReportType, ReportConfig> = {
     description: "Financial summary including deposits, costs, and projections",
     icon: "DollarSign",
     formats: ["PDF", "EXCEL"],
+    requiresDealId: true,
+  },
+  CLOSING_STATEMENT: {
+    type: "CLOSING_STATEMENT",
+    title: "Closing Statement",
+    description: "Settlement statement with buyer and seller debits/credits",
+    icon: "Receipt",
+    formats: ["PDF"],
     requiresDealId: true,
   },
   PIPELINE_SUMMARY: {
