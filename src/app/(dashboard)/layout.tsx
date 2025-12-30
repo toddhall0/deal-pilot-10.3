@@ -9,7 +9,7 @@ import {
   Users,
   UserCog,
   CheckSquare,
-  FileText,
+  FileBarChart,
   Settings,
   LogOut,
 } from "lucide-react"
@@ -27,7 +27,7 @@ export default function DashboardLayout({
     { href: "/deals", label: "Deals", icon: Briefcase },
     { href: "/clients", label: "Clients", icon: Users },
     { href: "/tasks", label: "Tasks", icon: CheckSquare },
-    { href: "/reports", label: "Reports", icon: FileText },
+    { href: "/reports", label: "Reports", icon: FileBarChart },
     { href: "/settings", label: "Settings", icon: Settings },
   ]
 
