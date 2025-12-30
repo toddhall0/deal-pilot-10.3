@@ -2,11 +2,12 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { signOut } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import {
   LayoutDashboard,
   Briefcase,
   Users,
+  UserCog,
   CheckSquare,
   FileText,
   Settings,
@@ -19,6 +20,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const { data: session } = useSession()
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -57,6 +59,21 @@ export default function DashboardLayout({
                 </Link>
               )
             })}
+
+            {/* Admin-only Users link */}
+            {session?.user?.role === "ADMIN" && (
+              <Link
+                href="/users"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  pathname === "/users"
+                    ? "bg-gray-100 text-gray-900"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <UserCog className="h-5 w-5" />
+                Users
+              </Link>
+            )}
           </nav>
 
           {/* Logout button at bottom */}
