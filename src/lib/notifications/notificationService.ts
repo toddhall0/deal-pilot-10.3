@@ -206,7 +206,9 @@ export async function notifyDealTeam(
 
   const userIds = new Set<string>()
   userIds.add(deal.createdById)
-  deal.tasks?.forEach((t) => t.assigneeId && userIds.add(t.assigneeId))
+  for (const task of deal.tasks || []) {
+    if (task.assigneeId) userIds.add(task.assigneeId)
+  }
 
   for (const userId of userIds) {
     await createNotification({ ...notification, userId, dealId })
