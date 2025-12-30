@@ -30,6 +30,7 @@ import {
   Briefcase,
 } from "lucide-react"
 import Link from "next/link"
+import { TableSkeleton } from "@/components/ui/skeleton-loaders"
 
 interface Client {
   id: string
@@ -131,7 +132,9 @@ export default function ClientsPage() {
 
       {/* Clients Table */}
       {isLoading ? (
-        <div className="text-center py-8">Loading clients...</div>
+        <Card>
+          <TableSkeleton rows={6} columns={4} />
+        </Card>
       ) : clients.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center">

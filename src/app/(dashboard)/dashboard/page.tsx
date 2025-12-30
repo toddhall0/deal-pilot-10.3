@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { DashboardContent } from "@/components/dashboard/DashboardContent"
+import { DashboardSkeleton } from "@/components/ui/skeleton-loaders"
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -20,7 +21,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <Suspense fallback={<div>Loading dashboard...</div>}>
+      <Suspense fallback={<DashboardSkeleton />}>
         <DashboardContent />
       </Suspense>
     </div>
