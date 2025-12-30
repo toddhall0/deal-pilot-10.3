@@ -199,7 +199,7 @@ export async function generateDealSummaryExcel(data: DealData): Promise<ExcelJS.
         status: t.status,
         priority: t.priority,
         dueDate: formatDate(t.dueDate),
-        assignee: t.assignedTo?.name || "",
+        assignee: t.assignee?.name || "",
       })),
     })
   }

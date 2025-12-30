@@ -106,7 +106,7 @@ async function getDealReportData(dealId: string) {
       },
       tasks: {
         include: {
-          assignedTo: { select: { name: true } },
+          assignee: { select: { name: true } },
         },
         orderBy: { dueDate: "asc" },
       },
@@ -231,7 +231,7 @@ async function getTaskReportData(dealId: string) {
   const tasks = await prisma.task.findMany({
     where: { dealId },
     include: {
-      assignedTo: { select: { name: true } },
+      assignee: { select: { name: true } },
       deal: { select: { dealNumber: true } },
     },
     orderBy: [{ status: "asc" }, { dueDate: "asc" }],
