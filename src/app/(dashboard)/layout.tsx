@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
 } from "lucide-react"
+import { NotificationBell } from "@/components/notifications/NotificationBell"
 
 export default function DashboardLayout({
   children,
@@ -35,7 +36,7 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 min-h-screen bg-white border-r border-gray-200 hidden md:block">
+        <aside className="w-64 min-h-screen bg-white border-r border-gray-200 hidden md:block relative">
           <div className="p-4">
             <h1 className="text-xl font-bold text-gray-900">Deal Pilot</h1>
           </div>
@@ -88,8 +89,24 @@ export default function DashboardLayout({
           </div>
         </aside>
 
-        {/* Main content */}
-        <main className="flex-1 p-6">{children}</main>
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="h-16 border-b bg-white flex items-center justify-between px-6">
+            <div>
+              {/* Breadcrumb or page title placeholder */}
+            </div>
+            <div className="flex items-center gap-4">
+              <NotificationBell />
+              {session?.user?.name && (
+                <span className="text-sm text-gray-600">{session.user.name}</span>
+              )}
+            </div>
+          </header>
+
+          {/* Page content */}
+          <main className="flex-1 p-6">{children}</main>
+        </div>
       </div>
     </div>
   )
