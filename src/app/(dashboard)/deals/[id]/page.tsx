@@ -9,6 +9,7 @@ import { NotesTab } from "@/components/deals/NotesTab"
 import { TimelineTab } from "@/components/deals/TimelineTab"
 import { OverviewTab } from "@/components/deals/OverviewTab"
 import { FinancialsTab } from "@/components/deals/FinancialsTab"
+import { QuickExport } from "@/components/reports/QuickExport"
 
 async function getDeal(id: string) {
   const deal = await prisma.deal.findUnique({
@@ -68,17 +69,20 @@ export default async function DealDetailPage({
             </p>
             <h1 className="text-2xl font-bold">{deal.name}</h1>
           </div>
-          <Badge
-            variant={
-              deal.status === "CLOSED"
-                ? "default"
-                : deal.status === "ACTIVE"
-                ? "secondary"
-                : "outline"
-            }
-          >
-            {deal.status.replace("_", " ")}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <QuickExport dealId={deal.id} />
+            <Badge
+              variant={
+                deal.status === "CLOSED"
+                  ? "default"
+                  : deal.status === "ACTIVE"
+                  ? "secondary"
+                  : "outline"
+              }
+            >
+              {deal.status.replace("_", " ")}
+            </Badge>
+          </div>
         </div>
       </div>
 
