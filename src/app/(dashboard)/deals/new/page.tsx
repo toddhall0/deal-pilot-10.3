@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,10 +14,16 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+interface Client {
+  id: string
+  name: string
+}
+
 export default function NewDealPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [clients, setClients] = useState<Client[]>([])
 
   const [formData, setFormData] = useState({
     name: "",
@@ -31,6 +37,28 @@ export default function NewDealPage() {
     propertyZip: "",
   })
 
+  useEffect(() => {
+    async function fetchClients() {
+      try {
+        const response = await fetch("/api/clients")
+        if (response.ok) {
+          const data = await response.json()
+          setClients(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch clients:", error)
+      }
+    }
+    fetchClients()
+
+    // Check URL for clientId
+    const params = new URLSearchParams(window.location.search)
+    const clientId = params.get("clientId")
+    if (clientId) {
+      setFormData((prev) => ({ ...prev, clientId }))
+    }
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -40,7 +68,10 @@ export default function NewDealPage() {
       const response = await fetch("/api/deals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          clientId: formData.clientId || undefined,
+        }),
       })
 
       if (!response.ok) {
@@ -100,6 +131,27 @@ export default function NewDealPage() {
                 <SelectContent>
                   <SelectItem value="ACQUISITION">Acquisition</SelectItem>
                   <SelectItem value="DISPOSITION">Disposition</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="client">Client</Label>
+              <Select
+                value={formData.clientId}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, clientId: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a client" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
