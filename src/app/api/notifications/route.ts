@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (unreadOnly) {
-      where.read = false
+      where.isRead = false
     }
 
     const notifications = await prisma.notification.findMany({
@@ -31,11 +31,6 @@ export async function GET(request: NextRequest) {
         cursor: { id: cursor },
         skip: 1,
       }),
-      include: {
-        deal: {
-          select: { id: true, dealNumber: true, propertyName: true },
-        },
-      },
     })
 
     // Check if there are more results
@@ -48,7 +43,7 @@ export async function GET(request: NextRequest) {
     const unreadCount = await prisma.notification.count({
       where: {
         userId: session.user.id,
-        read: false,
+        isRead: false,
       },
     })
 
