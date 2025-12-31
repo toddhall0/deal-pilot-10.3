@@ -10,7 +10,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "env:check": "ts-node src/lib/env.check.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
