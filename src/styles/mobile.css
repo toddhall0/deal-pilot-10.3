@@ -1,0 +1,53 @@
+/* Mobile-first responsive utilities */
+
+/* Hide on mobile, show on desktop */
+.desktop-only {
+  @apply hidden md:block;
+}
+
+/* Show on mobile, hide on desktop */
+.mobile-only {
+  @apply block md:hidden;
+}
+
+/* Responsive padding */
+.container-responsive {
+  @apply px-4 md:px-6 lg:px-8;
+}
+
+/* Responsive text */
+.text-responsive-lg {
+  @apply text-xl md:text-2xl lg:text-3xl;
+}
+
+.text-responsive-md {
+  @apply text-lg md:text-xl;
+}
+
+/* Responsive grid */
+.grid-responsive-2 {
+  @apply grid grid-cols-1 md:grid-cols-2;
+}
+
+.grid-responsive-3 {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
+}
+
+.grid-responsive-4 {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+}
+
+/* Mobile table scroll wrapper */
+.table-scroll-wrapper {
+  @apply overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0;
+}
+
+/* Touch-friendly targets */
+.touch-target {
+  @apply min-h-[44px] min-w-[44px];
+}
+
+/* Mobile card padding */
+.card-mobile {
+  @apply p-4 md:p-6;
+}

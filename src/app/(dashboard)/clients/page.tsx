@@ -89,21 +89,21 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Clients</h1>
+          <h1 className="text-xl md:text-2xl font-bold">Clients</h1>
           <p className="text-gray-500">Manage your clients and contacts</p>
         </div>
-        <Button onClick={() => setIsEditorOpen(true)}>
+        <Button onClick={() => setIsEditorOpen(true)} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Add Client
         </Button>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         <form onSubmit={handleSearch} className="flex gap-2 flex-1">
-          <div className="relative flex-1 max-w-md">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search clients..."
@@ -117,7 +117,7 @@ export default function ClientsPage() {
           </Button>
         </form>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-full sm:w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -148,16 +148,17 @@ export default function ClientsPage() {
         </Card>
       ) : (
         <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Deals</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Deals</TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {clients.map((client) => (
                 <TableRow key={client.id}>
@@ -213,7 +214,8 @@ export default function ClientsPage() {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+            </Table>
+          </div>
         </Card>
       )}
 
