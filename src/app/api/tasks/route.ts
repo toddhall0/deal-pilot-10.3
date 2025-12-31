@@ -14,13 +14,20 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status")
     const priority = searchParams.get("priority")
     const dealId = searchParams.get("dealId")
-    const sortBy = searchParams.get("sortBy") || "createdAt"
-    const sortOrder = searchParams.get("sortOrder") || "desc"
+    const sortBy = searchParams.get("sortBy") || "dueDate"
+    const sortOrder = searchParams.get("sortOrder") || "asc"
+    const limit = searchParams.get("limit")
 
     const where: Record<string, unknown> = {}
 
     if (status) {
-      where.status = status
+      // Support comma-separated statuses (e.g., "TODO,IN_PROGRESS")
+      const statuses = status.split(",")
+      if (statuses.length > 1) {
+        where.status = { in: statuses }
+      } else {
+        where.status = status
+      }
     }
     if (priority) {
       where.priority = priority
@@ -43,6 +50,7 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy,
+      ...(limit ? { take: parseInt(limit, 10) } : {}),
     })
 
     return NextResponse.json(tasks)

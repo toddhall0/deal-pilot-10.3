@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { StatCard } from "./StatCard"
 import { DealsChart } from "./DealsChart"
 import { StatusPieChart } from "./StatusPieChart"
 import { UpcomingMilestones } from "./UpcomingMilestones"
 import { RecentActivity } from "./RecentActivity"
+import { TaskList } from "./TaskList"
 import {
   Briefcase,
   DollarSign,
@@ -64,10 +65,35 @@ interface ActivityData {
   activities: ActivityItem[]
 }
 
+interface Task {
+  id: string
+  title: string
+  status: string
+  priority: string
+  dueDate: string | null
+  deal: {
+    id: string
+    dealNumber: string
+  }
+}
+
 export function DashboardContent() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [activity, setActivity] = useState<ActivityData | null>(null)
+  const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  const fetchTasks = useCallback(async () => {
+    try {
+      const res = await fetch("/api/tasks?status=TODO,IN_PROGRESS&limit=5")
+      if (res.ok) {
+        const data = await res.json()
+        setTasks(data.tasks || data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch tasks:", error)
+    }
+  }, [])
 
   useEffect(() => {
     async function fetchData() {
@@ -90,7 +116,8 @@ export function DashboardContent() {
     }
 
     fetchData()
-  }, [])
+    fetchTasks()
+  }, [fetchTasks])
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000000) {
@@ -152,6 +179,9 @@ export function DashboardContent() {
           iconColor="text-red-600"
         />
       </div>
+
+      {/* Task List */}
+      <TaskList tasks={tasks} onTaskComplete={fetchTasks} />
 
       {/* Charts Row */}
       <div className="grid gap-6 lg:grid-cols-3">
