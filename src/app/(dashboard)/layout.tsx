@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import { NotificationBell } from "@/components/notifications/NotificationBell"
 import { MobileNav } from "@/components/layout/MobileNav"
+import { GlobalSearch } from "@/components/search/GlobalSearch"
 
 export default function DashboardLayout({
   children,
@@ -98,10 +99,18 @@ export default function DashboardLayout({
             <div className="flex items-center gap-4">
               <MobileNav />
               <span className="text-xl font-bold text-blue-600 md:hidden">Deal Pilot</span>
+              {/* Global Search - hidden on mobile, shown on desktop */}
+              <div className="hidden md:block">
+                <GlobalSearch />
+              </div>
             </div>
 
             {/* Right side - notifications and user menu */}
             <div className="flex items-center gap-2 md:gap-4">
+              {/* Mobile search button */}
+              <div className="md:hidden">
+                <GlobalSearch />
+              </div>
               <NotificationBell />
               {session?.user?.name && (
                 <span className="text-sm text-gray-600 hidden sm:block">{session.user.name}</span>
