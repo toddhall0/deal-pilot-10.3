@@ -47,12 +47,19 @@ interface Task {
   }
 }
 
+interface TeamMember {
+  id: string
+  name: string
+  email: string
+}
+
 interface TasksTabProps {
   dealId: string
 }
 
 export function TasksTab({ dealId }: TasksTabProps) {
   const [tasks, setTasks] = useState<Task[]>([])
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
@@ -60,13 +67,16 @@ export function TasksTab({ dealId }: TasksTabProps) {
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
+    status: "TODO",
     priority: "MEDIUM",
     startDate: "",
     dueDate: "",
+    assigneeId: "",
   })
 
   useEffect(() => {
     fetchTasks()
+    fetchTeamMembers()
   }, [dealId])
 
   async function fetchTasks() {
@@ -81,19 +91,43 @@ export function TasksTab({ dealId }: TasksTabProps) {
     }
   }
 
+  async function fetchTeamMembers() {
+    try {
+      const response = await fetch("/api/team-members")
+      if (response.ok) {
+        const data = await response.json()
+        setTeamMembers(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch team members:", error)
+    }
+  }
+
   async function handleCreateTask(e: React.FormEvent) {
     e.preventDefault()
     try {
+      const taskData = {
+        ...newTask,
+        assigneeId: newTask.assigneeId || undefined,
+      }
       const response = await fetch(`/api/deals/${dealId}/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTask),
+        body: JSON.stringify(taskData),
       })
 
       if (response.ok) {
         await fetchTasks()
         setIsDialogOpen(false)
-        setNewTask({ title: "", description: "", priority: "MEDIUM", startDate: "", dueDate: "" })
+        setNewTask({
+          title: "",
+          description: "",
+          status: "TODO",
+          priority: "MEDIUM",
+          startDate: "",
+          dueDate: "",
+          assigneeId: "",
+        })
       }
     } catch (error) {
       console.error("Failed to create task:", error)
@@ -178,26 +212,68 @@ export function TasksTab({ dealId }: TasksTabProps) {
                     setNewTask({ ...newTask, description: e.target.value })
                   }
                   className="bg-slate-800 border-slate-700 text-white"
+                  rows={3}
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-slate-300">Priority</Label>
+                <Label className="text-slate-300">Assign To</Label>
                 <Select
-                  value={newTask.priority}
+                  value={newTask.assigneeId}
                   onValueChange={(value) =>
-                    setNewTask({ ...newTask, priority: value })
+                    setNewTask({ ...newTask, assigneeId: value })
                   }
                 >
                   <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                    <SelectValue />
+                    <SelectValue placeholder="Select assignee (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="LOW">Low</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="HIGH">High</SelectItem>
-                    <SelectItem value="URGENT">Urgent</SelectItem>
+                    {teamMembers.map((member) => (
+                      <SelectItem key={member.id} value={member.id}>
+                        {member.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-slate-300">Status</Label>
+                  <Select
+                    value={newTask.status}
+                    onValueChange={(value) =>
+                      setNewTask({ ...newTask, status: value })
+                    }
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="TODO">To Do</SelectItem>
+                      <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                      <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                      <SelectItem value="BLOCKED">Blocked</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-slate-300">Priority</Label>
+                  <Select
+                    value={newTask.priority}
+                    onValueChange={(value) =>
+                      setNewTask({ ...newTask, priority: value })
+                    }
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LOW">Low</SelectItem>
+                      <SelectItem value="MEDIUM">Medium</SelectItem>
+                      <SelectItem value="HIGH">High</SelectItem>
+                      <SelectItem value="URGENT">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

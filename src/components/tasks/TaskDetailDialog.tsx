@@ -87,6 +87,12 @@ interface TaskDetail {
   documents: TaskDocument[]
 }
 
+interface TeamMember {
+  id: string
+  name: string
+  email: string
+}
+
 interface TaskDetailDialogProps {
   taskId: string | null
   dealId: string
@@ -103,6 +109,7 @@ export function TaskDetailDialog({
   onTaskUpdated,
 }: TaskDetailDialogProps) {
   const [task, setTask] = useState<TaskDetail | null>(null)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [newComment, setNewComment] = useState("")
@@ -115,10 +122,12 @@ export function TaskDetailDialog({
   const [editPriority, setEditPriority] = useState("")
   const [editStartDate, setEditStartDate] = useState("")
   const [editDueDate, setEditDueDate] = useState("")
+  const [editAssigneeId, setEditAssigneeId] = useState("")
 
   useEffect(() => {
     if (open && taskId) {
       fetchTask()
+      fetchTeamMembers()
     }
   }, [open, taskId])
 
@@ -130,8 +139,21 @@ export function TaskDetailDialog({
       setEditPriority(task.priority)
       setEditStartDate(task.startDate ? task.startDate.split("T")[0] : "")
       setEditDueDate(task.dueDate ? task.dueDate.split("T")[0] : "")
+      setEditAssigneeId(task.assignee?.id || "")
     }
   }, [task])
+
+  async function fetchTeamMembers() {
+    try {
+      const res = await fetch("/api/team-members")
+      if (res.ok) {
+        const data = await res.json()
+        setTeamMembers(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch team members:", error)
+    }
+  }
 
   async function fetchTask() {
     if (!taskId) return
@@ -163,6 +185,7 @@ export function TaskDetailDialog({
           priority: editPriority,
           startDate: editStartDate || null,
           dueDate: editDueDate || null,
+          assigneeId: editAssigneeId || null,
         }),
       })
 
@@ -365,20 +388,24 @@ export function TaskDetailDialog({
                         <span className="text-sm text-white">{task.createdBy.name}</span>
                       </div>
                     </div>
-                    <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700">
-                      <p className="text-xs text-slate-500 mb-1">Assigned to</p>
-                      {task.assignee ? (
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="bg-purple-500/20 text-purple-400 text-xs">
-                              {task.assignee.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm text-white">{task.assignee.name}</span>
-                        </div>
-                      ) : (
-                        <span className="text-sm text-slate-500">Unassigned</span>
-                      )}
+                    <div className="space-y-2">
+                      <Label className="text-slate-400">Assigned to</Label>
+                      <Select
+                        value={editAssigneeId}
+                        onValueChange={setEditAssigneeId}
+                      >
+                        <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                          <SelectValue placeholder="Select assignee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Unassigned</SelectItem>
+                          {teamMembers.map((member) => (
+                            <SelectItem key={member.id} value={member.id}>
+                              {member.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
