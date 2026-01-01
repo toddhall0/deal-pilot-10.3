@@ -115,13 +115,13 @@ export function TasksTab({ dealId }: TasksTabProps) {
   }
 
   if (isLoading) {
-    return <div className="p-4">Loading tasks...</div>
+    return <div className="p-4 text-slate-400">Loading tasks...</div>
   }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Tasks ({tasks.length})</h2>
+        <h2 className="text-lg font-semibold text-white">Tasks ({tasks.length})</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>Add Task</Button>
@@ -193,33 +193,33 @@ export function TasksTab({ dealId }: TasksTabProps) {
       </div>
 
       {tasks.length === 0 ? (
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="py-10 text-center">
-            <p className="text-gray-500">No tasks yet. Add your first task!</p>
+            <p className="text-slate-400">No tasks yet. Add your first task!</p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-2">
           {tasks.map((task) => (
-            <Card key={task.id}>
+            <Card key={task.id} className="bg-slate-900 border-slate-800">
               <CardContent className="py-3 px-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{task.title}</span>
+                      <span className="font-medium text-white">{task.title}</span>
                       <Badge className={priorityColors[task.priority]}>
                         {task.priority}
                       </Badge>
                     </div>
                     {task.description && (
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-slate-400 mt-1">
                         {task.description}
                       </p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     {task.dueDate && (
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-slate-400">
                         {new Date(task.dueDate).toLocaleDateString()}
                       </span>
                     )}

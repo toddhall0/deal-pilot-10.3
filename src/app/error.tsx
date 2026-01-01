@@ -18,14 +18,14 @@ export default function Error({
   }, [error])
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
-      <Card className="max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-950">
+      <Card className="max-w-md w-full bg-slate-900 border-slate-800">
         <CardContent className="pt-6 text-center">
-          <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <AlertTriangle className="h-8 w-8 text-red-600" />
+          <div className="mx-auto w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4">
+            <AlertTriangle className="h-8 w-8 text-red-400" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
-          <p className="text-gray-500 mb-6">
+          <h1 className="text-2xl font-bold mb-2 text-white">Something went wrong</h1>
+          <p className="text-slate-400 mb-6">
             We apologize for the inconvenience. Please try again or contact support if the problem persists.
           </p>
           <div className="flex gap-3 justify-center">

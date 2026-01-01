@@ -42,17 +42,17 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-[400px] flex items-center justify-center p-6">
-          <Card className="max-w-md w-full">
+          <Card className="max-w-md w-full bg-slate-900 border-slate-800">
             <CardContent className="pt-6 text-center">
-              <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <AlertTriangle className="h-6 w-6 text-red-600" />
+              <div className="mx-auto w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle className="h-6 w-6 text-red-400" />
               </div>
-              <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
-              <p className="text-gray-500 mb-6">
+              <h2 className="text-xl font-semibold mb-2 text-white">Something went wrong</h2>
+              <p className="text-slate-400 mb-6">
                 We encountered an unexpected error. Please try again or return to the dashboard.
               </p>
               {process.env.NODE_ENV === "development" && this.state.error && (
-                <pre className="text-left text-xs bg-gray-100 p-3 rounded mb-4 overflow-auto max-h-32">
+                <pre className="text-left text-xs bg-slate-800 text-slate-300 p-3 rounded mb-4 overflow-auto max-h-32">
                   {this.state.error.message}
                 </pre>
               )}

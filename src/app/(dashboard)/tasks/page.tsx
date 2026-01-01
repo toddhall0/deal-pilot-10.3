@@ -143,19 +143,19 @@ export default function TasksPage() {
   }
 
   if (isLoading) {
-    return <div className="p-4">Loading tasks...</div>
+    return <div className="p-4 text-slate-400">Loading tasks...</div>
   }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Tasks</h1>
+        <h1 className="text-2xl font-bold text-white">Tasks</h1>
       </div>
 
       {/* Filters and Controls */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Group by:</span>
+          <span className="text-sm text-slate-400">Group by:</span>
           <Select value={groupBy} onValueChange={(v) => setGroupBy(v as GroupBy)}>
             <SelectTrigger className="w-32">
               <SelectValue />
@@ -170,7 +170,7 @@ export default function TasksPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Sort by:</span>
+          <span className="text-sm text-slate-400">Sort by:</span>
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
             <SelectTrigger className="w-32">
               <SelectValue />
@@ -192,7 +192,7 @@ export default function TasksPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Filter:</span>
+          <span className="text-sm text-slate-400">Filter:</span>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-32">
               <SelectValue />
@@ -211,14 +211,14 @@ export default function TasksPage() {
       </div>
 
       {/* Task Count */}
-      <p className="text-sm text-gray-500 mb-4">
+      <p className="text-sm text-slate-400 mb-4">
         Showing {filteredTasks.length} task{filteredTasks.length !== 1 ? "s" : ""}
       </p>
 
       {filteredTasks.length === 0 ? (
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="py-10 text-center">
-            <p className="text-gray-500">No tasks found</p>
+            <p className="text-slate-400">No tasks found</p>
           </CardContent>
         </Card>
       ) : (
@@ -226,21 +226,21 @@ export default function TasksPage() {
           {Object.entries(groupedTasks).map(([group, groupTasks]) => (
             <div key={group}>
               {groupBy !== "none" && (
-                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2 text-white">
                   {group}
-                  <span className="text-sm font-normal text-gray-500">
+                  <span className="text-sm font-normal text-slate-400">
                     ({groupTasks.length})
                   </span>
                 </h2>
               )}
               <div className="space-y-2">
                 {groupTasks.map((task) => (
-                  <Card key={task.id}>
+                  <Card key={task.id} className="bg-slate-900 border-slate-800">
                     <CardContent className="py-3 px-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{task.title}</span>
+                            <span className="font-medium text-white">{task.title}</span>
                             <Badge className={priorityColors[task.priority]}>
                               {task.priority}
                             </Badge>
@@ -248,28 +248,28 @@ export default function TasksPage() {
                           <div className="flex items-center gap-2 mt-1">
                             <Link
                               href={`/deals/${task.deal.id}`}
-                              className="text-sm text-blue-600 hover:underline"
+                              className="text-sm text-blue-400 hover:underline"
                             >
                               {task.deal.dealNumber}
                             </Link>
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-slate-400">
                               {task.deal.name}
                             </span>
                           </div>
                           {task.description && (
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-slate-400 mt-1">
                               {task.description}
                             </p>
                           )}
                         </div>
                         <div className="flex items-center gap-3">
                           {task.assignee && (
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-slate-400">
                               {task.assignee.name}
                             </span>
                           )}
                           {task.dueDate && (
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-slate-400">
                               Due: {new Date(task.dueDate).toLocaleDateString()}
                             </span>
                           )}

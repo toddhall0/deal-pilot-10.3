@@ -144,9 +144,9 @@ export function NotificationBell() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="flex items-center justify-between p-3 border-b">
-          <h3 className="font-semibold">Notifications</h3>
+      <PopoverContent className="w-80 p-0 bg-slate-900 border-slate-800" align="end">
+        <div className="flex items-center justify-between p-3 border-b border-slate-800">
+          <h3 className="font-semibold text-white">Notifications</h3>
           {unreadCount > 0 && (
             <Button variant="ghost" size="sm" onClick={markAllAsRead}>
               <CheckCheck className="h-4 w-4 mr-1" />
@@ -157,25 +157,25 @@ export function NotificationBell() {
 
         <ScrollArea className="h-[400px]">
           {notifications.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-slate-400">
               <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p>No notifications</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-slate-800">
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-3 hover:bg-gray-50 transition-colors ${
-                    !notification.isRead ? "bg-blue-50" : ""
+                  className={`p-3 hover:bg-slate-800 transition-colors ${
+                    !notification.isRead ? "bg-blue-500/10" : ""
                   }`}
                 >
                   <div className="flex gap-3">
                     <div
                       className={`mt-0.5 p-1.5 rounded-full ${
                         !notification.isRead
-                          ? "bg-blue-100 text-blue-600"
-                          : "bg-gray-100 text-gray-500"
+                          ? "bg-blue-500/20 text-blue-400"
+                          : "bg-slate-800 text-slate-400"
                       }`}
                     >
                       {getIcon(notification.type)}
@@ -189,17 +189,17 @@ export function NotificationBell() {
                             setIsOpen(false)
                           }}
                         >
-                          <p className="font-medium text-sm hover:text-blue-600">
+                          <p className="font-medium text-sm text-white hover:text-blue-400">
                             {notification.title}
                           </p>
                         </Link>
                       ) : (
-                        <p className="font-medium text-sm">{notification.title}</p>
+                        <p className="font-medium text-sm text-white">{notification.title}</p>
                       )}
-                      <p className="text-sm text-gray-500 line-clamp-2">
+                      <p className="text-sm text-slate-400 line-clamp-2">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-slate-500 mt-1">
                         {formatTime(notification.createdAt)}
                       </p>
                     </div>
@@ -217,7 +217,7 @@ export function NotificationBell() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 text-gray-400 hover:text-red-500"
+                        className="h-6 w-6 text-slate-400 hover:text-red-400"
                         onClick={() => deleteNotification(notification.id)}
                       >
                         <X className="h-3 w-3" />
@@ -230,7 +230,7 @@ export function NotificationBell() {
           )}
         </ScrollArea>
 
-        <div className="p-2 border-t">
+        <div className="p-2 border-t border-slate-800">
           <Link href="/notifications">
             <Button variant="ghost" className="w-full" size="sm">
               View all notifications

@@ -146,8 +146,8 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Notifications</h1>
-          <p className="text-gray-500">
+          <h1 className="text-2xl font-bold text-white">Notifications</h1>
+          <p className="text-slate-400">
             {unreadCount > 0 ? `${unreadCount} unread` : "All caught up!"}
           </p>
         </div>
@@ -172,13 +172,13 @@ export default function NotificationsPage() {
 
       {isLoading ? (
         <div className="text-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-400" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-slate-400" />
         </div>
       ) : notifications.length === 0 ? (
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="py-10 text-center">
-            <Bell className="mx-auto h-10 w-10 text-gray-300 mb-2" />
-            <p className="text-gray-500">No notifications</p>
+            <Bell className="mx-auto h-10 w-10 text-slate-600 mb-2" />
+            <p className="text-slate-400">No notifications</p>
           </CardContent>
         </Card>
       ) : (
@@ -186,15 +186,15 @@ export default function NotificationsPage() {
           {notifications.map((notification) => (
             <Card
               key={notification.id}
-              className={notification.isRead ? "" : "border-blue-200 bg-blue-50/50"}
+              className={`bg-slate-900 border-slate-800 ${notification.isRead ? "" : "border-blue-500/50 bg-blue-500/10"}`}
             >
               <CardContent className="p-4">
                 <div className="flex gap-4">
                   <div
                     className={`p-2 rounded-full ${
                       !notification.isRead
-                        ? "bg-blue-100 text-blue-600"
-                        : "bg-gray-100 text-gray-500"
+                        ? "bg-blue-500/20 text-blue-400"
+                        : "bg-slate-800 text-slate-400"
                     }`}
                   >
                     {getIcon(notification.type)}
@@ -209,15 +209,15 @@ export default function NotificationsPage() {
                               if (!notification.isRead) markAsRead(notification.id)
                             }}
                           >
-                            <h3 className="font-medium hover:text-blue-600">
+                            <h3 className="font-medium text-white hover:text-blue-400">
                               {notification.title}
                             </h3>
                           </Link>
                         ) : (
-                          <h3 className="font-medium">{notification.title}</h3>
+                          <h3 className="font-medium text-white">{notification.title}</h3>
                         )}
-                        <p className="text-gray-600 mt-1">{notification.message}</p>
-                        <p className="text-sm text-gray-400 mt-2">
+                        <p className="text-slate-400 mt-1">{notification.message}</p>
+                        <p className="text-sm text-slate-500 mt-2">
                           {formatDate(notification.createdAt)}
                         </p>
                       </div>
@@ -236,7 +236,7 @@ export default function NotificationsPage() {
                           size="icon"
                           onClick={() => deleteNotification(notification.id)}
                         >
-                          <Trash2 className="h-4 w-4 text-gray-400 hover:text-red-500" />
+                          <Trash2 className="h-4 w-4 text-slate-400 hover:text-red-400" />
                         </Button>
                       </div>
                     </div>
