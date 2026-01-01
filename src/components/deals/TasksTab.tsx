@@ -314,109 +314,86 @@ export function TasksTab({ dealId }: TasksTabProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1">
           {tasks.map((task) => (
-            <Card
+            <div
               key={task.id}
-              className="bg-slate-900 border-slate-800 cursor-pointer hover:border-slate-700 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700 transition-colors"
               onClick={() => openTaskDetail(task.id)}
             >
-              <CardContent className="py-3 px-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    {/* Title and Priority */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-white">{task.title}</span>
-                      <Badge className={priorityColors[task.priority]}>
-                        {task.priority}
-                      </Badge>
-                      {isOverdue(task.dueDate, task.status) && (
-                        <Badge className="bg-red-500/20 text-red-400">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          Overdue
-                        </Badge>
-                      )}
-                    </div>
+              {/* Title */}
+              <span className="font-medium text-white truncate min-w-0 flex-1">{task.title}</span>
 
-                    {/* Description */}
-                    {task.description && (
-                      <p className="text-sm text-slate-400 mt-1 line-clamp-1">
-                        {task.description}
-                      </p>
-                    )}
+              {/* Priority Badge */}
+              <Badge className={`${priorityColors[task.priority]} shrink-0 text-xs`}>
+                {task.priority}
+              </Badge>
 
-                    {/* Meta info row */}
-                    <div className="flex items-center gap-4 mt-2 flex-wrap">
-                      {/* Created By */}
-                      <div className="flex items-center gap-1 text-xs text-slate-500">
-                        <User className="h-3 w-3" />
-                        <span>by {task.createdBy.name}</span>
-                      </div>
+              {/* Overdue Badge */}
+              {isOverdue(task.dueDate, task.status) && (
+                <Badge className="bg-red-500/20 text-red-400 shrink-0 text-xs">
+                  <AlertTriangle className="h-3 w-3" />
+                </Badge>
+              )}
 
-                      {/* Assigned To */}
-                      {task.assignee && (
-                        <div className="flex items-center gap-1 text-xs text-slate-400">
-                          <User className="h-3 w-3" />
-                          <span>{task.assignee.name}</span>
-                        </div>
-                      )}
-
-                      {/* Due Date */}
-                      {task.dueDate && (
-                        <div className={`flex items-center gap-1 text-xs ${
-                          isOverdue(task.dueDate, task.status) ? "text-red-400" : "text-slate-500"
-                        }`}>
-                          <Calendar className="h-3 w-3" />
-                          <span>
-                            {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Comment count */}
-                      {task._count && task._count.comments > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-slate-500">
-                          <MessageSquare className="h-3 w-3" />
-                          <span>{task._count.comments}</span>
-                        </div>
-                      )}
-
-                      {/* Document count */}
-                      {task._count && task._count.documents > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-slate-500">
-                          <Paperclip className="h-3 w-3" />
-                          <span>{task._count.documents}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Status Select */}
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <Select
-                      value={task.status}
-                      onValueChange={(value) =>
-                        handleStatusChange({} as React.MouseEvent, task.id, value)
-                      }
-                    >
-                      <SelectTrigger className="w-36 bg-slate-800 border-slate-700">
-                        <Badge className={statusColors[task.status]}>
-                          {task.status.replace("_", " ")}
-                        </Badge>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="TODO">To Do</SelectItem>
-                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                        <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                        <SelectItem value="BLOCKED">Blocked</SelectItem>
-                        <SelectItem value="COMPLETED">Completed</SelectItem>
-                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+              {/* Assignee */}
+              {task.assignee && (
+                <div className="flex items-center gap-1 text-xs text-slate-400 shrink-0">
+                  <User className="h-3 w-3" />
+                  <span className="max-w-[80px] truncate">{task.assignee.name}</span>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+
+              {/* Due Date */}
+              {task.dueDate && (
+                <div className={`flex items-center gap-1 text-xs shrink-0 ${
+                  isOverdue(task.dueDate, task.status) ? "text-red-400" : "text-slate-500"
+                }`}>
+                  <Calendar className="h-3 w-3" />
+                  <span>{formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}</span>
+                </div>
+              )}
+
+              {/* Comment count */}
+              {task._count && task._count.comments > 0 && (
+                <div className="flex items-center gap-1 text-xs text-slate-500 shrink-0">
+                  <MessageSquare className="h-3 w-3" />
+                  <span>{task._count.comments}</span>
+                </div>
+              )}
+
+              {/* Document count */}
+              {task._count && task._count.documents > 0 && (
+                <div className="flex items-center gap-1 text-xs text-slate-500 shrink-0">
+                  <Paperclip className="h-3 w-3" />
+                  <span>{task._count.documents}</span>
+                </div>
+              )}
+
+              {/* Status Select */}
+              <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+                <Select
+                  value={task.status}
+                  onValueChange={(value) =>
+                    handleStatusChange({} as React.MouseEvent, task.id, value)
+                  }
+                >
+                  <SelectTrigger className="w-28 h-7 bg-slate-800 border-slate-700 text-xs">
+                    <Badge className={`${statusColors[task.status]} text-xs`}>
+                      {task.status.replace("_", " ")}
+                    </Badge>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TODO">To Do</SelectItem>
+                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                    <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                    <SelectItem value="BLOCKED">Blocked</SelectItem>
+                    <SelectItem value="COMPLETED">Completed</SelectItem>
+                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           ))}
         </div>
       )}
