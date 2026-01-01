@@ -5,13 +5,12 @@ import { StatCard } from "./StatCard"
 import { DealsChart } from "./DealsChart"
 import { StatusPieChart } from "./StatusPieChart"
 import { UpcomingMilestones } from "./UpcomingMilestones"
-import { RecentActivity } from "./RecentActivity"
 import { TaskList } from "./TaskList"
 import {
-  Briefcase,
-  DollarSign,
   CheckSquare,
   AlertTriangle,
+  Calendar,
+  Clock,
 } from "lucide-react"
 
 interface DealsByStatus {
@@ -39,18 +38,6 @@ interface Milestone {
   }
 }
 
-interface ActivityItem {
-  id: string
-  action: string
-  entityType: string
-  entityId: string
-  entityName: string | null
-  metadata: unknown
-  createdAt: string
-  userId: string | null
-  dealId: string | null
-}
-
 interface DashboardStats {
   totalDeals: number
   totalValue: number
@@ -59,10 +46,6 @@ interface DashboardStats {
   dealsByStatus: DealsByStatus[]
   dealsByMonth: DealsByMonth[]
   upcomingMilestones: Milestone[]
-}
-
-interface ActivityData {
-  activities: ActivityItem[]
 }
 
 interface Task {
@@ -79,13 +62,12 @@ interface Task {
 
 export function DashboardContent() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [activity, setActivity] = useState<ActivityData | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchTasks = useCallback(async () => {
     try {
-      const res = await fetch("/api/tasks?status=TODO,IN_PROGRESS&limit=5")
+      const res = await fetch("/api/tasks?status=TODO,IN_PROGRESS&limit=10")
       if (res.ok) {
         const data = await res.json()
         setTasks(data.tasks || data)
@@ -98,16 +80,9 @@ export function DashboardContent() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [statsRes, activityRes] = await Promise.all([
-          fetch("/api/dashboard/stats"),
-          fetch("/api/dashboard/activity"),
-        ])
-
+        const statsRes = await fetch("/api/dashboard/stats")
         const statsData = await statsRes.json()
-        const activityData = await activityRes.json()
-
         setStats(statsData)
-        setActivity(activityData)
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error)
       } finally {
@@ -119,19 +94,6 @@ export function DashboardContent() {
     fetchTasks()
   }, [fetchTasks])
 
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1000000000) {
-      return `$${(amount / 1000000000).toFixed(1)}B`
-    }
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`
-    }
-    if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`
-    }
-    return `$${amount}`
-  }
-
   if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -142,48 +104,56 @@ export function DashboardContent() {
     )
   }
 
-  const activeDeals = stats?.dealsByStatus
-    ?.filter((d) => !["CLOSED", "TERMINATED"].includes(d.status))
-    .reduce((sum, d) => sum + d.count, 0) || 0
+  // Count tasks due this week
+  const tasksDueThisWeek = tasks.filter((t) => {
+    if (!t.dueDate) return false
+    const dueDate = new Date(t.dueDate)
+    const now = new Date()
+    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    return dueDate >= now && dueDate <= weekFromNow
+  }).length
 
   return (
     <div className="space-y-6">
-      {/* Stat Cards */}
+      {/* Stat Cards - Task Focused */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Deals"
-          value={stats?.totalDeals || 0}
-          subtitle={`${activeDeals} active`}
-          icon={Briefcase}
-          iconColor="text-blue-600"
-        />
-        <StatCard
-          title="Total Value"
-          value={formatCurrency(stats?.totalValue || 0)}
-          subtitle="All deals"
-          icon={DollarSign}
-          iconColor="text-green-600"
-        />
         <StatCard
           title="Pending Tasks"
           value={stats?.pendingTasks || 0}
           subtitle="To be completed"
           icon={CheckSquare}
-          iconColor="text-purple-600"
+          iconColor="text-purple-400"
         />
         <StatCard
-          title="Overdue Tasks"
+          title="Overdue"
           value={stats?.overdueTasks || 0}
-          subtitle="Needs attention"
+          subtitle="Needs immediate attention"
           icon={AlertTriangle}
-          iconColor="text-red-600"
+          iconColor="text-red-400"
+        />
+        <StatCard
+          title="Due This Week"
+          value={tasksDueThisWeek}
+          subtitle="Tasks with upcoming deadlines"
+          icon={Clock}
+          iconColor="text-yellow-400"
+        />
+        <StatCard
+          title="Upcoming Milestones"
+          value={stats?.upcomingMilestones?.length || 0}
+          subtitle="Key dates this week"
+          icon={Calendar}
+          iconColor="text-blue-400"
         />
       </div>
 
-      {/* Task List */}
-      <TaskList tasks={tasks} onTaskComplete={fetchTasks} />
+      {/* Main Content - Tasks and Milestones Side by Side */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <TaskList tasks={tasks} onTaskComplete={fetchTasks} />
+        <UpcomingMilestones milestones={stats?.upcomingMilestones || []} />
+      </div>
 
-      {/* Charts Row */}
+      {/* Charts - Secondary */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <DealsChart data={stats?.dealsByMonth || []} />
@@ -191,12 +161,6 @@ export function DashboardContent() {
         <div>
           <StatusPieChart data={stats?.dealsByStatus || []} />
         </div>
-      </div>
-
-      {/* Bottom Row */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <UpcomingMilestones milestones={stats?.upcomingMilestones || []} />
-        <RecentActivity activities={activity?.activities || []} />
       </div>
     </div>
   )
