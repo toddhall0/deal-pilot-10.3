@@ -42,36 +42,40 @@ export function DealsChart({ data }: DealsChartProps) {
   }
 
   return (
-    <Card>
+    <Card className="bg-slate-900 border-slate-800">
       <CardHeader>
-        <CardTitle className="text-base">Deal Activity (Last 12 Months)</CardTitle>
+        <CardTitle className="text-base text-white">Deal Activity (Last 12 Months)</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={formattedData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
               <XAxis
                 dataKey="monthLabel"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 12, fill: "#94a3b8" }}
                 tickLine={false}
+                stroke="#334155"
               />
               <YAxis
                 yAxisId="left"
                 orientation="left"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 12, fill: "#94a3b8" }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
                 yAxisId="right"
                 orientation="right"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 12, fill: "#94a3b8" }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={formatCurrency}
               />
               <Tooltip
+                contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                labelStyle={{ color: "#f1f5f9" }}
+                itemStyle={{ color: "#94a3b8" }}
                 formatter={(value, name) => {
                   if (value === undefined) return [0, name || ""]
                   if (name === "Value") {
@@ -80,7 +84,7 @@ export function DealsChart({ data }: DealsChartProps) {
                   return [value, "Deals"]
                 }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ color: "#94a3b8" }} />
               <Bar
                 yAxisId="left"
                 dataKey="count"

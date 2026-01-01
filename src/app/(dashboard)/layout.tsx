@@ -35,11 +35,11 @@ export default function DashboardLayout({
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-950">
       {/* Desktop Sidebar - hidden on mobile */}
-      <aside className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col bg-white border-r border-gray-200">
+      <aside className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col bg-slate-900 border-r border-slate-800">
         <div className="p-4">
-          <h1 className="text-xl font-bold text-gray-900">Deal Pilot</h1>
+          <h1 className="text-xl font-bold text-blue-400">Deal Pilot</h1>
         </div>
         <nav className="flex-1 mt-4 px-2 space-y-1">
           {navItems.map((item) => {
@@ -52,8 +52,8 @@ export default function DashboardLayout({
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   isActive
-                    ? "bg-gray-100 text-gray-900"
-                    : "text-gray-600 hover:bg-gray-50"
+                    ? "bg-slate-800 text-white"
+                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
                 }`}
               >
                 <Icon className="h-5 w-5" />
@@ -68,8 +68,8 @@ export default function DashboardLayout({
               href="/users"
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                 pathname === "/users"
-                  ? "bg-gray-100 text-gray-900"
-                  : "text-gray-600 hover:bg-gray-50"
+                  ? "bg-slate-800 text-white"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-white"
               }`}
             >
               <UserCog className="h-5 w-5" />
@@ -79,10 +79,10 @@ export default function DashboardLayout({
         </nav>
 
         {/* Logout button at bottom */}
-        <div className="p-4 border-t">
+        <div className="p-4 border-t border-slate-800">
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="flex items-center gap-3 px-3 py-2 w-full text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+            className="flex items-center gap-3 px-3 py-2 w-full text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"
           >
             <LogOut className="h-5 w-5" />
             Sign Out
@@ -93,12 +93,12 @@ export default function DashboardLayout({
       {/* Main content area */}
       <div className="md:pl-64">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-white border-b">
+        <header className="sticky top-0 z-40 bg-slate-900 border-b border-slate-800">
           <div className="flex items-center justify-between h-16 px-4 md:px-6">
             {/* Mobile menu button */}
             <div className="flex items-center gap-4">
               <MobileNav />
-              <span className="text-xl font-bold text-blue-600 md:hidden">Deal Pilot</span>
+              <span className="text-xl font-bold text-blue-400 md:hidden">Deal Pilot</span>
               {/* Global Search - hidden on mobile, shown on desktop */}
               <div className="hidden md:block">
                 <GlobalSearch />
@@ -113,7 +113,7 @@ export default function DashboardLayout({
               </div>
               <NotificationBell />
               {session?.user?.name && (
-                <span className="text-sm text-gray-600 hidden sm:block">{session.user.name}</span>
+                <span className="text-sm text-slate-400 hidden sm:block">{session.user.name}</span>
               )}
             </div>
           </div>

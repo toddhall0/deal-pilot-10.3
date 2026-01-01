@@ -40,9 +40,9 @@ export function StatusPieChart({ data, title = "Deals by Status" }: StatusPieCha
   const total = formattedData.reduce((sum, item) => sum + item.count, 0)
 
   return (
-    <Card>
+    <Card className="bg-slate-900 border-slate-800">
       <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
+        <CardTitle className="text-base text-white">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[250px]">
@@ -66,6 +66,9 @@ export function StatusPieChart({ data, title = "Deals by Status" }: StatusPieCha
                 ))}
               </Pie>
               <Tooltip
+                contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                labelStyle={{ color: "#f1f5f9" }}
+                itemStyle={{ color: "#94a3b8" }}
                 formatter={(value) => [value, "Deals"]}
               />
               <Legend
@@ -73,15 +76,15 @@ export function StatusPieChart({ data, title = "Deals by Status" }: StatusPieCha
                 verticalAlign="bottom"
                 align="center"
                 formatter={(value) => (
-                  <span className="text-xs text-gray-600">{value}</span>
+                  <span className="text-xs text-slate-400">{value}</span>
                 )}
               />
             </PieChart>
           </ResponsiveContainer>
         </div>
         <div className="text-center mt-2">
-          <p className="text-2xl font-bold">{total}</p>
-          <p className="text-sm text-gray-500">Total Deals</p>
+          <p className="text-2xl font-bold text-white">{total}</p>
+          <p className="text-sm text-slate-400">Total Deals</p>
         </div>
       </CardContent>
     </Card>

@@ -34,17 +34,17 @@ export function MobileNav() {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="md:hidden text-slate-300 hover:text-white hover:bg-slate-800">
           <Menu className="h-6 w-6" />
           <span className="sr-only">Toggle menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 p-0">
+      <SheetContent side="left" className="w-72 p-0 bg-slate-900 border-slate-800">
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <span className="text-xl font-bold text-blue-600">Deal Pilot</span>
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+          <div className="flex items-center justify-between p-4 border-b border-slate-800">
+            <span className="text-xl font-bold text-blue-400">Deal Pilot</span>
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white hover:bg-slate-800">
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -61,8 +61,8 @@ export function MobileNav() {
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                     isActive
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-600 hover:bg-gray-50"
+                      ? "bg-slate-800 text-blue-400"
+                      : "text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
                   <Icon className="h-5 w-5" />
@@ -78,8 +78,8 @@ export function MobileNav() {
                 onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                   pathname === "/users"
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-gray-600 hover:bg-gray-50"
+                    ? "bg-slate-800 text-blue-400"
+                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
                 }`}
               >
                 <UserCog className="h-5 w-5" />
@@ -89,11 +89,11 @@ export function MobileNav() {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t">
+          <div className="p-4 border-t border-slate-800">
             <Link
               href="/settings"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 hover:bg-gray-50"
+              className="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"
             >
               <Settings className="h-5 w-5" />
               Settings

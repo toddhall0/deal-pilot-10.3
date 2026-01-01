@@ -66,16 +66,16 @@ export function RecentActivity({ activities }: RecentActivityProps) {
   }
 
   return (
-    <Card>
+    <Card className="bg-slate-900 border-slate-800">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center gap-2">
+        <CardTitle className="text-base flex items-center gap-2 text-white">
           <Activity className="h-4 w-4" />
           Recent Activity
         </CardTitle>
       </CardHeader>
       <CardContent>
         {activities.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">No recent activity</p>
+          <p className="text-center text-slate-400 py-4">No recent activity</p>
         ) : (
           <div className="space-y-3">
             {activities.slice(0, 10).map((activity) => (
@@ -83,22 +83,22 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                 <div className="mt-0.5">{getActivityIcon(activity.entityType)}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm">
-                    <span className="text-gray-600">
+                    <span className="text-slate-400">
                       {formatAction(activity.action)}
                     </span>
                     {activity.entityName && (
-                      <span className="font-medium"> {activity.entityName}</span>
+                      <span className="font-medium text-white"> {activity.entityName}</span>
                     )}
                   </p>
                   {activity.dealId && (
                     <Link
                       href={`/deals/${activity.dealId}`}
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs text-blue-400 hover:underline"
                     >
                       View Deal
                     </Link>
                   )}
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     {formatTime(activity.createdAt)}
                   </p>
                 </div>

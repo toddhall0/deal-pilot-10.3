@@ -136,7 +136,7 @@ export function DashboardContent() {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-32 bg-gray-100 rounded-lg animate-pulse" />
+          <div key={i} className="h-32 bg-slate-800 rounded-lg animate-pulse" />
         ))}
       </div>
     )
