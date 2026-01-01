@@ -175,7 +175,7 @@ export function ReportGenerator({
           return (
             <Card
               key={report.type}
-              className={`cursor-pointer transition-all hover:shadow-md ${
+              className={`cursor-pointer transition-all hover:shadow-md bg-slate-900 border-slate-800 ${
                 !isAvailable ? "opacity-50" : ""
               }`}
               onClick={() => {
@@ -188,19 +188,19 @@ export function ReportGenerator({
             >
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <Icon className="h-6 w-6 text-blue-600" />
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <Icon className="h-6 w-6 text-blue-400" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-medium">{report.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <h3 className="font-medium text-white">{report.title}</h3>
+                    <p className="text-sm text-slate-400 mt-1">
                       {report.description}
                     </p>
                     <div className="flex gap-1 mt-2">
                       {report.formats.map((format) => (
                         <span
                           key={format}
-                          className="text-xs bg-gray-100 px-2 py-0.5 rounded"
+                          className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded"
                         >
                           {format}
                         </span>
