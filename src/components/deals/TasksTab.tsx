@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { DatePicker } from "@/components/ui/date-picker"
 import { TaskDetailDialog } from "@/components/tasks/TaskDetailDialog"
 import {
   User,
@@ -29,7 +30,7 @@ import {
   Paperclip,
   AlertTriangle,
 } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
+import { formatDistanceToNow, format } from "date-fns"
 
 interface Task {
   id: string
@@ -69,10 +70,10 @@ export function TasksTab({ dealId }: TasksTabProps) {
     description: "",
     status: "TODO",
     priority: "MEDIUM",
-    startDate: "",
-    dueDate: "",
     assigneeId: "",
   })
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined)
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
 
   useEffect(() => {
     fetchTasks()
@@ -109,6 +110,8 @@ export function TasksTab({ dealId }: TasksTabProps) {
       const taskData = {
         ...newTask,
         assigneeId: newTask.assigneeId || undefined,
+        startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
+        dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : undefined,
       }
       const response = await fetch(`/api/deals/${dealId}/tasks`, {
         method: "POST",
@@ -124,10 +127,10 @@ export function TasksTab({ dealId }: TasksTabProps) {
           description: "",
           status: "TODO",
           priority: "MEDIUM",
-          startDate: "",
-          dueDate: "",
           assigneeId: "",
         })
+        setStartDate(undefined)
+        setDueDate(undefined)
       }
     } catch (error) {
       console.error("Failed to create task:", error)
@@ -278,24 +281,18 @@ export function TasksTab({ dealId }: TasksTabProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-slate-300">Start Date</Label>
-                  <Input
-                    type="date"
-                    value={newTask.startDate}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, startDate: e.target.value })
-                    }
-                    className="bg-slate-800 border-slate-700 text-white"
+                  <DatePicker
+                    date={startDate}
+                    onDateChange={setStartDate}
+                    placeholder="Select start date"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-slate-300">Due Date</Label>
-                  <Input
-                    type="date"
-                    value={newTask.dueDate}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, dueDate: e.target.value })
-                    }
-                    className="bg-slate-800 border-slate-700 text-white"
+                  <DatePicker
+                    date={dueDate}
+                    onDateChange={setDueDate}
+                    placeholder="Select due date"
                   />
                 </div>
               </div>

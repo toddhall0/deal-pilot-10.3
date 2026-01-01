@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import { DatePicker } from "@/components/ui/date-picker"
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,6 @@ import {
 } from "@/components/ui/select"
 import {
   User,
-  Calendar,
   Clock,
   MessageSquare,
   Paperclip,
@@ -120,8 +120,8 @@ export function TaskDetailDialog({
   const [editDescription, setEditDescription] = useState("")
   const [editStatus, setEditStatus] = useState("")
   const [editPriority, setEditPriority] = useState("")
-  const [editStartDate, setEditStartDate] = useState("")
-  const [editDueDate, setEditDueDate] = useState("")
+  const [editStartDate, setEditStartDate] = useState<Date | undefined>(undefined)
+  const [editDueDate, setEditDueDate] = useState<Date | undefined>(undefined)
   const [editAssigneeId, setEditAssigneeId] = useState("")
 
   useEffect(() => {
@@ -137,8 +137,8 @@ export function TaskDetailDialog({
       setEditDescription(task.description || "")
       setEditStatus(task.status)
       setEditPriority(task.priority)
-      setEditStartDate(task.startDate ? task.startDate.split("T")[0] : "")
-      setEditDueDate(task.dueDate ? task.dueDate.split("T")[0] : "")
+      setEditStartDate(task.startDate ? new Date(task.startDate) : undefined)
+      setEditDueDate(task.dueDate ? new Date(task.dueDate) : undefined)
       setEditAssigneeId(task.assignee?.id || "")
     }
   }, [task])
@@ -183,8 +183,8 @@ export function TaskDetailDialog({
           description: editDescription || null,
           status: editStatus,
           priority: editPriority,
-          startDate: editStartDate || null,
-          dueDate: editDueDate || null,
+          startDate: editStartDate ? format(editStartDate, "yyyy-MM-dd") : null,
+          dueDate: editDueDate ? format(editDueDate, "yyyy-MM-dd") : null,
           assigneeId: editAssigneeId || null,
         }),
       })
@@ -320,11 +320,10 @@ export function TaskDetailDialog({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-slate-400">Start Date</Label>
-                    <Input
-                      type="date"
-                      value={editStartDate}
-                      onChange={(e) => setEditStartDate(e.target.value)}
-                      className="bg-slate-800 border-slate-700 text-white"
+                    <DatePicker
+                      date={editStartDate}
+                      onDateChange={setEditStartDate}
+                      placeholder="Select start date"
                     />
                   </div>
                   <div className="space-y-2">
@@ -336,11 +335,10 @@ export function TaskDetailDialog({
                         </span>
                       )}
                     </Label>
-                    <Input
-                      type="date"
-                      value={editDueDate}
-                      onChange={(e) => setEditDueDate(e.target.value)}
-                      className={`bg-slate-800 border-slate-700 text-white ${isOverdue ? "border-red-500" : ""}`}
+                    <DatePicker
+                      date={editDueDate}
+                      onDateChange={setEditDueDate}
+                      placeholder="Select due date"
                     />
                   </div>
                 </div>
