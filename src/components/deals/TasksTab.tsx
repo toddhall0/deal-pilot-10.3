@@ -21,6 +21,15 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { TaskDetailDialog } from "@/components/tasks/TaskDetailDialog"
+import {
+  User,
+  Calendar,
+  MessageSquare,
+  Paperclip,
+  AlertTriangle,
+} from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
 
 interface Task {
   id: string
@@ -28,8 +37,14 @@ interface Task {
   description: string | null
   status: string
   priority: string
+  startDate: string | null
   dueDate: string | null
-  assignee: { id: string; name: string } | null
+  assignee: { id: string; name: string; email: string } | null
+  createdBy: { id: string; name: string; email: string }
+  _count?: {
+    comments: number
+    documents: number
+  }
 }
 
 interface TasksTabProps {
@@ -40,10 +55,13 @@ export function TasksTab({ dealId }: TasksTabProps) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     priority: "MEDIUM",
+    startDate: "",
     dueDate: "",
   })
 
@@ -73,17 +91,17 @@ export function TasksTab({ dealId }: TasksTabProps) {
       })
 
       if (response.ok) {
-        const task = await response.json()
-        setTasks([task, ...tasks])
+        await fetchTasks()
         setIsDialogOpen(false)
-        setNewTask({ title: "", description: "", priority: "MEDIUM", dueDate: "" })
+        setNewTask({ title: "", description: "", priority: "MEDIUM", startDate: "", dueDate: "" })
       }
     } catch (error) {
       console.error("Failed to create task:", error)
     }
   }
 
-  async function handleStatusChange(taskId: string, newStatus: string) {
+  async function handleStatusChange(e: React.MouseEvent, taskId: string, newStatus: string) {
+    e.stopPropagation()
     try {
       await fetch(`/api/deals/${dealId}/tasks/${taskId}`, {
         method: "PATCH",
@@ -98,20 +116,30 @@ export function TasksTab({ dealId }: TasksTabProps) {
     }
   }
 
+  function openTaskDetail(taskId: string) {
+    setSelectedTaskId(taskId)
+    setIsDetailOpen(true)
+  }
+
   const priorityColors: Record<string, string> = {
-    LOW: "bg-gray-100 text-gray-800",
-    MEDIUM: "bg-blue-100 text-blue-800",
-    HIGH: "bg-orange-100 text-orange-800",
-    URGENT: "bg-red-100 text-red-800",
+    LOW: "bg-slate-500/20 text-slate-300",
+    MEDIUM: "bg-blue-500/20 text-blue-400",
+    HIGH: "bg-orange-500/20 text-orange-400",
+    URGENT: "bg-red-500/20 text-red-400",
   }
 
   const statusColors: Record<string, string> = {
-    TODO: "bg-gray-100 text-gray-800",
-    IN_PROGRESS: "bg-blue-100 text-blue-800",
-    IN_REVIEW: "bg-purple-100 text-purple-800",
-    BLOCKED: "bg-red-100 text-red-800",
-    COMPLETED: "bg-green-100 text-green-800",
-    CANCELLED: "bg-gray-100 text-gray-500",
+    TODO: "bg-slate-500/20 text-slate-300",
+    IN_PROGRESS: "bg-blue-500/20 text-blue-400",
+    IN_REVIEW: "bg-purple-500/20 text-purple-400",
+    BLOCKED: "bg-red-500/20 text-red-400",
+    COMPLETED: "bg-green-500/20 text-green-400",
+    CANCELLED: "bg-slate-500/20 text-slate-500",
+  }
+
+  const isOverdue = (dueDate: string | null, status: string) => {
+    if (!dueDate || status === "COMPLETED" || status === "CANCELLED") return false
+    return new Date(dueDate) < new Date()
   }
 
   if (isLoading) {
@@ -126,61 +154,72 @@ export function TasksTab({ dealId }: TasksTabProps) {
           <DialogTrigger asChild>
             <Button>Add Task</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-slate-900 border-slate-800">
             <DialogHeader>
-              <DialogTitle>Create New Task</DialogTitle>
+              <DialogTitle className="text-white">Create New Task</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreateTask} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label className="text-slate-300">Title *</Label>
                 <Input
-                  id="title"
                   value={newTask.title}
                   onChange={(e) =>
                     setNewTask({ ...newTask, title: e.target.value })
                   }
+                  className="bg-slate-800 border-slate-700 text-white"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label className="text-slate-300">Description</Label>
                 <Textarea
-                  id="description"
                   value={newTask.description}
                   onChange={(e) =>
                     setNewTask({ ...newTask, description: e.target.value })
                   }
+                  className="bg-slate-800 border-slate-700 text-white"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-slate-300">Priority</Label>
+                <Select
+                  value={newTask.priority}
+                  onValueChange={(value) =>
+                    setNewTask({ ...newTask, priority: value })
+                  }
+                >
+                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LOW">Low</SelectItem>
+                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                    <SelectItem value="HIGH">High</SelectItem>
+                    <SelectItem value="URGENT">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
-                  <Select
-                    value={newTask.priority}
-                    onValueChange={(value) =>
-                      setNewTask({ ...newTask, priority: value })
+                  <Label className="text-slate-300">Start Date</Label>
+                  <Input
+                    type="date"
+                    value={newTask.startDate}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, startDate: e.target.value })
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="LOW">Low</SelectItem>
-                      <SelectItem value="MEDIUM">Medium</SelectItem>
-                      <SelectItem value="HIGH">High</SelectItem>
-                      <SelectItem value="URGENT">Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Label className="text-slate-300">Due Date</Label>
                   <Input
-                    id="dueDate"
                     type="date"
                     value={newTask.dueDate}
                     onChange={(e) =>
                       setNewTask({ ...newTask, dueDate: e.target.value })
                     }
+                    className="bg-slate-800 border-slate-700 text-white"
                   />
                 </div>
               </div>
@@ -201,35 +240,90 @@ export function TasksTab({ dealId }: TasksTabProps) {
       ) : (
         <div className="space-y-2">
           {tasks.map((task) => (
-            <Card key={task.id} className="bg-slate-900 border-slate-800">
+            <Card
+              key={task.id}
+              className="bg-slate-900 border-slate-800 cursor-pointer hover:border-slate-700 transition-colors"
+              onClick={() => openTaskDetail(task.id)}
+            >
               <CardContent className="py-3 px-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    {/* Title and Priority */}
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-white">{task.title}</span>
                       <Badge className={priorityColors[task.priority]}>
                         {task.priority}
                       </Badge>
+                      {isOverdue(task.dueDate, task.status) && (
+                        <Badge className="bg-red-500/20 text-red-400">
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          Overdue
+                        </Badge>
+                      )}
                     </div>
+
+                    {/* Description */}
                     {task.description && (
-                      <p className="text-sm text-slate-400 mt-1">
+                      <p className="text-sm text-slate-400 mt-1 line-clamp-1">
                         {task.description}
                       </p>
                     )}
+
+                    {/* Meta info row */}
+                    <div className="flex items-center gap-4 mt-2 flex-wrap">
+                      {/* Created By */}
+                      <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <User className="h-3 w-3" />
+                        <span>by {task.createdBy.name}</span>
+                      </div>
+
+                      {/* Assigned To */}
+                      {task.assignee && (
+                        <div className="flex items-center gap-1 text-xs text-slate-400">
+                          <User className="h-3 w-3" />
+                          <span>{task.assignee.name}</span>
+                        </div>
+                      )}
+
+                      {/* Due Date */}
+                      {task.dueDate && (
+                        <div className={`flex items-center gap-1 text-xs ${
+                          isOverdue(task.dueDate, task.status) ? "text-red-400" : "text-slate-500"
+                        }`}>
+                          <Calendar className="h-3 w-3" />
+                          <span>
+                            {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Comment count */}
+                      {task._count && task._count.comments > 0 && (
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                          <MessageSquare className="h-3 w-3" />
+                          <span>{task._count.comments}</span>
+                        </div>
+                      )}
+
+                      {/* Document count */}
+                      {task._count && task._count.documents > 0 && (
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                          <Paperclip className="h-3 w-3" />
+                          <span>{task._count.documents}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {task.dueDate && (
-                      <span className="text-sm text-slate-400">
-                        {new Date(task.dueDate).toLocaleDateString()}
-                      </span>
-                    )}
+
+                  {/* Status Select */}
+                  <div onClick={(e) => e.stopPropagation()}>
                     <Select
                       value={task.status}
                       onValueChange={(value) =>
-                        handleStatusChange(task.id, value)
+                        handleStatusChange({} as React.MouseEvent, task.id, value)
                       }
                     >
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="w-36 bg-slate-800 border-slate-700">
                         <Badge className={statusColors[task.status]}>
                           {task.status.replace("_", " ")}
                         </Badge>
@@ -250,6 +344,15 @@ export function TasksTab({ dealId }: TasksTabProps) {
           ))}
         </div>
       )}
+
+      {/* Task Detail Dialog */}
+      <TaskDetailDialog
+        taskId={selectedTaskId}
+        dealId={dealId}
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        onTaskUpdated={fetchTasks}
+      />
     </div>
   )
 }

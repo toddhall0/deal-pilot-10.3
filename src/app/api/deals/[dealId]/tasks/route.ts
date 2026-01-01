@@ -10,6 +10,7 @@ const createTaskSchema = z.object({
   description: z.string().optional(),
   status: z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "BLOCKED", "COMPLETED", "CANCELLED"]).default("TODO"),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
+  startDate: z.string().optional(),
   dueDate: z.string().optional(),
   assigneeId: z.string().optional(),
   milestoneId: z.string().optional(),
@@ -34,7 +35,13 @@ export async function GET(
         assignee: {
           select: { id: true, name: true, email: true },
         },
+        createdBy: {
+          select: { id: true, name: true, email: true },
+        },
         subtasks: true,
+        _count: {
+          select: { comments: true, documents: true },
+        },
       },
       orderBy: [
         { status: "asc" },
@@ -75,12 +82,16 @@ export async function POST(
     const task = await prisma.task.create({
       data: {
         ...data,
+        startDate: data.startDate ? new Date(data.startDate) : null,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         dealId,
         createdById: session.user.id,
       },
       include: {
         assignee: {
+          select: { id: true, name: true, email: true },
+        },
+        createdBy: {
           select: { id: true, name: true, email: true },
         },
       },

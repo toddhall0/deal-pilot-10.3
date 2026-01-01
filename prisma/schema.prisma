@@ -127,6 +127,7 @@ model User {
   createdDeals  Deal[]    @relation("CreatedBy")
   assignedTasks Task[]    @relation("AssignedTo")
   createdTasks  Task[]    @relation("TaskCreatedBy")
+  taskComments  TaskComment[]
   documents     Document[]
   notes         Note[]
   preferences   UserPreferences?
@@ -338,6 +339,9 @@ model Task {
 
   sortOrder       Int           @default(0)
 
+  comments        TaskComment[]
+  documents       Document[]
+
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -345,6 +349,24 @@ model Task {
   @@index([assigneeId])
   @@index([status])
   @@index([dueDate])
+}
+
+model TaskComment {
+  id          String    @id @default(cuid())
+
+  taskId      String
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+
+  content     String    @db.Text
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([taskId])
+  @@index([authorId])
 }
 
 model DocumentFolder {
@@ -379,6 +401,9 @@ model Document {
   folderId          String?
   folder            DocumentFolder?  @relation(fields: [folderId], references: [id])
 
+  taskId            String?
+  task              Task?            @relation(fields: [taskId], references: [id])
+
   name              String
   originalName      String
   description       String?
@@ -412,6 +437,7 @@ model Document {
   @@index([dealId])
   @@index([category])
   @@index([folderId])
+  @@index([taskId])
 }
 
 model Note {

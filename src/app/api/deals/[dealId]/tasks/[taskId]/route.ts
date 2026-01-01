@@ -9,6 +9,7 @@ const updateTaskSchema = z.object({
   description: z.string().optional().nullable(),
   status: z.enum(["TODO", "IN_PROGRESS", "IN_REVIEW", "BLOCKED", "COMPLETED", "CANCELLED"]).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
+  startDate: z.string().optional().nullable(),
   dueDate: z.string().optional().nullable(),
   assigneeId: z.string().optional().nullable(),
 })
@@ -31,7 +32,29 @@ export async function GET(
         assignee: {
           select: { id: true, name: true, email: true },
         },
+        createdBy: {
+          select: { id: true, name: true, email: true },
+        },
         subtasks: true,
+        comments: {
+          include: {
+            author: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        documents: {
+          select: {
+            id: true,
+            name: true,
+            originalName: true,
+            fileType: true,
+            fileSize: true,
+            fileUrl: true,
+            createdAt: true,
+          },
+        },
       },
     })
 
@@ -63,8 +86,11 @@ export async function PATCH(
     const data = updateTaskSchema.parse(body)
 
     const updateData: Record<string, unknown> = { ...data }
-    if (data.dueDate) {
-      updateData.dueDate = new Date(data.dueDate)
+    if (data.startDate !== undefined) {
+      updateData.startDate = data.startDate ? new Date(data.startDate) : null
+    }
+    if (data.dueDate !== undefined) {
+      updateData.dueDate = data.dueDate ? new Date(data.dueDate) : null
     }
     if (data.status === "COMPLETED") {
       updateData.completedAt = new Date()
@@ -76,6 +102,12 @@ export async function PATCH(
       include: {
         assignee: {
           select: { id: true, name: true, email: true },
+        },
+        createdBy: {
+          select: { id: true, name: true, email: true },
+        },
+        _count: {
+          select: { comments: true, documents: true },
         },
       },
     })

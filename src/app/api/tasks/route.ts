@@ -48,6 +48,12 @@ export async function GET(request: NextRequest) {
         assignee: {
           select: { id: true, name: true, email: true },
         },
+        createdBy: {
+          select: { id: true, name: true, email: true },
+        },
+        _count: {
+          select: { comments: true, documents: true },
+        },
       },
       orderBy,
       ...(limit ? { take: parseInt(limit, 10) } : {}),
