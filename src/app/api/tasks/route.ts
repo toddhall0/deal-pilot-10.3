@@ -14,8 +14,6 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status")
     const priority = searchParams.get("priority")
     const dealId = searchParams.get("dealId")
-    const sortBy = searchParams.get("sortBy") || "dueDate"
-    const sortOrder = searchParams.get("sortOrder") || "asc"
     const limit = searchParams.get("limit")
 
     const where: Record<string, unknown> = {}
@@ -36,17 +34,8 @@ export async function GET(request: NextRequest) {
       where.dealId = dealId
     }
 
-    // Build orderBy - prioritize showing recent tasks
-    let orderBy: Record<string, string>[] | Record<string, string>
-
-    if (sortBy === "dueDate") {
-      // For dueDate sorting, also sort by createdAt to ensure new tasks appear
-      orderBy = [
-        { createdAt: "desc" },  // Show newest tasks first as a tiebreaker
-      ]
-    } else {
-      orderBy = { [sortBy]: sortOrder }
-    }
+    // Build orderBy - show newest tasks first
+    const orderBy = [{ createdAt: "desc" as const }]
 
     const tasks = await prisma.task.findMany({
       where,
@@ -59,6 +48,9 @@ export async function GET(request: NextRequest) {
         },
         createdBy: {
           select: { id: true, name: true, email: true },
+        },
+        taskList: {
+          select: { id: true, name: true, color: true },
         },
         _count: {
           select: { comments: true, documents: true },
