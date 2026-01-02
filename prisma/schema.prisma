@@ -199,6 +199,7 @@ model Deal {
 
   transactionSummary TransactionSummary?
   timeline        Timeline?
+  taskLists       TaskList[]
   tasks           Task[]
   documents       Document[]
   notes           Note[]
@@ -304,11 +305,34 @@ model Milestone {
   @@index([dueDate])
 }
 
+model TaskList {
+  id          String    @id @default(cuid())
+
+  dealId      String
+  deal        Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  color       String?
+  sortOrder   Int       @default(0)
+  isCollapsed Boolean   @default(false)
+
+  tasks       Task[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([dealId])
+}
+
 model Task {
   id              String        @id @default(cuid())
 
   dealId          String
   deal            Deal          @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  taskListId      String?
+  taskList        TaskList?     @relation(fields: [taskListId], references: [id], onDelete: SetNull)
 
   milestoneId     String?
   milestone       Milestone?    @relation(fields: [milestoneId], references: [id])
@@ -346,6 +370,7 @@ model Task {
   updatedAt       DateTime      @updatedAt
 
   @@index([dealId])
+  @@index([taskListId])
   @@index([assigneeId])
   @@index([status])
   @@index([dueDate])

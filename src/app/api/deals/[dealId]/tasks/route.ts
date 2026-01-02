@@ -15,6 +15,7 @@ const createTaskSchema = z.object({
   assigneeId: z.string().optional(),
   milestoneId: z.string().optional(),
   parentId: z.string().optional(),
+  taskListId: z.string().optional().nullable(),
 })
 
 export async function GET(
@@ -38,12 +39,16 @@ export async function GET(
         createdBy: {
           select: { id: true, name: true, email: true },
         },
+        taskList: {
+          select: { id: true, name: true, color: true },
+        },
         subtasks: true,
         _count: {
           select: { comments: true, documents: true },
         },
       },
       orderBy: [
+        { sortOrder: "asc" },
         { status: "asc" },
         { priority: "desc" },
         { createdAt: "desc" },
