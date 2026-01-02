@@ -36,8 +36,18 @@ export async function GET(request: NextRequest) {
       where.dealId = dealId
     }
 
-    const orderBy: Record<string, string> = {}
-    orderBy[sortBy] = sortOrder
+    // Build orderBy - for dueDate, put nulls first so tasks without due dates still appear
+    const orderBy: Array<Record<string, unknown>> = []
+
+    if (sortBy === "dueDate") {
+      // Sort by dueDate with nulls first (urgent/unscheduled tasks), then by createdAt
+      orderBy.push(
+        { dueDate: { sort: sortOrder, nulls: "first" } },
+        { createdAt: "desc" }
+      )
+    } else {
+      orderBy.push({ [sortBy]: sortOrder })
+    }
 
     const tasks = await prisma.task.findMany({
       where,
@@ -50,9 +60,6 @@ export async function GET(request: NextRequest) {
         },
         createdBy: {
           select: { id: true, name: true, email: true },
-        },
-        taskList: {
-          select: { id: true, name: true, color: true },
         },
         _count: {
           select: { comments: true, documents: true },
