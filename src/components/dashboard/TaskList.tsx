@@ -21,6 +21,7 @@ interface Task {
   dueDate: string | null
   deal: {
     id: string
+    name: string
     dealNumber: string
   }
 }
@@ -156,8 +157,9 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                       <Link
                         href={`/deals/${task.deal.id}`}
                         className="text-xs text-blue-400 hover:underline truncate block"
+                        title={task.deal.name}
                       >
-                        {task.deal.dealNumber}
+                        {task.deal.name}
                       </Link>
                     </td>
                     <td className="px-3 py-2">

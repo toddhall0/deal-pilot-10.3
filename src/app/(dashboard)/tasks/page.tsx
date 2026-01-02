@@ -347,8 +347,9 @@ export default function TasksPage() {
                           <Link
                             href={`/deals/${task.deal.id}`}
                             className="text-sm text-blue-400 hover:underline truncate block"
+                            title={task.deal.name}
                           >
-                            {task.deal.dealNumber}
+                            {task.deal.name}
                           </Link>
                         </td>
                         <td className="px-3 py-2 overflow-hidden">
