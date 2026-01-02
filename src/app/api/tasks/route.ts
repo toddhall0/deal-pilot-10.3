@@ -36,17 +36,16 @@ export async function GET(request: NextRequest) {
       where.dealId = dealId
     }
 
-    // Build orderBy - for dueDate, put nulls first so tasks without due dates still appear
-    const orderBy: Array<Record<string, unknown>> = []
+    // Build orderBy - prioritize showing recent tasks
+    let orderBy: Record<string, string>[] | Record<string, string>
 
     if (sortBy === "dueDate") {
-      // Sort by dueDate with nulls first (urgent/unscheduled tasks), then by createdAt
-      orderBy.push(
-        { dueDate: { sort: sortOrder, nulls: "first" } },
-        { createdAt: "desc" }
-      )
+      // For dueDate sorting, also sort by createdAt to ensure new tasks appear
+      orderBy = [
+        { createdAt: "desc" },  // Show newest tasks first as a tiebreaker
+      ]
     } else {
-      orderBy.push({ [sortBy]: sortOrder })
+      orderBy = { [sortBy]: sortOrder }
     }
 
     const tasks = await prisma.task.findMany({
