@@ -24,8 +24,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { DatePicker } from "@/components/ui/date-picker"
 import { TaskDetailDialog } from "@/components/tasks/TaskDetailDialog"
 import {
-  User,
-  Calendar,
   MessageSquare,
   Paperclip,
   AlertTriangle,
@@ -311,87 +309,97 @@ export function TasksTab({ dealId }: TasksTabProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-1">
-          {tasks.map((task) => (
-            <div
-              key={task.id}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700 transition-colors"
-              onClick={() => openTaskDetail(task.id)}
-            >
-              {/* Title */}
-              <span className="font-medium text-white truncate min-w-0 flex-1">{task.title}</span>
-
-              {/* Priority Badge */}
-              <Badge className={`${priorityColors[task.priority]} shrink-0 text-xs`}>
-                {task.priority}
-              </Badge>
-
-              {/* Overdue Badge */}
-              {isOverdue(task.dueDate, task.status) && (
-                <Badge className="bg-red-500/20 text-red-400 shrink-0 text-xs">
-                  <AlertTriangle className="h-3 w-3" />
-                </Badge>
-              )}
-
-              {/* Assignee */}
-              {task.assignee && (
-                <div className="flex items-center gap-1 text-xs text-slate-400 shrink-0">
-                  <User className="h-3 w-3" />
-                  <span className="max-w-[80px] truncate">{task.assignee.name}</span>
-                </div>
-              )}
-
-              {/* Due Date */}
-              {task.dueDate && (
-                <div className={`flex items-center gap-1 text-xs shrink-0 ${
-                  isOverdue(task.dueDate, task.status) ? "text-red-400" : "text-slate-500"
-                }`}>
-                  <Calendar className="h-3 w-3" />
-                  <span>{formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}</span>
-                </div>
-              )}
-
-              {/* Comment count */}
-              {task._count && task._count.comments > 0 && (
-                <div className="flex items-center gap-1 text-xs text-slate-500 shrink-0">
-                  <MessageSquare className="h-3 w-3" />
-                  <span>{task._count.comments}</span>
-                </div>
-              )}
-
-              {/* Document count */}
-              {task._count && task._count.documents > 0 && (
-                <div className="flex items-center gap-1 text-xs text-slate-500 shrink-0">
-                  <Paperclip className="h-3 w-3" />
-                  <span>{task._count.documents}</span>
-                </div>
-              )}
-
-              {/* Status Select */}
-              <div onClick={(e) => e.stopPropagation()} className="shrink-0">
-                <Select
-                  value={task.status}
-                  onValueChange={(value) =>
-                    handleStatusChange({} as React.MouseEvent, task.id, value)
-                  }
+        <div className="rounded-lg border border-slate-800 overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-slate-800/50 border-b border-slate-800">
+                <th className="text-left text-xs font-medium text-slate-400 px-3 py-2">Task</th>
+                <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-20">Priority</th>
+                <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-28">Assignee</th>
+                <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-28">Due Date</th>
+                <th className="text-center text-xs font-medium text-slate-400 px-3 py-2 w-12">
+                  <MessageSquare className="h-3 w-3 mx-auto" />
+                </th>
+                <th className="text-center text-xs font-medium text-slate-400 px-3 py-2 w-12">
+                  <Paperclip className="h-3 w-3 mx-auto" />
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-32">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tasks.map((task) => (
+                <tr
+                  key={task.id}
+                  className="bg-slate-900 border-b border-slate-800 last:border-b-0 cursor-pointer hover:bg-slate-800/50 transition-colors"
+                  onClick={() => openTaskDetail(task.id)}
                 >
-                  <SelectTrigger className="w-28 h-7 bg-slate-800 border-slate-700 text-xs">
-                    <Badge className={`${statusColors[task.status]} text-xs`}>
-                      {task.status.replace("_", " ")}
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-white truncate">{task.title}</span>
+                      {isOverdue(task.dueDate, task.status) && (
+                        <AlertTriangle className="h-3 w-3 text-red-400 shrink-0" />
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">
+                    <Badge className={`${priorityColors[task.priority]} text-xs`}>
+                      {task.priority}
                     </Badge>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="TODO">To Do</SelectItem>
-                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                    <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                    <SelectItem value="BLOCKED">Blocked</SelectItem>
-                    <SelectItem value="COMPLETED">Completed</SelectItem>
-                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          ))}
+                  </td>
+                  <td className="px-3 py-2">
+                    {task.assignee ? (
+                      <span className="text-sm text-slate-300 truncate block max-w-[100px]">
+                        {task.assignee.name}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-slate-500">—</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    {task.dueDate ? (
+                      <span className={`text-sm ${isOverdue(task.dueDate, task.status) ? "text-red-400" : "text-slate-400"}`}>
+                        {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-slate-500">—</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    <span className="text-xs text-slate-500">
+                      {task._count?.comments || 0}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    <span className="text-xs text-slate-500">
+                      {task._count?.documents || 0}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                    <Select
+                      value={task.status}
+                      onValueChange={(value) =>
+                        handleStatusChange({} as React.MouseEvent, task.id, value)
+                      }
+                    >
+                      <SelectTrigger className="w-28 h-7 bg-slate-800 border-slate-700 text-xs">
+                        <Badge className={`${statusColors[task.status]} text-xs`}>
+                          {task.status.replace("_", " ")}
+                        </Badge>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="TODO">To Do</SelectItem>
+                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                        <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                        <SelectItem value="BLOCKED">Blocked</SelectItem>
+                        <SelectItem value="COMPLETED">Completed</SelectItem>
+                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
