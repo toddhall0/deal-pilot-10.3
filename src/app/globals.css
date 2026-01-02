@@ -41,6 +41,15 @@
     @apply bg-slate-950 text-slate-50;
     font-family: Arial, Helvetica, sans-serif;
   }
+
+  /* Ensure light backgrounds have dark text by default */
+  .bg-white,
+  .bg-slate-50,
+  .bg-slate-100,
+  .bg-gray-50,
+  .bg-gray-100 {
+    @apply text-slate-900;
+  }
 }
 
 /* Tiptap Editor Styles */
