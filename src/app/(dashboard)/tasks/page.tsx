@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { AlertTriangle } from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
 
 interface Task {
   id: string
@@ -127,19 +129,24 @@ export default function TasksPage() {
   }, [filteredTasks, groupBy])
 
   const priorityColors: Record<string, string> = {
-    LOW: "bg-gray-100 text-gray-800",
-    MEDIUM: "bg-blue-100 text-blue-800",
-    HIGH: "bg-orange-100 text-orange-800",
-    URGENT: "bg-red-100 text-red-800",
+    LOW: "bg-slate-500/20 text-slate-300",
+    MEDIUM: "bg-blue-500/20 text-blue-400",
+    HIGH: "bg-orange-500/20 text-orange-400",
+    URGENT: "bg-red-500/20 text-red-400",
   }
 
   const statusColors: Record<string, string> = {
-    TODO: "bg-gray-100 text-gray-800",
-    IN_PROGRESS: "bg-blue-100 text-blue-800",
-    IN_REVIEW: "bg-purple-100 text-purple-800",
-    BLOCKED: "bg-red-100 text-red-800",
-    COMPLETED: "bg-green-100 text-green-800",
-    CANCELLED: "bg-gray-100 text-gray-500",
+    TODO: "bg-slate-500/20 text-slate-300",
+    IN_PROGRESS: "bg-blue-500/20 text-blue-400",
+    IN_REVIEW: "bg-purple-500/20 text-purple-400",
+    BLOCKED: "bg-red-500/20 text-red-400",
+    COMPLETED: "bg-green-500/20 text-green-400",
+    CANCELLED: "bg-slate-500/20 text-slate-500",
+  }
+
+  const isOverdue = (dueDate: string | null, status: string) => {
+    if (!dueDate || status === "COMPLETED" || status === "CANCELLED") return false
+    return new Date(dueDate) < new Date()
   }
 
   if (isLoading) {
@@ -157,7 +164,7 @@ export default function TasksPage() {
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-400">Group by:</span>
           <Select value={groupBy} onValueChange={(v) => setGroupBy(v as GroupBy)}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-32 bg-slate-800 border-slate-700">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -172,7 +179,7 @@ export default function TasksPage() {
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-400">Sort by:</span>
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-32 bg-slate-800 border-slate-700">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -185,6 +192,7 @@ export default function TasksPage() {
           <Button
             variant="outline"
             size="sm"
+            className="bg-slate-800 border-slate-700"
             onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
           >
             {sortOrder === "asc" ? "↑" : "↓"}
@@ -194,7 +202,7 @@ export default function TasksPage() {
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-400">Filter:</span>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-32 bg-slate-800 border-slate-700">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -233,54 +241,72 @@ export default function TasksPage() {
                   </span>
                 </h2>
               )}
-              <div className="space-y-2">
-                {groupTasks.map((task) => (
-                  <Card key={task.id} className="bg-slate-900 border-slate-800">
-                    <CardContent className="py-3 px-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
+              <div className="rounded-lg border border-slate-800 overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-slate-800/50 border-b border-slate-800">
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2">Task</th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-20">Priority</th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-32">Deal</th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-28">Assignee</th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-28">Due Date</th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-32">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {groupTasks.map((task) => (
+                      <tr
+                        key={task.id}
+                        className="bg-slate-900 border-b border-slate-800 last:border-b-0 hover:bg-slate-800/50 transition-colors"
+                      >
+                        <td className="px-3 py-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-white">{task.title}</span>
-                            <Badge className={priorityColors[task.priority]}>
-                              {task.priority}
-                            </Badge>
+                            <span className="font-medium text-white truncate">{task.title}</span>
+                            {isOverdue(task.dueDate, task.status) && (
+                              <AlertTriangle className="h-3 w-3 text-red-400 shrink-0" />
+                            )}
                           </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Link
-                              href={`/deals/${task.deal.id}`}
-                              className="text-sm text-blue-400 hover:underline"
-                            >
-                              {task.deal.dealNumber}
-                            </Link>
-                            <span className="text-sm text-slate-400">
-                              {task.deal.name}
-                            </span>
-                          </div>
-                          {task.description && (
-                            <p className="text-sm text-slate-400 mt-1">
-                              {task.description}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3">
-                          {task.assignee && (
-                            <span className="text-sm text-slate-400">
+                        </td>
+                        <td className="px-3 py-2">
+                          <Badge className={`${priorityColors[task.priority]} text-xs`}>
+                            {task.priority}
+                          </Badge>
+                        </td>
+                        <td className="px-3 py-2">
+                          <Link
+                            href={`/deals/${task.deal.id}`}
+                            className="text-sm text-blue-400 hover:underline truncate block max-w-[120px]"
+                          >
+                            {task.deal.dealNumber}
+                          </Link>
+                        </td>
+                        <td className="px-3 py-2">
+                          {task.assignee ? (
+                            <span className="text-sm text-slate-300 truncate block max-w-[100px]">
                               {task.assignee.name}
                             </span>
+                          ) : (
+                            <span className="text-sm text-slate-500">—</span>
                           )}
-                          {task.dueDate && (
-                            <span className="text-sm text-slate-400">
-                              Due: {new Date(task.dueDate).toLocaleDateString()}
+                        </td>
+                        <td className="px-3 py-2">
+                          {task.dueDate ? (
+                            <span className={`text-sm ${isOverdue(task.dueDate, task.status) ? "text-red-400" : "text-slate-400"}`}>
+                              {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
                             </span>
+                          ) : (
+                            <span className="text-sm text-slate-500">—</span>
                           )}
+                        </td>
+                        <td className="px-3 py-2">
                           <Select
                             value={task.status}
                             onValueChange={(value) =>
                               handleStatusChange(task.id, task.deal.id, value)
                             }
                           >
-                            <SelectTrigger className="w-36">
-                              <Badge className={statusColors[task.status]}>
+                            <SelectTrigger className="w-28 h-7 bg-slate-800 border-slate-700 text-xs">
+                              <Badge className={`${statusColors[task.status]} text-xs`}>
                                 {task.status.replace("_", " ")}
                               </Badge>
                             </SelectTrigger>
@@ -293,11 +319,11 @@ export default function TasksPage() {
                               <SelectItem value="CANCELLED">Cancelled</SelectItem>
                             </SelectContent>
                           </Select>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           ))}

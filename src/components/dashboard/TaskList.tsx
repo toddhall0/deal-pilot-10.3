@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   CheckSquare,
-  Clock,
-  AlertTriangle,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
@@ -31,17 +30,11 @@ interface TaskListProps {
 }
 
 export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "URGENT":
-        return "text-red-400 bg-red-500/20"
-      case "HIGH":
-        return "text-orange-400 bg-orange-500/20"
-      case "MEDIUM":
-        return "text-yellow-400 bg-yellow-500/20"
-      default:
-        return "text-slate-400 bg-slate-500/20"
-    }
+  const priorityColors: Record<string, string> = {
+    LOW: "bg-slate-500/20 text-slate-300",
+    MEDIUM: "bg-blue-500/20 text-blue-400",
+    HIGH: "bg-orange-500/20 text-orange-400",
+    URGENT: "bg-red-500/20 text-red-400",
   }
 
   const isOverdue = (dueDate: string | null) => {
@@ -76,61 +69,69 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
           </Button>
         </Link>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-0 pb-0">
         {tasks.length === 0 ? (
-          <div className="text-center py-6 text-slate-500">
+          <div className="text-center py-6 text-slate-500 px-6">
             <CheckSquare className="h-8 w-8 mx-auto mb-2 text-slate-600" />
             <p>No pending tasks</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className="flex items-start gap-3 p-3 rounded-lg border border-slate-800 hover:bg-slate-800/50 transition-colors"
-              >
-                <Checkbox
-                  className="mt-1 border-slate-600"
-                  onCheckedChange={() => handleCheck(task.id)}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-medium text-sm truncate text-white">{task.title}</p>
-                      <Link
-                        href={`/deals/${task.deal.id}`}
-                        className="text-xs text-blue-400 hover:underline"
-                      >
-                        {task.deal.dealNumber}
-                      </Link>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-800">
+                <th className="w-8 px-3 py-2"></th>
+                <th className="text-left text-xs font-medium text-slate-400 px-3 py-2">Task</th>
+                <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-20">Priority</th>
+                <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-20">Deal</th>
+                <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-28">Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tasks.map((task) => (
+                <tr
+                  key={task.id}
+                  className="border-b border-slate-800 last:border-b-0 hover:bg-slate-800/50 transition-colors"
+                >
+                  <td className="px-3 py-2">
+                    <Checkbox
+                      className="border-slate-600"
+                      onCheckedChange={() => handleCheck(task.id)}
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm text-white truncate">{task.title}</span>
+                      {isOverdue(task.dueDate) && (
+                        <AlertTriangle className="h-3 w-3 text-red-400 shrink-0" />
+                      )}
                     </div>
-                    <Badge
-                      variant="secondary"
-                      className={`text-xs shrink-0 ${getPriorityColor(task.priority)}`}
-                    >
+                  </td>
+                  <td className="px-3 py-2">
+                    <Badge className={`${priorityColors[task.priority]} text-xs`}>
                       {task.priority}
                     </Badge>
-                  </div>
-                  {task.dueDate && (
-                    <div
-                      className={`flex items-center gap-1 mt-1 text-xs ${
-                        isOverdue(task.dueDate) ? "text-red-400" : "text-slate-500"
-                      }`}
+                  </td>
+                  <td className="px-3 py-2">
+                    <Link
+                      href={`/deals/${task.deal.id}`}
+                      className="text-xs text-blue-400 hover:underline"
                     >
-                      {isOverdue(task.dueDate) ? (
-                        <AlertTriangle className="h-3 w-3" />
-                      ) : (
-                        <Clock className="h-3 w-3" />
-                      )}
-                      {isOverdue(task.dueDate)
-                        ? `Overdue by ${formatDistanceToNow(new Date(task.dueDate))}`
-                        : `Due ${formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}`}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+                      {task.deal.dealNumber}
+                    </Link>
+                  </td>
+                  <td className="px-3 py-2">
+                    {task.dueDate ? (
+                      <span className={`text-xs ${isOverdue(task.dueDate) ? "text-red-400" : "text-slate-400"}`}>
+                        {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-slate-500">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </CardContent>
     </Card>
