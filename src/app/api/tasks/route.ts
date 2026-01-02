@@ -51,6 +51,9 @@ export async function GET(request: NextRequest) {
         createdBy: {
           select: { id: true, name: true, email: true },
         },
+        taskList: {
+          select: { id: true, name: true, color: true },
+        },
         _count: {
           select: { comments: true, documents: true },
         },
