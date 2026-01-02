@@ -61,16 +61,16 @@ const CATEGORIES = [
 ]
 
 const CATEGORY_COLORS: Record<string, string> = {
-  CLOSING_COST: "bg-blue-100 text-blue-800",
-  PRORATION: "bg-purple-100 text-purple-800",
-  CREDIT: "bg-green-100 text-green-800",
-  ADJUSTMENT: "bg-orange-100 text-orange-800",
-  TAX: "bg-red-100 text-red-800",
-  INSURANCE: "bg-cyan-100 text-cyan-800",
-  HOA: "bg-yellow-100 text-yellow-800",
-  UTILITY: "bg-indigo-100 text-indigo-800",
-  COMMISSION: "bg-pink-100 text-pink-800",
-  OTHER: "bg-gray-100 text-gray-800",
+  CLOSING_COST: "bg-blue-500/20 text-blue-400",
+  PRORATION: "bg-purple-500/20 text-purple-400",
+  CREDIT: "bg-green-500/20 text-green-400",
+  ADJUSTMENT: "bg-orange-500/20 text-orange-400",
+  TAX: "bg-red-500/20 text-red-400",
+  INSURANCE: "bg-cyan-500/20 text-cyan-400",
+  HOA: "bg-yellow-500/20 text-yellow-400",
+  UTILITY: "bg-indigo-500/20 text-indigo-400",
+  COMMISSION: "bg-pink-500/20 text-pink-400",
+  OTHER: "bg-slate-500/20 text-slate-300",
 }
 
 export function LineItemsManager({ dealId, lineItems, onUpdate }: LineItemsManagerProps) {
@@ -180,19 +180,19 @@ export function LineItemsManager({ dealId, lineItems, onUpdate }: LineItemsManag
   }
 
   return (
-    <Card>
+    <Card className="bg-slate-900 border-slate-800">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="text-base flex items-center gap-2 text-white">
             <Receipt className="h-4 w-4" />
             Closing Costs & Prorations
           </CardTitle>
           <div className="flex gap-4 text-sm mt-1">
-            <span className="text-gray-500">
-              Estimated: <span className="font-medium text-gray-900">{formatCurrency(estimatedTotal)}</span>
+            <span className="text-slate-400">
+              Estimated: <span className="font-medium text-white">{formatCurrency(estimatedTotal)}</span>
             </span>
-            <span className="text-gray-500">
-              Actual: <span className="font-medium text-gray-900">{formatCurrency(actualTotal)}</span>
+            <span className="text-slate-400">
+              Actual: <span className="font-medium text-white">{formatCurrency(actualTotal)}</span>
             </span>
           </div>
         </div>
@@ -209,26 +209,26 @@ export function LineItemsManager({ dealId, lineItems, onUpdate }: LineItemsManag
       </CardHeader>
       <CardContent>
         {lineItems.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">No line items recorded</p>
+          <p className="text-center text-slate-400 py-4">No line items recorded</p>
         ) : (
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Item</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Vendor</TableHead>
-                <TableHead className="text-right">Estimated</TableHead>
-                <TableHead className="text-right">Actual</TableHead>
+              <TableRow className="border-slate-800">
+                <TableHead className="text-slate-400">Item</TableHead>
+                <TableHead className="text-slate-400">Category</TableHead>
+                <TableHead className="text-slate-400">Vendor</TableHead>
+                <TableHead className="text-right text-slate-400">Estimated</TableHead>
+                <TableHead className="text-right text-slate-400">Actual</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {lineItems.map((item) => (
-                <TableRow key={item.id} className="group">
+                <TableRow key={item.id} className="group border-slate-800">
                   <TableCell>
-                    <span className="font-medium">{item.name}</span>
+                    <span className="font-medium text-white">{item.name}</span>
                     {item.description && (
-                      <p className="text-xs text-gray-500">{item.description}</p>
+                      <p className="text-xs text-slate-500">{item.description}</p>
                     )}
                   </TableCell>
                   <TableCell>
@@ -236,19 +236,19 @@ export function LineItemsManager({ dealId, lineItems, onUpdate }: LineItemsManag
                       {item.category.replace(/_/g, " ")}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-slate-300">
                     {item.vendor || "—"}
                     {item.invoiceNumber && (
-                      <p className="text-xs text-gray-500">#{item.invoiceNumber}</p>
+                      <p className="text-xs text-slate-500">#{item.invoiceNumber}</p>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right text-slate-300">
                     {item.estimatedAmount ? formatCurrency(Number(item.estimatedAmount)) : "—"}
                   </TableCell>
-                  <TableCell className="text-right font-medium">
+                  <TableCell className="text-right font-medium text-white">
                     {item.actualAmount ? formatCurrency(Number(item.actualAmount)) : "—"}
                     {item.paidDate && (
-                      <p className="text-xs text-gray-500">Paid {formatDate(item.paidDate)}</p>
+                      <p className="text-xs text-slate-500">Paid {formatDate(item.paidDate)}</p>
                     )}
                   </TableCell>
                   <TableCell>

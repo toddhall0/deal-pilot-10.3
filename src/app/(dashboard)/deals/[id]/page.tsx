@@ -64,10 +64,10 @@ export default async function DealDetailPage({
       <div className="mb-6">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-slate-400">
               {deal.dealNumber} • {deal.client.name}
             </p>
-            <h1 className="text-2xl font-bold">{deal.name}</h1>
+            <h1 className="text-2xl font-bold text-white">{deal.name}</h1>
           </div>
           <div className="flex items-center gap-2">
             <QuickExport dealId={deal.id} />

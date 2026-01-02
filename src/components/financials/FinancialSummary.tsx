@@ -82,32 +82,32 @@ export function FinancialSummary({
   return (
     <div className="grid grid-cols-2 gap-4">
       {/* Purchase Summary */}
-      <Card>
+      <Card className="bg-slate-900 border-slate-800">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-blue-600" />
+          <CardTitle className="text-base flex items-center gap-2 text-white">
+            <DollarSign className="h-4 w-4 text-blue-400" />
             Purchase Summary
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between">
-            <span className="text-gray-600">Contract Price</span>
-            <span className="font-medium">{formatCurrency(price)}</span>
+            <span className="text-slate-400">Contract Price</span>
+            <span className="font-medium text-white">{formatCurrency(price)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Total Deposits Required</span>
-            <span className="font-medium">{formatCurrency(totalDeposits)}</span>
+            <span className="text-slate-400">Total Deposits Required</span>
+            <span className="font-medium text-white">{formatCurrency(totalDeposits)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Deposits Paid</span>
-            <span className="font-medium text-green-600">
+            <span className="text-slate-400">Deposits Paid</span>
+            <span className="font-medium text-green-400">
               {formatCurrency(paidDeposits)}
             </span>
           </div>
-          <Separator />
+          <Separator className="bg-slate-700" />
           <div className="flex justify-between text-lg">
-            <span className="font-semibold">Balance Due at Closing</span>
-            <span className="font-bold text-blue-600">
+            <span className="font-semibold text-white">Balance Due at Closing</span>
+            <span className="font-bold text-blue-400">
               {formatCurrency(price - paidDeposits)}
             </span>
           </div>
@@ -115,44 +115,44 @@ export function FinancialSummary({
       </Card>
 
       {/* Costs Summary */}
-      <Card>
+      <Card className="bg-slate-900 border-slate-800">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Receipt className="h-4 w-4 text-green-600" />
+          <CardTitle className="text-base flex items-center gap-2 text-white">
+            <Receipt className="h-4 w-4 text-green-400" />
             Costs & Adjustments
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between">
-            <span className="text-gray-600">Closing Costs</span>
+            <span className="text-slate-400">Closing Costs</span>
             <div className="text-right">
-              <span className="font-medium">{formatCurrency(actualClosingCosts || estimatedClosingCosts)}</span>
+              <span className="font-medium text-white">{formatCurrency(actualClosingCosts || estimatedClosingCosts)}</span>
               {actualClosingCosts > 0 && estimatedClosingCosts > 0 && actualClosingCosts !== estimatedClosingCosts && (
-                <p className="text-xs text-gray-500">Est: {formatCurrency(estimatedClosingCosts)}</p>
+                <p className="text-xs text-slate-500">Est: {formatCurrency(estimatedClosingCosts)}</p>
               )}
             </div>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Prorations</span>
-            <span className="font-medium">{formatCurrency(actualProrations || estimatedProrations)}</span>
+            <span className="text-slate-400">Prorations</span>
+            <span className="font-medium text-white">{formatCurrency(actualProrations || estimatedProrations)}</span>
           </div>
           {(estimatedCredits > 0 || actualCredits > 0) && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Credits</span>
-              <span className="font-medium text-green-600">
+              <span className="text-slate-400">Credits</span>
+              <span className="font-medium text-green-400">
                 -{formatCurrency(actualCredits || estimatedCredits)}
               </span>
             </div>
           )}
-          <Separator />
+          <Separator className="bg-slate-700" />
           <div className="flex justify-between text-lg">
-            <span className="font-semibold">Total Costs</span>
-            <span className="font-bold">
+            <span className="font-semibold text-white">Total Costs</span>
+            <span className="font-bold text-white">
               {formatCurrency(totalActual || totalEstimated)}
             </span>
           </div>
           {totalActual > 0 && totalEstimated > 0 && totalActual !== totalEstimated && (
-            <p className="text-xs text-gray-500 text-right">
+            <p className="text-xs text-slate-500 text-right">
               Estimated: {formatCurrency(totalEstimated)}
             </p>
           )}

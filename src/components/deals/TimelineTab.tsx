@@ -134,46 +134,46 @@ export function TimelineTab({ dealId }: TimelineTabProps) {
     <div>
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-gray-500" />
+              <Calendar className="h-5 w-5 text-slate-400" />
               <div>
-                <p className="text-2xl font-bold">{stats.total}</p>
-                <p className="text-sm text-gray-500">Total Milestones</p>
+                <p className="text-2xl font-bold text-white">{stats.total}</p>
+                <p className="text-sm text-slate-400">Total Milestones</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
               <div>
-                <p className="text-2xl font-bold">{stats.completed}</p>
-                <p className="text-sm text-gray-500">Completed</p>
+                <p className="text-2xl font-bold text-white">{stats.completed}</p>
+                <p className="text-sm text-slate-400">Completed</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-orange-500" />
               <div>
-                <p className="text-2xl font-bold">{stats.upcoming}</p>
-                <p className="text-sm text-gray-500">Due This Week</p>
+                <p className="text-2xl font-bold text-white">{stats.upcoming}</p>
+                <p className="text-sm text-slate-400">Due This Week</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
               <div>
-                <p className="text-2xl font-bold">{stats.overdue}</p>
-                <p className="text-sm text-gray-500">Overdue</p>
+                <p className="text-2xl font-bold text-white">{stats.overdue}</p>
+                <p className="text-sm text-slate-400">Overdue</p>
               </div>
             </div>
           </CardContent>
@@ -182,7 +182,7 @@ export function TimelineTab({ dealId }: TimelineTabProps) {
 
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Timeline</h2>
+        <h2 className="text-lg font-semibold text-white">Timeline</h2>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -210,10 +210,10 @@ export function TimelineTab({ dealId }: TimelineTabProps) {
 
       {/* Milestones List */}
       {allMilestones.length === 0 ? (
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="py-10 text-center">
-            <Calendar className="mx-auto h-10 w-10 text-gray-300 mb-2" />
-            <p className="text-gray-500 mb-4">No milestones yet</p>
+            <Calendar className="mx-auto h-10 w-10 text-slate-600 mb-2" />
+            <p className="text-slate-400 mb-4">No milestones yet</p>
             <Button onClick={handleNewMilestone}>
               <Plus className="mr-2 h-4 w-4" />
               Add your first milestone
@@ -221,7 +221,7 @@ export function TimelineTab({ dealId }: TimelineTabProps) {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="py-4">
             {allMilestones.map((milestone) => (
               <MilestoneItem

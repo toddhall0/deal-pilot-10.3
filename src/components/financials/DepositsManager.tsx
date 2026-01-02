@@ -53,12 +53,12 @@ interface DepositsManagerProps {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  SCHEDULED: "bg-gray-100 text-gray-800",
-  DUE: "bg-yellow-100 text-yellow-800",
-  PAID: "bg-green-100 text-green-800",
-  APPLIED_TO_PURCHASE: "bg-blue-100 text-blue-800",
-  REFUNDED: "bg-purple-100 text-purple-800",
-  FORFEITED: "bg-red-100 text-red-800",
+  SCHEDULED: "bg-slate-500/20 text-slate-300",
+  DUE: "bg-yellow-500/20 text-yellow-400",
+  PAID: "bg-green-500/20 text-green-400",
+  APPLIED_TO_PURCHASE: "bg-blue-500/20 text-blue-400",
+  REFUNDED: "bg-purple-500/20 text-purple-400",
+  FORFEITED: "bg-red-500/20 text-red-400",
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -185,14 +185,14 @@ export function DepositsManager({ dealId, deposits, onUpdate }: DepositsManagerP
   }
 
   return (
-    <Card>
+    <Card className="bg-slate-900 border-slate-800">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="text-base flex items-center gap-2 text-white">
             <Banknote className="h-4 w-4" />
             Earnest Money Deposits
           </CardTitle>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-slate-400 mt-1">
             {formatCurrency(paidDeposits)} of {formatCurrency(totalDeposits)} paid
           </p>
         </div>
@@ -209,29 +209,29 @@ export function DepositsManager({ dealId, deposits, onUpdate }: DepositsManagerP
       </CardHeader>
       <CardContent>
         {deposits.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">No deposits recorded</p>
+          <p className="text-center text-slate-400 py-4">No deposits recorded</p>
         ) : (
           <div className="space-y-3">
             {deposits.map((deposit) => (
               <div
                 key={deposit.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group"
+                className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg group"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{deposit.name}</span>
+                    <span className="font-medium text-white">{deposit.name}</span>
                     <Badge className={STATUS_COLORS[deposit.status]}>
                       {STATUS_LABELS[deposit.status] || deposit.status}
                     </Badge>
                   </div>
-                  <div className="text-sm text-gray-500 mt-1">
+                  <div className="text-sm text-slate-400 mt-1">
                     Due: {formatDate(deposit.dueDate)}
                     {deposit.paidDate && ` • Paid: ${formatDate(deposit.paidDate)}`}
                     {deposit.condition && ` • ${deposit.condition}`}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-lg font-semibold">
+                  <span className="text-lg font-semibold text-white">
                     {formatCurrency(Number(deposit.amount))}
                   </span>
                   <DropdownMenu>

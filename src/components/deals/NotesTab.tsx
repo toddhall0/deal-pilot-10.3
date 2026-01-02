@@ -159,9 +159,9 @@ export function NotesTab({ dealId }: NotesTabProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div className="flex items-center gap-4 w-full sm:w-auto">
-          <h2 className="text-lg font-semibold">Notes ({notes.length})</h2>
+          <h2 className="text-lg font-semibold text-white">Notes ({notes.length})</h2>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-40 bg-slate-800 border-slate-700">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -177,13 +177,13 @@ export function NotesTab({ dealId }: NotesTabProps) {
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <form onSubmit={handleSearch} className="flex gap-2 flex-1">
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
               <Input
                 type="text"
                 placeholder="Search notes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 bg-slate-800 border-slate-700 text-white"
               />
             </div>
           </form>
@@ -196,10 +196,10 @@ export function NotesTab({ dealId }: NotesTabProps) {
 
       {/* Notes List */}
       {notes.length === 0 ? (
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="py-10 text-center">
-            <FileText className="mx-auto h-10 w-10 text-gray-300 mb-2" />
-            <p className="text-gray-500 mb-4">No notes yet</p>
+            <FileText className="mx-auto h-10 w-10 text-slate-600 mb-2" />
+            <p className="text-slate-400 mb-4">No notes yet</p>
             <Button onClick={handleNewNote}>
               <Plus className="mr-2 h-4 w-4" />
               Add your first note
@@ -211,16 +211,16 @@ export function NotesTab({ dealId }: NotesTabProps) {
           {notes.map((note) => (
             <Card
               key={note.id}
-              className={`group ${note.isPinned ? "border-yellow-300 bg-yellow-50/50" : ""}`}
+              className={`group bg-slate-900 border-slate-800 ${note.isPinned ? "border-yellow-500/50" : ""}`}
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       {note.isPinned && (
-                        <Pin className="h-4 w-4 text-yellow-600 fill-yellow-600" />
+                        <Pin className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                       )}
-                      <h3 className="font-medium">
+                      <h3 className="font-medium text-white">
                         {note.title || "Untitled Note"}
                       </h3>
                       {note.category && (
@@ -231,11 +231,11 @@ export function NotesTab({ dealId }: NotesTabProps) {
                     </div>
 
                     {/* Preview of content */}
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className="text-sm text-slate-300 mb-2">
                       {truncateText(note.plainText || "", 200)}
                     </p>
 
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-slate-400">
                       {note.author.name} • {formatDate(note.createdAt)}
                       {note.updatedAt !== note.createdAt && " (edited)"}
                     </p>

@@ -73,9 +73,9 @@ export function FinancialsTab({ dealId }: FinancialsTabProps) {
   return (
     <div className="space-y-6">
       {/* Contract Price */}
-      <Card>
+      <Card className="bg-slate-900 border-slate-800">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="text-base flex items-center gap-2 text-white">
             <DollarSign className="h-4 w-4" />
             Contract Price
           </CardTitle>
@@ -83,15 +83,15 @@ export function FinancialsTab({ dealId }: FinancialsTabProps) {
         <CardContent>
           <div className="flex items-end gap-4">
             <div className="flex-1 space-y-2">
-              <Label htmlFor="contractPrice">Amount</Label>
+              <Label htmlFor="contractPrice" className="text-slate-300">Amount</Label>
               <div className="relative">
-                <span className="absolute left-3 top-2.5 text-gray-500">$</span>
+                <span className="absolute left-3 top-2.5 text-slate-400">$</span>
                 <Input
                   id="contractPrice"
                   type="number"
                   value={contractPrice}
                   onChange={(e) => setContractPrice(e.target.value)}
-                  className="pl-7"
+                  className="pl-7 bg-slate-800 border-slate-700 text-white"
                   placeholder="0"
                 />
               </div>
@@ -108,7 +108,7 @@ export function FinancialsTab({ dealId }: FinancialsTabProps) {
             </Button>
           </div>
           {price > 0 && (
-            <p className="mt-2 text-lg font-semibold">
+            <p className="mt-2 text-lg font-semibold text-white">
               {formatCurrency(price)}
             </p>
           )}

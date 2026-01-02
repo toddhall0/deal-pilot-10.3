@@ -87,48 +87,48 @@ export function OverviewTab({ deal }: OverviewTabProps) {
     <div className="space-y-6">
       {/* Quick Stats */}
       <div className="grid grid-cols-4 gap-4">
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <CheckSquare className="h-5 w-5 text-blue-500" />
               <div>
-                <p className="text-2xl font-bold">
+                <p className="text-2xl font-bold text-white">
                   {stats.completedTasks}/{stats.tasks}
                 </p>
-                <p className="text-sm text-gray-500">Tasks Complete</p>
+                <p className="text-sm text-slate-400">Tasks Complete</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-purple-500" />
               <div>
-                <p className="text-2xl font-bold">{stats.documents}</p>
-                <p className="text-sm text-gray-500">Documents</p>
+                <p className="text-2xl font-bold text-white">{stats.documents}</p>
+                <p className="text-sm text-slate-400">Documents</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-orange-500" />
               <div>
-                <p className="text-2xl font-bold">{stats.milestones}</p>
-                <p className="text-sm text-gray-500">Milestones</p>
+                <p className="text-2xl font-bold text-white">{stats.milestones}</p>
+                <p className="text-sm text-slate-400">Milestones</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Building className="h-5 w-5 text-green-500" />
               <div>
-                <p className="text-2xl font-bold">{deal.type}</p>
-                <p className="text-sm text-gray-500">Deal Type</p>
+                <p className="text-2xl font-bold text-white">{deal.type}</p>
+                <p className="text-sm text-slate-400">Deal Type</p>
               </div>
             </div>
           </CardContent>
@@ -136,9 +136,9 @@ export function OverviewTab({ deal }: OverviewTabProps) {
       </div>
 
       {/* Contract Analysis Section */}
-      <Card>
+      <Card className="bg-slate-900 border-slate-800">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-lg">Contract Summary</CardTitle>
+          <CardTitle className="text-lg text-white">Contract Summary</CardTitle>
           <div className="flex gap-2">
             {summary && (
               <Button
@@ -158,7 +158,7 @@ export function OverviewTab({ deal }: OverviewTabProps) {
                 onAnalysisComplete={handleAnalysisComplete}
               />
             ) : (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-slate-400">
                 Upload a contract and mark it as primary to analyze
               </p>
             )}
@@ -170,28 +170,28 @@ export function OverviewTab({ deal }: OverviewTabProps) {
       </Card>
 
       {/* Property Details */}
-      <Card>
+      <Card className="bg-slate-900 border-slate-800">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Property Details</CardTitle>
+          <CardTitle className="text-lg text-white">Property Details</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             {deal.propertyName && (
               <div>
-                <p className="text-sm text-gray-500">Property Name</p>
-                <p className="font-medium">{deal.propertyName}</p>
+                <p className="text-sm text-slate-400">Property Name</p>
+                <p className="font-medium text-white">{deal.propertyName}</p>
               </div>
             )}
             {deal.propertyType && (
               <div>
-                <p className="text-sm text-gray-500">Property Type</p>
-                <p className="font-medium">{deal.propertyType}</p>
+                <p className="text-sm text-slate-400">Property Type</p>
+                <p className="font-medium text-white">{deal.propertyType}</p>
               </div>
             )}
             {deal.propertyAddress && (
               <div className="col-span-2">
-                <p className="text-sm text-gray-500">Address</p>
-                <p className="font-medium">
+                <p className="text-sm text-slate-400">Address</p>
+                <p className="font-medium text-white">
                   {deal.propertyAddress}
                   {deal.propertyCity && `, ${deal.propertyCity}`}
                   {deal.propertyState && `, ${deal.propertyState}`}
@@ -201,14 +201,14 @@ export function OverviewTab({ deal }: OverviewTabProps) {
             )}
             {deal.acreage && (
               <div>
-                <p className="text-sm text-gray-500">Acreage</p>
-                <p className="font-medium">{Number(deal.acreage).toFixed(2)} acres</p>
+                <p className="text-sm text-slate-400">Acreage</p>
+                <p className="font-medium text-white">{Number(deal.acreage).toFixed(2)} acres</p>
               </div>
             )}
             {deal.squareFootage && (
               <div>
-                <p className="text-sm text-gray-500">Square Footage</p>
-                <p className="font-medium">
+                <p className="text-sm text-slate-400">Square Footage</p>
+                <p className="font-medium text-white">
                   {Number(deal.squareFootage).toLocaleString()} SF
                 </p>
               </div>

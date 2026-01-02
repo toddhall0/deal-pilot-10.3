@@ -158,9 +158,9 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
     <div>
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold">Documents ({documents.length})</h2>
+          <h2 className="text-lg font-semibold text-white">Documents ({documents.length})</h2>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-48 bg-slate-800 border-slate-700">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -179,10 +179,10 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
       </div>
 
       {documents.length === 0 ? (
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="py-10 text-center">
-            <FileIcon className="mx-auto h-10 w-10 text-gray-300 mb-2" />
-            <p className="text-gray-500 mb-4">No documents yet</p>
+            <FileIcon className="mx-auto h-10 w-10 text-slate-600 mb-2" />
+            <p className="text-slate-400 mb-4">No documents yet</p>
             <Button onClick={() => setIsUploadOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
               Upload your first document
@@ -192,13 +192,13 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {documents.map((doc) => (
-            <Card key={doc.id} className="relative group">
+            <Card key={doc.id} className="relative group bg-slate-900 border-slate-800">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   {getFileIcon(doc.fileType)}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-sm truncate" title={doc.name}>
+                      <h3 className="font-medium text-sm truncate text-white" title={doc.name}>
                         {doc.name}
                       </h3>
                       {doc.isPrimaryContract && (
@@ -212,11 +212,11 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                       <Badge variant="secondary" className="text-xs">
                         {doc.category}
                       </Badge>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-slate-400">
                         {formatFileSize(doc.fileSize)}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400 mt-2">
+                    <p className="text-xs text-slate-400 mt-2">
                       {doc.uploadedBy.name} • {formatDate(doc.createdAt)}
                     </p>
                   </div>
