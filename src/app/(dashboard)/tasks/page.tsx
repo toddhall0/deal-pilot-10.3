@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Select,
   SelectContent,
@@ -12,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useResizableColumns } from "@/hooks/useResizableColumns"
 import { AlertTriangle } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
@@ -30,6 +32,16 @@ interface Task {
 type GroupBy = "none" | "status" | "priority" | "deal"
 type SortBy = "createdAt" | "dueDate" | "priority" | "status" | "title"
 
+const columnConfig = [
+  { key: "checkbox", initialWidth: 40, minWidth: 40 },
+  { key: "task", initialWidth: 250, minWidth: 120 },
+  { key: "priority", initialWidth: 80, minWidth: 70 },
+  { key: "deal", initialWidth: 130, minWidth: 80 },
+  { key: "assignee", initialWidth: 120, minWidth: 80 },
+  { key: "dueDate", initialWidth: 110, minWidth: 80 },
+  { key: "status", initialWidth: 130, minWidth: 100 },
+]
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -37,6 +49,8 @@ export default function TasksPage() {
   const [sortBy, setSortBy] = useState<SortBy>("createdAt")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [filterStatus, setFilterStatus] = useState<string>("all")
+
+  const { getColumnWidth, ResizeHandle } = useResizableColumns(columnConfig, "tasks-page")
 
   useEffect(() => {
     fetchTasks()
@@ -71,6 +85,10 @@ export default function TasksPage() {
     } catch (error) {
       console.error("Failed to update task:", error)
     }
+  }
+
+  async function handleCompleteTask(taskId: string, dealId: string) {
+    await handleStatusChange(taskId, dealId, "COMPLETED")
   }
 
   const filteredTasks = useMemo(() => {
@@ -241,27 +259,80 @@ export default function TasksPage() {
                   </span>
                 </h2>
               )}
-              <div className="rounded-lg border border-slate-800 overflow-hidden">
-                <table className="w-full">
+              <div className="rounded-lg border border-slate-800 overflow-x-auto">
+                <table className="w-full" style={{ tableLayout: "fixed" }}>
                   <thead>
                     <tr className="bg-slate-800/50 border-b border-slate-800">
-                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2">Task</th>
-                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-20">Priority</th>
-                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-32">Deal</th>
-                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-28">Assignee</th>
-                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-28">Due Date</th>
-                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 w-32">Status</th>
+                      <th
+                        className="text-left text-xs font-medium text-slate-400 px-2 py-2 relative group"
+                        style={{ width: getColumnWidth("checkbox") }}
+                      >
+                        <ResizeHandle columnKey="checkbox" />
+                      </th>
+                      <th
+                        className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
+                        style={{ width: getColumnWidth("task") }}
+                      >
+                        Task
+                        <ResizeHandle columnKey="task" />
+                      </th>
+                      <th
+                        className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
+                        style={{ width: getColumnWidth("priority") }}
+                      >
+                        Priority
+                        <ResizeHandle columnKey="priority" />
+                      </th>
+                      <th
+                        className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
+                        style={{ width: getColumnWidth("deal") }}
+                      >
+                        Deal
+                        <ResizeHandle columnKey="deal" />
+                      </th>
+                      <th
+                        className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
+                        style={{ width: getColumnWidth("assignee") }}
+                      >
+                        Assignee
+                        <ResizeHandle columnKey="assignee" />
+                      </th>
+                      <th
+                        className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
+                        style={{ width: getColumnWidth("dueDate") }}
+                      >
+                        Due Date
+                        <ResizeHandle columnKey="dueDate" />
+                      </th>
+                      <th
+                        className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
+                        style={{ width: getColumnWidth("status") }}
+                      >
+                        Status
+                        <ResizeHandle columnKey="status" />
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {groupTasks.map((task) => (
                       <tr
                         key={task.id}
-                        className="bg-slate-900 border-b border-slate-800 last:border-b-0 hover:bg-slate-800/50 transition-colors"
+                        className={`border-b border-slate-800 last:border-b-0 hover:bg-slate-800/50 transition-colors ${
+                          task.status === "COMPLETED" ? "opacity-60" : "bg-slate-900"
+                        }`}
                       >
-                        <td className="px-3 py-2">
+                        <td className="px-2 py-2">
+                          <Checkbox
+                            checked={task.status === "COMPLETED"}
+                            onCheckedChange={() => handleCompleteTask(task.id, task.deal.id)}
+                            className="border-slate-600"
+                          />
+                        </td>
+                        <td className="px-3 py-2 overflow-hidden">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-white truncate">{task.title}</span>
+                            <span className={`font-medium truncate ${task.status === "COMPLETED" ? "line-through text-slate-500" : "text-white"}`}>
+                              {task.title}
+                            </span>
                             {isOverdue(task.dueDate, task.status) && (
                               <AlertTriangle className="h-3 w-3 text-red-400 shrink-0" />
                             )}
@@ -272,17 +343,17 @@ export default function TasksPage() {
                             {task.priority}
                           </Badge>
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 overflow-hidden">
                           <Link
                             href={`/deals/${task.deal.id}`}
-                            className="text-sm text-blue-400 hover:underline truncate block max-w-[120px]"
+                            className="text-sm text-blue-400 hover:underline truncate block"
                           >
                             {task.deal.dealNumber}
                           </Link>
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-2 overflow-hidden">
                           {task.assignee ? (
-                            <span className="text-sm text-slate-300 truncate block max-w-[100px]">
+                            <span className="text-sm text-slate-300 truncate block">
                               {task.assignee.name}
                             </span>
                           ) : (
@@ -305,7 +376,7 @@ export default function TasksPage() {
                               handleStatusChange(task.id, task.deal.id, value)
                             }
                           >
-                            <SelectTrigger className="w-28 h-7 bg-slate-800 border-slate-700 text-xs">
+                            <SelectTrigger className="w-full h-7 bg-slate-800 border-slate-700 text-xs">
                               <Badge className={`${statusColors[task.status]} text-xs`}>
                                 {task.status.replace("_", " ")}
                               </Badge>
