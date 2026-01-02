@@ -142,7 +142,12 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                     </td>
                     <td className="px-3 py-2 overflow-hidden">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm text-white truncate">{task.title}</span>
+                        <Link
+                          href={`/tasks/${task.id}`}
+                          className="font-medium text-sm text-white truncate hover:underline"
+                        >
+                          {task.title}
+                        </Link>
                         {isOverdue(task.dueDate) && (
                           <AlertTriangle className="h-3 w-3 text-red-400 shrink-0" />
                         )}

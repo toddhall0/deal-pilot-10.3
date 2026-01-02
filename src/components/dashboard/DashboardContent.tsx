@@ -56,6 +56,7 @@ interface Task {
   dueDate: string | null
   deal: {
     id: string
+    name: string
     dealNumber: string
   }
 }

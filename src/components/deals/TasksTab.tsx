@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -23,7 +24,6 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { DatePicker } from "@/components/ui/date-picker"
-import { TaskDetailDialog } from "@/components/tasks/TaskDetailDialog"
 import { useResizableColumns } from "@/hooks/useResizableColumns"
 import {
   MessageSquare,
@@ -74,8 +74,6 @@ export function TasksTab({ dealId }: TasksTabProps) {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -167,11 +165,6 @@ export function TasksTab({ dealId }: TasksTabProps) {
 
   async function handleCompleteTask(taskId: string) {
     await handleStatusChange(taskId, "COMPLETED")
-  }
-
-  function openTaskDetail(taskId: string) {
-    setSelectedTaskId(taskId)
-    setIsDetailOpen(true)
   }
 
   const priorityColors: Record<string, string> = {
@@ -392,12 +385,11 @@ export function TasksTab({ dealId }: TasksTabProps) {
               {tasks.map((task) => (
                 <tr
                   key={task.id}
-                  className={`border-b border-slate-800 last:border-b-0 cursor-pointer hover:bg-slate-800/50 transition-colors ${
+                  className={`border-b border-slate-800 last:border-b-0 hover:bg-slate-800/50 transition-colors ${
                     task.status === "COMPLETED" ? "opacity-60" : "bg-slate-900"
                   }`}
-                  onClick={() => openTaskDetail(task.id)}
                 >
-                  <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-2 py-2">
                     <Checkbox
                       checked={task.status === "COMPLETED"}
                       onCheckedChange={() => handleCompleteTask(task.id)}
@@ -406,9 +398,12 @@ export function TasksTab({ dealId }: TasksTabProps) {
                   </td>
                   <td className="px-3 py-2 overflow-hidden">
                     <div className="flex items-center gap-2">
-                      <span className={`font-medium truncate ${task.status === "COMPLETED" ? "line-through text-slate-500" : "text-white"}`}>
+                      <Link
+                        href={`/tasks/${task.id}`}
+                        className={`font-medium truncate hover:underline ${task.status === "COMPLETED" ? "line-through text-slate-500" : "text-white"}`}
+                      >
                         {task.title}
-                      </span>
+                      </Link>
                       {isOverdue(task.dueDate, task.status) && (
                         <AlertTriangle className="h-3 w-3 text-red-400 shrink-0" />
                       )}
@@ -447,7 +442,7 @@ export function TasksTab({ dealId }: TasksTabProps) {
                       {task._count?.documents || 0}
                     </span>
                   </td>
-                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-3 py-2">
                     <Select
                       value={task.status}
                       onValueChange={(value) => handleStatusChange(task.id, value)}
@@ -473,15 +468,6 @@ export function TasksTab({ dealId }: TasksTabProps) {
           </table>
         </div>
       )}
-
-      {/* Task Detail Dialog */}
-      <TaskDetailDialog
-        taskId={selectedTaskId}
-        dealId={dealId}
-        open={isDetailOpen}
-        onOpenChange={setIsDetailOpen}
-        onTaskUpdated={fetchTasks}
-      />
     </div>
   )
 }

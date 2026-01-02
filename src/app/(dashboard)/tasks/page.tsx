@@ -330,9 +330,12 @@ export default function TasksPage() {
                         </td>
                         <td className="px-3 py-2 overflow-hidden">
                           <div className="flex items-center gap-2">
-                            <span className={`font-medium truncate ${task.status === "COMPLETED" ? "line-through text-slate-500" : "text-white"}`}>
+                            <Link
+                              href={`/tasks/${task.id}`}
+                              className={`font-medium truncate hover:underline ${task.status === "COMPLETED" ? "line-through text-slate-500" : "text-white"}`}
+                            >
                               {task.title}
-                            </span>
+                            </Link>
                             {isOverdue(task.dueDate, task.status) && (
                               <AlertTriangle className="h-3 w-3 text-red-400 shrink-0" />
                             )}
