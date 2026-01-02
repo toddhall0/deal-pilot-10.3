@@ -33,8 +33,9 @@ interface TaskListProps {
 
 const columnConfig = [
   { key: "checkbox", initialWidth: 36, minWidth: 36 },
-  { key: "task", initialWidth: 200, minWidth: 100 },
-  { key: "priority", initialWidth: 75, minWidth: 60 },
+  { key: "task", initialWidth: 180, minWidth: 100 },
+  { key: "priority", initialWidth: 70, minWidth: 60 },
+  { key: "status", initialWidth: 85, minWidth: 70 },
   { key: "deal", initialWidth: 80, minWidth: 60 },
   { key: "due", initialWidth: 100, minWidth: 70 },
 ]
@@ -45,6 +46,19 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
     MEDIUM: "bg-blue-500/20 text-blue-400",
     HIGH: "bg-orange-500/20 text-orange-400",
     URGENT: "bg-red-500/20 text-red-400",
+  }
+
+  const statusColors: Record<string, string> = {
+    TODO: "bg-slate-500/20 text-slate-300",
+    IN_PROGRESS: "bg-blue-500/20 text-blue-400",
+    IN_REVIEW: "bg-purple-500/20 text-purple-400",
+    BLOCKED: "bg-red-500/20 text-red-400",
+    COMPLETED: "bg-green-500/20 text-green-400",
+    CANCELLED: "bg-gray-500/20 text-gray-400",
+  }
+
+  const formatStatus = (status: string) => {
+    return status.replace(/_/g, " ")
   }
 
   const { getColumnWidth, ResizeHandle } = useResizableColumns(columnConfig, "dashboard-tasks")
@@ -114,6 +128,13 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                   </th>
                   <th
                     className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
+                    style={{ width: getColumnWidth("status") }}
+                  >
+                    Status
+                    <ResizeHandle columnKey="status" />
+                  </th>
+                  <th
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
                     style={{ width: getColumnWidth("deal") }}
                   >
                     Deal
@@ -156,6 +177,11 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                     <td className="px-3 py-2">
                       <Badge className={`${priorityColors[task.priority]} text-xs`}>
                         {task.priority}
+                      </Badge>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Badge className={`${statusColors[task.status]} text-xs`}>
+                        {formatStatus(task.status)}
                       </Badge>
                     </td>
                     <td className="px-3 py-2 overflow-hidden">

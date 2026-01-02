@@ -68,7 +68,7 @@ export function DashboardContent() {
 
   const fetchTasks = useCallback(async () => {
     try {
-      const res = await fetch("/api/tasks?status=TODO,IN_PROGRESS&limit=10")
+      const res = await fetch("/api/tasks?status=TODO,IN_PROGRESS,IN_REVIEW,BLOCKED&limit=10")
       if (res.ok) {
         const data = await res.json()
         setTasks(data.tasks || data)
