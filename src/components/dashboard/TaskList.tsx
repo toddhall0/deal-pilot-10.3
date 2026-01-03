@@ -103,46 +103,46 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full" style={{ tableLayout: "fixed" }}>
+            <table className="min-w-full" style={{ tableLayout: "auto" }}>
               <thead>
                 <tr className="border-b border-slate-800">
                   <th
-                    className="px-2 py-2 relative group"
+                    className="px-2 py-2 relative group whitespace-nowrap"
                     style={{ width: getColumnWidth("checkbox") }}
                   >
                     <ResizeHandle columnKey="checkbox" />
                   </th>
                   <th
-                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
-                    style={{ width: getColumnWidth("task") }}
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
+                    style={{ minWidth: getColumnWidth("task") }}
                   >
                     Task
                     <ResizeHandle columnKey="task" />
                   </th>
                   <th
-                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
-                    style={{ width: getColumnWidth("priority") }}
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
+                    style={{ minWidth: getColumnWidth("priority") }}
                   >
                     Priority
                     <ResizeHandle columnKey="priority" />
                   </th>
                   <th
-                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
-                    style={{ width: getColumnWidth("status") }}
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
+                    style={{ minWidth: getColumnWidth("status") }}
                   >
                     Status
                     <ResizeHandle columnKey="status" />
                   </th>
                   <th
-                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
-                    style={{ width: getColumnWidth("deal") }}
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
+                    style={{ minWidth: getColumnWidth("deal") }}
                   >
                     Deal
                     <ResizeHandle columnKey="deal" />
                   </th>
                   <th
-                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group"
-                    style={{ width: getColumnWidth("due") }}
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
+                    style={{ minWidth: getColumnWidth("due") }}
                   >
                     Due
                     <ResizeHandle columnKey="due" />
@@ -155,17 +155,17 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                     key={task.id}
                     className="border-b border-slate-800 last:border-b-0 hover:bg-slate-800/50 transition-colors"
                   >
-                    <td className="px-2 py-2">
+                    <td className="px-2 py-2 whitespace-nowrap">
                       <Checkbox
                         className="border-slate-600"
                         onCheckedChange={() => handleCheck(task.id)}
                       />
                     </td>
-                    <td className="px-3 py-2 overflow-hidden">
+                    <td className="px-3 py-2 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/tasks/${task.id}`}
-                          className="font-medium text-sm text-white truncate hover:underline"
+                          className="font-medium text-sm text-white hover:underline"
                         >
                           {task.title}
                         </Link>
@@ -174,26 +174,26 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                         )}
                       </div>
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 whitespace-nowrap">
                       <Badge className={`${priorityColors[task.priority]} text-xs`}>
                         {task.priority}
                       </Badge>
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 whitespace-nowrap">
                       <Badge className={`${statusColors[task.status]} text-xs`}>
                         {formatStatus(task.status)}
                       </Badge>
                     </td>
-                    <td className="px-3 py-2 overflow-hidden">
+                    <td className="px-3 py-2 whitespace-nowrap">
                       <Link
                         href={`/deals/${task.deal.id}`}
-                        className="text-xs text-blue-400 hover:underline truncate block"
+                        className="text-xs text-blue-400 hover:underline"
                         title={task.deal.name}
                       >
                         {task.deal.name}
                       </Link>
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 whitespace-nowrap">
                       {task.dueDate ? (
                         <span className={`text-xs ${isOverdue(task.dueDate) ? "text-red-400" : "text-slate-400"}`}>
                           {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
