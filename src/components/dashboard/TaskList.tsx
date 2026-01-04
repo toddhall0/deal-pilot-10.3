@@ -230,11 +230,15 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                     }`}
                   >
                     <td className="px-2 py-2 whitespace-nowrap">
-                      <Checkbox
-                        className="border-slate-600"
-                        checked={completingTasks.has(task.id)}
-                        onCheckedChange={() => handleCheck(task.id, task.status)}
-                      />
+                      <div
+                        onClick={() => handleCheck(task.id, task.status)}
+                        className="cursor-pointer"
+                      >
+                        <Checkbox
+                          className="border-slate-600 pointer-events-none"
+                          checked={completingTasks.has(task.id)}
+                        />
+                      </div>
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
                       <div className="flex items-center gap-2">
