@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -42,10 +42,7 @@ const columnConfig = [
 ]
 
 export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
-  const [completingTasks, setCompletingTasks] = useState<Set<string>>(new Set())
-  const [hiddenTasks, setHiddenTasks] = useState<Set<string>>(new Set())
-  const timeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map())
-  const originalStatusRefs = useRef<Map<string, string>>(new Map())
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set())
 
   const priorityColors: Record<string, string> = {
     LOW: "bg-slate-500/20 text-slate-300",
@@ -75,81 +72,46 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
   }
 
   const handleCheck = async (taskId: string, currentStatus: string) => {
-    // If already completing, uncheck it (cancel completion)
-    if (completingTasks.has(taskId)) {
-      // Cancel the timeout
-      const timeout = timeoutRefs.current.get(taskId)
-      if (timeout) {
-        clearTimeout(timeout)
-        timeoutRefs.current.delete(taskId)
-      }
+    const isCompleted = completedTasks.has(taskId) || currentStatus === "COMPLETED"
+    const newStatus = isCompleted ? "IN_PROGRESS" : "COMPLETED"
 
-      // Restore original status
-      const originalStatus = originalStatusRefs.current.get(taskId) || "IN_PROGRESS"
-      originalStatusRefs.current.delete(taskId)
-
-      // Remove from completing state
-      setCompletingTasks((prev) => {
-        const next = new Set(prev)
+    // Toggle local state
+    setCompletedTasks((prev) => {
+      const next = new Set(prev)
+      if (isCompleted) {
         next.delete(taskId)
-        return next
-      })
-
-      // Restore status in database
-      try {
-        await fetch(`/api/tasks/${taskId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: originalStatus }),
-        })
-      } catch (error) {
-        console.error("Failed to restore task:", error)
+      } else {
+        next.add(taskId)
       }
-      return
-    }
+      return next
+    })
 
+    // Update in database
     try {
-      // Store original status before completing
-      originalStatusRefs.current.set(taskId, currentStatus)
-
-      // Mark as completing (starts fade animation)
-      setCompletingTasks((prev) => new Set(prev).add(taskId))
-
-      // Update the task status to COMPLETED in the database
       await fetch(`/api/tasks/${taskId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "COMPLETED" }),
+        body: JSON.stringify({ status: newStatus }),
       })
-
-      // After 5 seconds, hide the task and refresh the list
-      const timeout = setTimeout(() => {
-        timeoutRefs.current.delete(taskId)
-        originalStatusRefs.current.delete(taskId)
-        setHiddenTasks((prev) => new Set(prev).add(taskId))
-        setCompletingTasks((prev) => {
-          const next = new Set(prev)
-          next.delete(taskId)
-          return next
-        })
-        onTaskComplete?.(taskId)
-      }, 5000)
-
-      timeoutRefs.current.set(taskId, timeout)
+      onTaskComplete?.(taskId)
     } catch (error) {
-      console.error("Failed to complete task:", error)
-      originalStatusRefs.current.delete(taskId)
-      // Remove from completing state on error
-      setCompletingTasks((prev) => {
+      console.error("Failed to update task:", error)
+      // Revert on error
+      setCompletedTasks((prev) => {
         const next = new Set(prev)
-        next.delete(taskId)
+        if (isCompleted) {
+          next.add(taskId)
+        } else {
+          next.delete(taskId)
+        }
         return next
       })
     }
   }
 
-  // Filter out hidden tasks
-  const visibleTasks = tasks.filter((task) => !hiddenTasks.has(task.id))
+  const isTaskCompleted = (task: Task) => {
+    return completedTasks.has(task.id) || task.status === "COMPLETED"
+  }
 
   return (
     <Card className="bg-slate-800 border-slate-700">
@@ -166,7 +128,7 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
         </Link>
       </CardHeader>
       <CardContent className="px-0 pb-0">
-        {visibleTasks.length === 0 ? (
+        {tasks.length === 0 ? (
           <div className="text-center py-6 text-slate-500 px-6">
             <CheckSquare className="h-8 w-8 mx-auto mb-2 text-slate-600" />
             <p>No pending tasks</p>
@@ -220,13 +182,11 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                 </tr>
               </thead>
               <tbody>
-                {visibleTasks.map((task) => (
+                {tasks.map((task) => (
                   <tr
                     key={task.id}
-                    className={`border-b border-slate-800 last:border-b-0 hover:bg-slate-800/50 transition-all duration-500 ${
-                      completingTasks.has(task.id)
-                        ? "opacity-50 bg-green-900/20"
-                        : ""
+                    className={`border-b border-slate-800 last:border-b-0 hover:bg-slate-800/50 transition-colors ${
+                      isTaskCompleted(task) ? "opacity-50" : ""
                     }`}
                   >
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -236,7 +196,7 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                       >
                         <Checkbox
                           className="border-slate-600 pointer-events-none"
-                          checked={completingTasks.has(task.id)}
+                          checked={isTaskCompleted(task)}
                         />
                       </div>
                     </td>
