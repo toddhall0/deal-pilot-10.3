@@ -82,7 +82,7 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
   }
 
   return (
-    <Card className="bg-slate-900 border-slate-800">
+    <Card className="bg-slate-800 border-slate-700">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2 text-white">
           <CheckSquare className="h-5 w-5 text-purple-400" />

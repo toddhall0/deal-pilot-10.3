@@ -40,7 +40,7 @@ export function UpcomingMilestones({ milestones }: UpcomingMilestonesProps) {
   }
 
   return (
-    <Card className="bg-slate-900 border-slate-800">
+    <Card className="bg-slate-800 border-slate-700">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base flex items-center gap-2 text-white">
           <Calendar className="h-4 w-4" />

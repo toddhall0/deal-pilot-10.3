@@ -25,7 +25,7 @@ export function StatCard({
   trend,
 }: StatCardProps) {
   return (
-    <Card className="bg-slate-900 border-slate-800">
+    <Card className="bg-slate-800 border-slate-700">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -47,7 +47,7 @@ export function StatCard({
               </div>
             )}
           </div>
-          <div className={`p-3 rounded-lg bg-slate-800 ${iconColor}`}>
+          <div className={`p-3 rounded-lg bg-slate-700 ${iconColor}`}>
             <Icon className="h-6 w-6" />
           </div>
         </div>

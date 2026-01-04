@@ -40,7 +40,7 @@ export function StatusPieChart({ data, title = "Deals by Status" }: StatusPieCha
   const total = formattedData.reduce((sum, item) => sum + item.count, 0)
 
   return (
-    <Card className="bg-slate-900 border-slate-800">
+    <Card className="bg-slate-800 border-slate-700">
       <CardHeader>
         <CardTitle className="text-base text-white">{title}</CardTitle>
       </CardHeader>

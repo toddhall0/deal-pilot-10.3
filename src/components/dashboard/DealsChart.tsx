@@ -42,7 +42,7 @@ export function DealsChart({ data }: DealsChartProps) {
   }
 
   return (
-    <Card className="bg-slate-900 border-slate-800">
+    <Card className="bg-slate-800 border-slate-700">
       <CardHeader>
         <CardTitle className="text-base text-white">Deal Activity (Last 12 Months)</CardTitle>
       </CardHeader>
