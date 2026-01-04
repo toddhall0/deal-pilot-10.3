@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -44,6 +44,8 @@ const columnConfig = [
 export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
   const [completingTasks, setCompletingTasks] = useState<Set<string>>(new Set())
   const [hiddenTasks, setHiddenTasks] = useState<Set<string>>(new Set())
+  const timeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map())
+  const originalStatusRefs = useRef<Map<string, string>>(new Map())
 
   const priorityColors: Record<string, string> = {
     LOW: "bg-slate-500/20 text-slate-300",
@@ -72,8 +74,44 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
     return new Date(dueDate) < new Date()
   }
 
-  const handleCheck = async (taskId: string) => {
+  const handleCheck = async (taskId: string, currentStatus: string) => {
+    // If already completing, uncheck it (cancel completion)
+    if (completingTasks.has(taskId)) {
+      // Cancel the timeout
+      const timeout = timeoutRefs.current.get(taskId)
+      if (timeout) {
+        clearTimeout(timeout)
+        timeoutRefs.current.delete(taskId)
+      }
+
+      // Restore original status
+      const originalStatus = originalStatusRefs.current.get(taskId) || "IN_PROGRESS"
+      originalStatusRefs.current.delete(taskId)
+
+      // Remove from completing state
+      setCompletingTasks((prev) => {
+        const next = new Set(prev)
+        next.delete(taskId)
+        return next
+      })
+
+      // Restore status in database
+      try {
+        await fetch(`/api/tasks/${taskId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: originalStatus }),
+        })
+      } catch (error) {
+        console.error("Failed to restore task:", error)
+      }
+      return
+    }
+
     try {
+      // Store original status before completing
+      originalStatusRefs.current.set(taskId, currentStatus)
+
       // Mark as completing (starts fade animation)
       setCompletingTasks((prev) => new Set(prev).add(taskId))
 
@@ -85,7 +123,9 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
       })
 
       // After 5 seconds, hide the task and refresh the list
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
+        timeoutRefs.current.delete(taskId)
+        originalStatusRefs.current.delete(taskId)
         setHiddenTasks((prev) => new Set(prev).add(taskId))
         setCompletingTasks((prev) => {
           const next = new Set(prev)
@@ -94,8 +134,11 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
         })
         onTaskComplete?.(taskId)
       }, 5000)
+
+      timeoutRefs.current.set(taskId, timeout)
     } catch (error) {
       console.error("Failed to complete task:", error)
+      originalStatusRefs.current.delete(taskId)
       // Remove from completing state on error
       setCompletingTasks((prev) => {
         const next = new Set(prev)
@@ -190,8 +233,7 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                       <Checkbox
                         className="border-slate-600"
                         checked={completingTasks.has(task.id)}
-                        disabled={completingTasks.has(task.id)}
-                        onCheckedChange={() => handleCheck(task.id)}
+                        onCheckedChange={() => handleCheck(task.id, task.status)}
                       />
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
