@@ -210,10 +210,11 @@ export function OverviewTab({ deal }: OverviewTabProps) {
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 5)
 
-  // Calculate financial totals
-  const totalDeposits = financials?.deposits?.reduce((sum, d) => sum + (d.amount || 0), 0) || 0
-  const totalCredits = financials?.lineItems?.filter((l) => l.type === "CREDIT").reduce((sum, l) => sum + (l.amount || 0), 0) || 0
-  const totalDebits = financials?.lineItems?.filter((l) => l.type === "DEBIT").reduce((sum, l) => sum + (l.amount || 0), 0) || 0
+  // Calculate financial totals - convert Decimal to number
+  const totalDeposits = financials?.deposits?.reduce((sum, d) => sum + Number(d.amount || 0), 0) || 0
+  const totalCredits = financials?.lineItems?.filter((l) => l.type === "CREDIT").reduce((sum, l) => sum + Number(l.amount || 0), 0) || 0
+  const totalDebits = financials?.lineItems?.filter((l) => l.type === "DEBIT").reduce((sum, l) => sum + Number(l.amount || 0), 0) || 0
+  const contractPrice = Number(financials?.contractPrice || 0)
 
   const getDaysUntil = (dueDate: string) => {
     const now = new Date()
@@ -444,7 +445,7 @@ export function OverviewTab({ deal }: OverviewTabProps) {
             <div className="p-3 rounded-lg bg-slate-700/50">
               <p className="text-xs text-slate-400">Contract Price</p>
               <p className="text-lg font-bold text-white">
-                {financials?.contractPrice ? formatCurrency(financials.contractPrice) : "—"}
+                {contractPrice > 0 ? formatCurrency(contractPrice) : "—"}
               </p>
             </div>
             <div className="p-3 rounded-lg bg-slate-700/50">
@@ -466,12 +467,12 @@ export function OverviewTab({ deal }: OverviewTabProps) {
               </p>
             </div>
           </div>
-          {financials?.contractPrice && (
+          {contractPrice > 0 && (
             <div className="mt-4 p-3 rounded-lg bg-slate-700/30 border border-slate-600">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-400">Estimated Balance Due at Closing</span>
                 <span className="text-xl font-bold text-white">
-                  {formatCurrency(financials.contractPrice - totalDeposits - totalCredits + totalDebits)}
+                  {formatCurrency(contractPrice - totalDeposits - totalCredits + totalDebits)}
                 </span>
               </div>
             </div>
