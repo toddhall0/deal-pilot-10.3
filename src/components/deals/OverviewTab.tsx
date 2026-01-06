@@ -290,50 +290,71 @@ export function OverviewTab({ deal }: OverviewTabProps) {
               </Button>
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-0 pb-0">
             {activeTasks.length === 0 ? (
-              <div className="text-center py-4 text-slate-500">
+              <div className="text-center py-4 text-slate-500 px-6">
                 <CheckSquare className="h-8 w-8 mx-auto mb-2 text-slate-600" />
                 <p>No active tasks</p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {activeTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className={`flex items-center gap-3 p-2 rounded-lg hover:bg-slate-700/50 transition-colors ${
-                      isTaskCompleted(task) ? "opacity-50" : ""
-                    }`}
-                  >
-                    <div
-                      onClick={() => handleTaskCheck(task.id, task.status)}
-                      className="cursor-pointer"
-                    >
-                      <Checkbox
-                        className="border-slate-600 pointer-events-none"
-                        checked={isTaskCompleted(task)}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{task.title}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge className={`${priorityColors[task.priority]} text-xs`}>
-                          {task.priority}
-                        </Badge>
-                        <Badge className={`${statusColors[task.status]} text-xs`}>
-                          {task.status.replace(/_/g, " ")}
-                        </Badge>
-                      </div>
-                    </div>
-                    {task.dueDate && (
-                      <span className={`text-xs ${
-                        new Date(task.dueDate) < new Date() ? "text-red-400" : "text-slate-400"
-                      }`}>
-                        {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
-                      </span>
-                    )}
-                  </div>
-                ))}
+              <div className="overflow-x-auto">
+                <table className="min-w-full" style={{ tableLayout: "auto" }}>
+                  <thead>
+                    <tr className="border-b border-slate-700">
+                      <th className="px-2 py-2 w-8"></th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Task</th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Priority</th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Status</th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Due</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeTasks.map((task) => (
+                      <tr
+                        key={task.id}
+                        className={`border-b border-slate-700 last:border-b-0 hover:bg-slate-700/50 transition-colors ${
+                          isTaskCompleted(task) ? "opacity-50" : ""
+                        }`}
+                      >
+                        <td className="px-2 py-2 whitespace-nowrap">
+                          <div
+                            onClick={() => handleTaskCheck(task.id, task.status)}
+                            className="cursor-pointer"
+                          >
+                            <Checkbox
+                              className="border-slate-600 pointer-events-none"
+                              checked={isTaskCompleted(task)}
+                            />
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <span className="text-sm font-medium text-white">{task.title}</span>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <Badge className={`${priorityColors[task.priority]} text-xs`}>
+                            {task.priority}
+                          </Badge>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <Badge className={`${statusColors[task.status]} text-xs`}>
+                            {task.status.replace(/_/g, " ")}
+                          </Badge>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          {task.dueDate ? (
+                            <span className={`text-xs ${
+                              new Date(task.dueDate) < new Date() ? "text-red-400" : "text-slate-400"
+                            }`}>
+                              {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-500">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </CardContent>
