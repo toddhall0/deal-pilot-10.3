@@ -46,6 +46,7 @@ interface Deposit {
   id: string
   name: string
   amount: number
+  paidAmount: number | null
   status: string
 }
 
@@ -212,6 +213,12 @@ export function OverviewTab({ deal }: OverviewTabProps) {
 
   // Calculate financial totals - convert Decimal to number
   const totalDeposits = financials?.deposits?.reduce((sum, d) => sum + Number(d.amount || 0), 0) || 0
+  const depositsPaid = financials?.deposits
+    ?.filter((d) => d.status === "PAID" || d.status === "APPLIED_TO_PURCHASE")
+    .reduce((sum, d) => sum + Number(d.paidAmount || d.amount || 0), 0) || 0
+  const depositsScheduled = financials?.deposits
+    ?.filter((d) => d.status === "SCHEDULED" || d.status === "DUE")
+    .reduce((sum, d) => sum + Number(d.amount || 0), 0) || 0
   const totalCredits = financials?.lineItems?.filter((l) => l.type === "CREDIT").reduce((sum, l) => sum + Number(l.amount || 0), 0) || 0
   const totalDebits = financials?.lineItems?.filter((l) => l.type === "DEBIT").reduce((sum, l) => sum + Number(l.amount || 0), 0) || 0
   const contractPrice = Number(financials?.contractPrice || 0)
@@ -462,17 +469,11 @@ export function OverviewTab({ deal }: OverviewTabProps) {
           </Link>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="p-3 rounded-lg bg-slate-700/50">
               <p className="text-xs text-slate-400">Contract Price</p>
               <p className="text-lg font-bold text-white">
                 {contractPrice > 0 ? formatCurrency(contractPrice) : "—"}
-              </p>
-            </div>
-            <div className="p-3 rounded-lg bg-slate-700/50">
-              <p className="text-xs text-slate-400">Total Deposits</p>
-              <p className="text-lg font-bold text-green-400">
-                {totalDeposits > 0 ? formatCurrency(totalDeposits) : "—"}
               </p>
             </div>
             <div className="p-3 rounded-lg bg-slate-700/50">
@@ -488,12 +489,38 @@ export function OverviewTab({ deal }: OverviewTabProps) {
               </p>
             </div>
           </div>
+
+          {/* Deposits Breakdown */}
+          <div className="mt-4 p-3 rounded-lg bg-slate-700/30 border border-slate-600">
+            <p className="text-xs text-slate-400 mb-2">Earnest Money Deposits</p>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-xs text-slate-500">Total</p>
+                <p className="text-base font-bold text-white">
+                  {totalDeposits > 0 ? formatCurrency(totalDeposits) : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Paid</p>
+                <p className="text-base font-bold text-green-400">
+                  {depositsPaid > 0 ? formatCurrency(depositsPaid) : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Scheduled</p>
+                <p className="text-base font-bold text-yellow-400">
+                  {depositsScheduled > 0 ? formatCurrency(depositsScheduled) : "—"}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {contractPrice > 0 && (
             <div className="mt-4 p-3 rounded-lg bg-slate-700/30 border border-slate-600">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-400">Estimated Balance Due at Closing</span>
                 <span className="text-xl font-bold text-white">
-                  {formatCurrency(contractPrice - totalDeposits - totalCredits + totalDebits)}
+                  {formatCurrency(contractPrice - depositsPaid - totalCredits + totalDebits)}
                 </span>
               </div>
             </div>
