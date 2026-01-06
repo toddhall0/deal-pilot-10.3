@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TasksTab } from "@/components/deals/TasksTab"
 import { DocumentsTab } from "@/components/deals/DocumentsTab"
 import { NotesTab } from "@/components/deals/NotesTab"
+import { IssuesTab } from "@/components/deals/IssuesTab"
 import { TimelineTab } from "@/components/deals/TimelineTab"
 import { OverviewTab } from "@/components/deals/OverviewTab"
 import { FinancialsTab } from "@/components/deals/FinancialsTab"
@@ -34,6 +35,13 @@ async function getDeal(id: string) {
       },
       notes: {
         orderBy: { createdAt: "desc" },
+        take: 5,
+      },
+      issues: {
+        where: {
+          status: { in: ["OPEN", "IN_PROGRESS"] },
+        },
+        orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
         take: 5,
       },
       financials: {
@@ -94,6 +102,7 @@ export default async function DealDetailPage({
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
+          <TabsTrigger value="issues">Issues</TabsTrigger>
           <TabsTrigger value="financials">Financials</TabsTrigger>
         </TabsList>
 
@@ -115,6 +124,10 @@ export default async function DealDetailPage({
 
         <TabsContent value="notes" className="mt-6">
           <NotesTab dealId={deal.id} />
+        </TabsContent>
+
+        <TabsContent value="issues" className="mt-6">
+          <IssuesTab dealId={deal.id} />
         </TabsContent>
 
         <TabsContent value="financials" className="mt-6">

@@ -97,6 +97,20 @@ enum DepositStatus {
   FORFEITED
 }
 
+enum IssueStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 enum NotificationFrequency {
   REALTIME
   DAILY
@@ -130,6 +144,7 @@ model User {
   taskComments  TaskComment[]
   documents     Document[]
   notes         Note[]
+  issues        Issue[]
   preferences   UserPreferences?
   notifications Notification[]
 }
@@ -203,6 +218,7 @@ model Deal {
   tasks           Task[]
   documents       Document[]
   notes           Note[]
+  issues          Issue[]
   financials      DealFinancials?
 
   @@index([clientId])
@@ -488,6 +504,32 @@ model Note {
 
   @@index([dealId])
   @@index([authorId])
+}
+
+model Issue {
+  id          String        @id @default(cuid())
+
+  dealId      String
+  deal        Deal          @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  authorId    String
+  author      User          @relation(fields: [authorId], references: [id])
+
+  title       String
+  description String?       @db.Text
+
+  status      IssueStatus   @default(OPEN)
+  priority    IssuePriority @default(MEDIUM)
+
+  resolvedAt  DateTime?
+  resolvedById String?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([dealId])
+  @@index([authorId])
+  @@index([status])
 }
 
 model DealFinancials {

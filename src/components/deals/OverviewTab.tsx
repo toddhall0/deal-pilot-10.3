@@ -42,6 +42,15 @@ interface Milestone {
   status: string
 }
 
+interface Issue {
+  id: string
+  title: string
+  description: string | null
+  status: string
+  priority: string
+  createdAt: string
+}
+
 interface Deposit {
   id: string
   name: string
@@ -92,6 +101,7 @@ interface Deal {
   unitCount?: number | null
   documents?: Document[]
   tasks?: Task[]
+  issues?: Issue[]
   timeline?: Timeline | null
   transactionSummary?: TransactionSummaryData | null
 }
@@ -189,6 +199,20 @@ export function OverviewTab({ deal }: OverviewTabProps) {
     COMPLETED: "bg-green-500/20 text-green-400",
   }
 
+  const issuePriorityColors: Record<string, string> = {
+    LOW: "bg-slate-500/20 text-slate-300",
+    MEDIUM: "bg-blue-500/20 text-blue-400",
+    HIGH: "bg-orange-500/20 text-orange-400",
+    CRITICAL: "bg-red-500/20 text-red-400",
+  }
+
+  const issueStatusColors: Record<string, string> = {
+    OPEN: "bg-red-500/20 text-red-400",
+    IN_PROGRESS: "bg-yellow-500/20 text-yellow-400",
+    RESOLVED: "bg-green-500/20 text-green-400",
+    CLOSED: "bg-slate-500/20 text-slate-400",
+  }
+
   const stats = {
     tasks: deal.tasks?.length || 0,
     completedTasks: deal.tasks?.filter((t: Task) => t.status === "COMPLETED").length || 0,
@@ -198,6 +222,9 @@ export function OverviewTab({ deal }: OverviewTabProps) {
 
   // Get active tasks (not completed)
   const activeTasks = (deal.tasks || []).filter((t) => t.status !== "COMPLETED").slice(0, 5)
+
+  // Get open issues
+  const openIssues = (deal.issues || []).filter((i) => i.status === "OPEN" || i.status === "IN_PROGRESS")
 
   // Get upcoming milestones (next 7 days, not completed)
   const upcomingMilestones = (deal.timeline?.milestones || [])
@@ -453,6 +480,62 @@ export function OverviewTab({ deal }: OverviewTabProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Issues to Resolve */}
+      {openIssues.length > 0 && (
+        <Card className="bg-slate-800 border-slate-700 border-l-4 border-l-red-500">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-base font-medium flex items-center gap-2 text-white">
+              <AlertTriangle className="h-5 w-5 text-red-400" />
+              Issues to Resolve
+              <Badge className="bg-red-500/20 text-red-400 ml-2">
+                {openIssues.length}
+              </Badge>
+            </CardTitle>
+            <Link href={`/deals/${deal.id}?tab=issues`}>
+              <Button variant="ghost" size="sm" className="text-sm text-slate-400 hover:text-white">
+                View All
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {openIssues.map((issue) => (
+                <div
+                  key={issue.id}
+                  className={`p-3 rounded-lg border transition-colors ${
+                    issue.priority === "CRITICAL"
+                      ? "border-red-500/50 bg-red-500/10"
+                      : issue.priority === "HIGH"
+                      ? "border-orange-500/50 bg-orange-500/10"
+                      : "border-slate-700 hover:bg-slate-700/50"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium text-sm text-white">{issue.title}</p>
+                        <Badge className={issuePriorityColors[issue.priority]}>
+                          {issue.priority}
+                        </Badge>
+                        <Badge className={issueStatusColors[issue.status]}>
+                          {issue.status.replace(/_/g, " ")}
+                        </Badge>
+                      </div>
+                      {issue.description && (
+                        <p className="text-xs text-slate-400 mt-1 line-clamp-1">
+                          {issue.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Financial Summary */}
       <Card className="bg-slate-800 border-slate-700">
