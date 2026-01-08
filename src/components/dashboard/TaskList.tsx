@@ -239,9 +239,11 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
                       {task.issue ? (
-                        <Badge className="bg-red-500/20 text-red-400 text-xs truncate max-w-[90px]" title={task.issue.title}>
-                          {task.issue.title}
-                        </Badge>
+                        <Link href={`/deals/${task.deal.id}?tab=issues`}>
+                          <Badge className="bg-red-500/20 text-red-400 text-xs truncate max-w-[90px] cursor-pointer hover:bg-red-500/30" title={task.issue.title}>
+                            {task.issue.title}
+                          </Badge>
+                        </Link>
                       ) : (
                         <span className="text-xs text-slate-500">—</span>
                       )}

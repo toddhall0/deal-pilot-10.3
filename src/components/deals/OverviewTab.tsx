@@ -398,7 +398,9 @@ export function OverviewTab({ deal }: OverviewTabProps) {
                           </div>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap">
-                          <span className="text-sm font-medium text-white">{task.title}</span>
+                          <Link href={`/tasks/${task.id}`} className="text-sm font-medium text-white hover:underline">
+                            {task.title}
+                          </Link>
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap">
                           <Badge className={`${priorityColors[task.priority]} text-xs`}>
@@ -412,9 +414,11 @@ export function OverviewTab({ deal }: OverviewTabProps) {
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap">
                           {task.issue ? (
-                            <Badge className="bg-red-500/20 text-red-400 text-xs truncate max-w-[90px]" title={task.issue.title}>
-                              {task.issue.title}
-                            </Badge>
+                            <Link href={`/deals/${deal.id}?tab=issues`}>
+                              <Badge className="bg-red-500/20 text-red-400 text-xs truncate max-w-[90px] cursor-pointer hover:bg-red-500/30" title={task.issue.title}>
+                                {task.issue.title}
+                              </Badge>
+                            </Link>
                           ) : (
                             <span className="text-xs text-slate-500">—</span>
                           )}
