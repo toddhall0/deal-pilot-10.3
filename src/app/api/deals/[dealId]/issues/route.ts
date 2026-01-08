@@ -29,7 +29,12 @@ export async function GET(
     const where: Record<string, unknown> = { dealId }
 
     if (status && status !== "ALL") {
-      where.status = status
+      const statusValues = status.split(",").map(s => s.trim())
+      if (statusValues.length === 1) {
+        where.status = statusValues[0]
+      } else {
+        where.status = { in: statusValues }
+      }
     }
 
     if (priority && priority !== "ALL") {
