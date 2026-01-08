@@ -353,6 +353,9 @@ model Task {
   milestoneId     String?
   milestone       Milestone?    @relation(fields: [milestoneId], references: [id])
 
+  issueId         String?
+  issue           Issue?        @relation(fields: [issueId], references: [id], onDelete: SetNull)
+
   parentId        String?
   parent          Task?         @relation("TaskHierarchy", fields: [parentId], references: [id])
   subtasks        Task[]        @relation("TaskHierarchy")
@@ -390,6 +393,7 @@ model Task {
   @@index([assigneeId])
   @@index([status])
   @@index([dueDate])
+  @@index([issueId])
 }
 
 model TaskComment {
@@ -523,6 +527,8 @@ model Issue {
 
   resolvedAt  DateTime?
   resolvedById String?
+
+  tasks       Task[]
 
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt

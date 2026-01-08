@@ -12,6 +12,7 @@ const updateTaskSchema = z.object({
   startDate: z.string().optional().nullable(),
   dueDate: z.string().optional().nullable(),
   assigneeId: z.string().optional().nullable(),
+  issueId: z.string().optional().nullable(),
 })
 
 export async function GET(
@@ -37,6 +38,9 @@ export async function GET(
         },
         createdBy: {
           select: { id: true, name: true, email: true },
+        },
+        issue: {
+          select: { id: true, title: true, status: true, priority: true },
         },
         subtasks: {
           include: {
@@ -124,6 +128,9 @@ export async function PATCH(
         },
         createdBy: {
           select: { id: true, name: true, email: true },
+        },
+        issue: {
+          select: { id: true, title: true, status: true, priority: true },
         },
         _count: {
           select: { comments: true, documents: true },

@@ -16,6 +16,7 @@ const createTaskSchema = z.object({
   milestoneId: z.string().optional(),
   parentId: z.string().optional(),
   taskListId: z.string().optional().nullable(),
+  issueId: z.string().optional().nullable(),
 })
 
 export async function GET(

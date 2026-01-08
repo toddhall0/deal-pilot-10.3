@@ -80,6 +80,13 @@ interface TeamMember {
   email: string
 }
 
+interface Issue {
+  id: string
+  title: string
+  status: string
+  priority: string
+}
+
 interface TasksTabProps {
   dealId: string
 }
@@ -111,6 +118,7 @@ export function TasksTab({ dealId }: TasksTabProps) {
   const [uncategorizedTasks, setUncategorizedTasks] = useState<Task[]>([])
   const [collapsedLists, setCollapsedLists] = useState<Set<string>>(new Set())
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [issues, setIssues] = useState<Issue[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   // Task dialog state
@@ -122,6 +130,7 @@ export function TasksTab({ dealId }: TasksTabProps) {
     status: "TODO",
     priority: "MEDIUM",
     assigneeId: "",
+    issueId: "",
   })
   const [startDate, setStartDate] = useState<Date | undefined>(undefined)
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
@@ -137,6 +146,7 @@ export function TasksTab({ dealId }: TasksTabProps) {
   useEffect(() => {
     fetchTaskLists()
     fetchTeamMembers()
+    fetchIssues()
   }, [dealId])
 
   async function fetchTaskLists() {
@@ -164,12 +174,25 @@ export function TasksTab({ dealId }: TasksTabProps) {
     }
   }
 
+  async function fetchIssues() {
+    try {
+      const response = await fetch(`/api/deals/${dealId}/issues?status=OPEN,IN_PROGRESS`)
+      if (response.ok) {
+        const data = await response.json()
+        setIssues(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch issues:", error)
+    }
+  }
+
   async function handleCreateTask(e: React.FormEvent) {
     e.preventDefault()
     try {
       const taskData = {
         ...newTask,
         assigneeId: newTask.assigneeId || undefined,
+        issueId: newTask.issueId || undefined,
         taskListId: selectedTaskListId,
         startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
         dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : undefined,
@@ -197,6 +220,7 @@ export function TasksTab({ dealId }: TasksTabProps) {
       status: "TODO",
       priority: "MEDIUM",
       assigneeId: "",
+      issueId: "",
     })
     setStartDate(undefined)
     setDueDate(undefined)
@@ -759,6 +783,36 @@ export function TasksTab({ dealId }: TasksTabProps) {
                 </SelectContent>
               </Select>
             </div>
+            {issues.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-slate-300">Related Issue</Label>
+                <Select
+                  value={newTask.issueId}
+                  onValueChange={(value) => setNewTask({ ...newTask, issueId: value === "none" ? "" : value })}
+                >
+                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                    <SelectValue placeholder="Link to issue (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No linked issue</SelectItem>
+                    {issues.map((issue) => (
+                      <SelectItem key={issue.id} value={issue.id}>
+                        <div className="flex items-center gap-2">
+                          <Badge className={`text-xs ${
+                            issue.priority === "CRITICAL" ? "bg-red-500/20 text-red-400" :
+                            issue.priority === "HIGH" ? "bg-orange-500/20 text-orange-400" :
+                            "bg-blue-500/20 text-blue-400"
+                          }`}>
+                            {issue.priority}
+                          </Badge>
+                          <span className="truncate">{issue.title}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-slate-300">Status</Label>
