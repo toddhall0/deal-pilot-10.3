@@ -33,6 +33,12 @@ interface Task {
   status: string
   priority: string
   dueDate: string | null
+  issue?: {
+    id: string
+    title: string
+    status: string
+    priority: string
+  } | null
 }
 
 interface Milestone {
@@ -339,6 +345,7 @@ export function OverviewTab({ deal }: OverviewTabProps) {
                       <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Task</th>
                       <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Priority</th>
                       <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Status</th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Issue</th>
                       <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Due</th>
                     </tr>
                   </thead>
@@ -373,6 +380,15 @@ export function OverviewTab({ deal }: OverviewTabProps) {
                           <Badge className={`${statusColors[task.status]} text-xs`}>
                             {task.status.replace(/_/g, " ")}
                           </Badge>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          {task.issue ? (
+                            <Badge className="bg-red-500/20 text-red-400 text-xs truncate max-w-[90px]" title={task.issue.title}>
+                              {task.issue.title}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-slate-500">—</span>
+                          )}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap">
                           {task.dueDate ? (

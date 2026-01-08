@@ -49,6 +49,23 @@ export async function GET(request: NextRequest) {
         author: {
           select: { id: true, name: true, email: true },
         },
+        tasks: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            priority: true,
+            dueDate: true,
+          },
+          where: {
+            status: { notIn: ["COMPLETED", "CANCELLED"] },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        },
+        _count: {
+          select: { tasks: true },
+        },
       },
       orderBy: [
         { priority: "desc" }, // CRITICAL first

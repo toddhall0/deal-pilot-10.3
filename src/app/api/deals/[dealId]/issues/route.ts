@@ -47,6 +47,19 @@ export async function GET(
         author: {
           select: { id: true, name: true },
         },
+        tasks: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            priority: true,
+            dueDate: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        _count: {
+          select: { tasks: true },
+        },
       },
       orderBy: [
         { status: "asc" },

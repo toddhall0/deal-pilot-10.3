@@ -52,6 +52,9 @@ export async function GET(request: NextRequest) {
         taskList: {
           select: { id: true, name: true, color: true },
         },
+        issue: {
+          select: { id: true, title: true, status: true, priority: true },
+        },
         _count: {
           select: { comments: true, documents: true },
         },

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -37,6 +38,14 @@ import {
   XCircle,
 } from "lucide-react"
 
+interface Task {
+  id: string
+  title: string
+  status: string
+  priority: string
+  dueDate: string | null
+}
+
 interface Issue {
   id: string
   title: string
@@ -47,6 +56,8 @@ interface Issue {
   resolvedAt: string | null
   createdAt: string
   updatedAt: string
+  tasks?: Task[]
+  _count?: { tasks: number }
 }
 
 interface IssuesTabProps {
@@ -276,7 +287,39 @@ export function IssuesTab({ dealId }: IssuesTabProps) {
                           </p>
                         )}
 
-                        <p className="text-xs text-slate-400">
+                        {/* Assigned Tasks */}
+                        {issue.tasks && issue.tasks.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-slate-700">
+                            <p className="text-xs text-slate-500 mb-1">
+                              Assigned Tasks ({issue._count?.tasks || issue.tasks.length})
+                            </p>
+                            <div className="space-y-1">
+                              {issue.tasks.slice(0, 3).map((task) => (
+                                <Link
+                                  key={task.id}
+                                  href={`/tasks/${task.id}`}
+                                  className="flex items-center gap-2 text-xs text-slate-300 hover:text-blue-400"
+                                >
+                                  <Badge className={`text-xs py-0 ${
+                                    task.status === "IN_PROGRESS" ? "bg-blue-500/20 text-blue-400" :
+                                    task.status === "BLOCKED" ? "bg-red-500/20 text-red-400" :
+                                    "bg-slate-500/20 text-slate-400"
+                                  }`}>
+                                    {task.status.replace(/_/g, " ")}
+                                  </Badge>
+                                  <span className="truncate">{task.title}</span>
+                                </Link>
+                              ))}
+                              {(issue._count?.tasks || issue.tasks.length) > 3 && (
+                                <p className="text-xs text-slate-500">
+                                  +{(issue._count?.tasks || issue.tasks.length) - 3} more
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <p className="text-xs text-slate-400 mt-2">
                           {issue.author.name} • {formatDate(issue.createdAt)}
                           {issue.resolvedAt && ` • Resolved ${formatDate(issue.resolvedAt)}`}
                         </p>

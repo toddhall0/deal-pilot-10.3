@@ -7,8 +7,15 @@ import { Button } from "@/components/ui/button"
 import {
   AlertTriangle,
   ArrowRight,
+  CheckSquare,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
+
+interface Task {
+  id: string
+  title: string
+  status: string
+}
 
 interface Issue {
   id: string
@@ -22,6 +29,8 @@ interface Issue {
     name: string
     dealNumber: string
   }
+  tasks?: Task[]
+  _count?: { tasks: number }
 }
 
 interface IssuesListProps {
@@ -85,6 +94,9 @@ export function IssuesList({ issues }: IssuesListProps) {
                     Status
                   </th>
                   <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">
+                    Tasks
+                  </th>
+                  <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">
                     Deal
                   </th>
                   <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">
@@ -120,6 +132,16 @@ export function IssuesList({ issues }: IssuesListProps) {
                       <Badge className={`${statusColors[issue.status]} text-xs`}>
                         {formatStatus(issue.status)}
                       </Badge>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      {(issue._count?.tasks || issue.tasks?.length) ? (
+                        <div className="flex items-center gap-1 text-xs text-slate-400">
+                          <CheckSquare className="h-3 w-3" />
+                          {issue._count?.tasks || issue.tasks?.length}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-500">—</span>
+                      )}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
                       <Link

@@ -61,6 +61,18 @@ interface Task {
     name: string
     dealNumber: string
   }
+  issue?: {
+    id: string
+    title: string
+    status: string
+    priority: string
+  } | null
+}
+
+interface IssueTask {
+  id: string
+  title: string
+  status: string
 }
 
 interface Issue {
@@ -75,6 +87,8 @@ interface Issue {
     name: string
     dealNumber: string
   }
+  tasks?: IssueTask[]
+  _count?: { tasks: number }
 }
 
 export function DashboardContent() {

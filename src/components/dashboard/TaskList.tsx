@@ -25,6 +25,12 @@ interface Task {
     name: string
     dealNumber: string
   }
+  issue?: {
+    id: string
+    title: string
+    status: string
+    priority: string
+  } | null
 }
 
 interface TaskListProps {
@@ -34,11 +40,12 @@ interface TaskListProps {
 
 const columnConfig = [
   { key: "checkbox", initialWidth: 36, minWidth: 36 },
-  { key: "task", initialWidth: 180, minWidth: 100 },
+  { key: "task", initialWidth: 160, minWidth: 100 },
   { key: "priority", initialWidth: 70, minWidth: 60 },
   { key: "status", initialWidth: 85, minWidth: 70 },
+  { key: "issue", initialWidth: 100, minWidth: 70 },
   { key: "deal", initialWidth: 80, minWidth: 60 },
-  { key: "due", initialWidth: 100, minWidth: 70 },
+  { key: "due", initialWidth: 90, minWidth: 70 },
 ]
 
 export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
@@ -167,6 +174,13 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                   </th>
                   <th
                     className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
+                    style={{ minWidth: getColumnWidth("issue") }}
+                  >
+                    Issue
+                    <ResizeHandle columnKey="issue" />
+                  </th>
+                  <th
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
                     style={{ minWidth: getColumnWidth("deal") }}
                   >
                     Deal
@@ -222,6 +236,15 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                       <Badge className={`${statusColors[task.status]} text-xs`}>
                         {formatStatus(task.status)}
                       </Badge>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      {task.issue ? (
+                        <Badge className="bg-red-500/20 text-red-400 text-xs truncate max-w-[90px]" title={task.issue.title}>
+                          {task.issue.title}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-slate-500">—</span>
+                      )}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
                       <Link

@@ -26,6 +26,11 @@ async function getDeal(id: string) {
         },
       },
       tasks: {
+        include: {
+          issue: {
+            select: { id: true, title: true, status: true, priority: true },
+          },
+        },
         orderBy: { createdAt: "desc" },
         take: 5,
       },
