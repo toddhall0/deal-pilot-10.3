@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { TransactionSummary } from "@/components/analysis/TransactionSummary"
 import { AnalyzeButton } from "@/components/analysis/AnalyzeButton"
+import { useResizableColumns } from "@/hooks/useResizableColumns"
 import {
   Building,
   FileText,
@@ -116,11 +117,22 @@ interface OverviewTabProps {
   deal: Deal
 }
 
+const taskColumnConfig = [
+  { key: "checkbox", initialWidth: 36, minWidth: 36 },
+  { key: "task", initialWidth: 150, minWidth: 100 },
+  { key: "priority", initialWidth: 70, minWidth: 60 },
+  { key: "status", initialWidth: 85, minWidth: 70 },
+  { key: "issue", initialWidth: 100, minWidth: 70 },
+  { key: "due", initialWidth: 90, minWidth: 70 },
+]
+
 export function OverviewTab({ deal }: OverviewTabProps) {
   const [summary, setSummary] = useState(deal.transactionSummary)
   const [primaryContract, setPrimaryContract] = useState<Document | null>(null)
   const [financials, setFinancials] = useState<Financials | null>(null)
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set())
+
+  const { getColumnWidth, ResizeHandle } = useResizableColumns(taskColumnConfig, `deal-overview-tasks-${deal.id}`)
 
   useEffect(() => {
     // Find primary contract document
@@ -337,16 +349,33 @@ export function OverviewTab({ deal }: OverviewTabProps) {
                 <p>No active tasks</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full" style={{ tableLayout: "auto" }}>
-                  <thead>
+              <div className="overflow-auto max-h-[300px]">
+                <table className="min-w-full" style={{ tableLayout: "fixed" }}>
+                  <thead className="sticky top-0 bg-slate-800 z-10">
                     <tr className="border-b border-slate-700">
-                      <th className="px-2 py-2 w-8"></th>
-                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Task</th>
-                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Priority</th>
-                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Status</th>
-                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Issue</th>
-                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">Due</th>
+                      <th className="px-2 py-2 relative group" style={{ width: getColumnWidth("checkbox") }}>
+                        <ResizeHandle columnKey="checkbox" />
+                      </th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap relative group" style={{ width: getColumnWidth("task") }}>
+                        Task
+                        <ResizeHandle columnKey="task" />
+                      </th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap relative group" style={{ width: getColumnWidth("priority") }}>
+                        Priority
+                        <ResizeHandle columnKey="priority" />
+                      </th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap relative group" style={{ width: getColumnWidth("status") }}>
+                        Status
+                        <ResizeHandle columnKey="status" />
+                      </th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap relative group" style={{ width: getColumnWidth("issue") }}>
+                        Issue
+                        <ResizeHandle columnKey="issue" />
+                      </th>
+                      <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap relative group" style={{ width: getColumnWidth("due") }}>
+                        Due
+                        <ResizeHandle columnKey="due" />
+                      </th>
                     </tr>
                   </thead>
                   <tbody>

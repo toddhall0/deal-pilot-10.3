@@ -141,10 +141,10 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
             <p>No pending tasks</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full" style={{ tableLayout: "auto" }}>
-              <thead>
-                <tr className="border-b border-slate-800">
+          <div className="overflow-auto max-h-[400px]">
+            <table className="min-w-full" style={{ tableLayout: "fixed" }}>
+              <thead className="sticky top-0 bg-slate-800 z-10">
+                <tr className="border-b border-slate-700">
                   <th
                     className="px-2 py-2 relative group whitespace-nowrap"
                     style={{ width: getColumnWidth("checkbox") }}
@@ -153,42 +153,42 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                   </th>
                   <th
                     className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
-                    style={{ minWidth: getColumnWidth("task") }}
+                    style={{ width: getColumnWidth("task") }}
                   >
                     Task
                     <ResizeHandle columnKey="task" />
                   </th>
                   <th
                     className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
-                    style={{ minWidth: getColumnWidth("priority") }}
+                    style={{ width: getColumnWidth("priority") }}
                   >
                     Priority
                     <ResizeHandle columnKey="priority" />
                   </th>
                   <th
                     className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
-                    style={{ minWidth: getColumnWidth("status") }}
+                    style={{ width: getColumnWidth("status") }}
                   >
                     Status
                     <ResizeHandle columnKey="status" />
                   </th>
                   <th
                     className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
-                    style={{ minWidth: getColumnWidth("issue") }}
+                    style={{ width: getColumnWidth("issue") }}
                   >
                     Issue
                     <ResizeHandle columnKey="issue" />
                   </th>
                   <th
                     className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
-                    style={{ minWidth: getColumnWidth("deal") }}
+                    style={{ width: getColumnWidth("deal") }}
                   >
                     Deal
                     <ResizeHandle columnKey="deal" />
                   </th>
                   <th
                     className="text-left text-xs font-medium text-slate-400 px-3 py-2 relative group whitespace-nowrap"
-                    style={{ minWidth: getColumnWidth("due") }}
+                    style={{ width: getColumnWidth("due") }}
                   >
                     Due
                     <ResizeHandle columnKey="due" />

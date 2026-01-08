@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useResizableColumns } from "@/hooks/useResizableColumns"
 import {
   AlertTriangle,
   ArrowRight,
@@ -37,7 +38,18 @@ interface IssuesListProps {
   issues: Issue[]
 }
 
+const columnConfig = [
+  { key: "issue", initialWidth: 160, minWidth: 100 },
+  { key: "priority", initialWidth: 70, minWidth: 60 },
+  { key: "status", initialWidth: 85, minWidth: 70 },
+  { key: "tasks", initialWidth: 50, minWidth: 40 },
+  { key: "deal", initialWidth: 80, minWidth: 60 },
+  { key: "created", initialWidth: 90, minWidth: 70 },
+]
+
 export function IssuesList({ issues }: IssuesListProps) {
+  const { getColumnWidth, ResizeHandle } = useResizableColumns(columnConfig, "dashboard-issues")
+
   const priorityColors: Record<string, string> = {
     LOW: "bg-slate-500/20 text-slate-300",
     MEDIUM: "bg-blue-500/20 text-blue-400",
@@ -80,27 +92,51 @@ export function IssuesList({ issues }: IssuesListProps) {
             <p>No open issues</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full" style={{ tableLayout: "auto" }}>
-              <thead>
-                <tr className="border-b border-slate-800">
-                  <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">
+          <div className="overflow-auto max-h-[400px]">
+            <table className="min-w-full" style={{ tableLayout: "fixed" }}>
+              <thead className="sticky top-0 bg-slate-800 z-10">
+                <tr className="border-b border-slate-700">
+                  <th
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap relative group"
+                    style={{ width: getColumnWidth("issue") }}
+                  >
                     Issue
+                    <ResizeHandle columnKey="issue" />
                   </th>
-                  <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">
+                  <th
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap relative group"
+                    style={{ width: getColumnWidth("priority") }}
+                  >
                     Priority
+                    <ResizeHandle columnKey="priority" />
                   </th>
-                  <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">
+                  <th
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap relative group"
+                    style={{ width: getColumnWidth("status") }}
+                  >
                     Status
+                    <ResizeHandle columnKey="status" />
                   </th>
-                  <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">
+                  <th
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap relative group"
+                    style={{ width: getColumnWidth("tasks") }}
+                  >
                     Tasks
+                    <ResizeHandle columnKey="tasks" />
                   </th>
-                  <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">
+                  <th
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap relative group"
+                    style={{ width: getColumnWidth("deal") }}
+                  >
                     Deal
+                    <ResizeHandle columnKey="deal" />
                   </th>
-                  <th className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap">
+                  <th
+                    className="text-left text-xs font-medium text-slate-400 px-3 py-2 whitespace-nowrap relative group"
+                    style={{ width: getColumnWidth("created") }}
+                  >
                     Created
+                    <ResizeHandle columnKey="created" />
                   </th>
                 </tr>
               </thead>
