@@ -6,11 +6,13 @@ import { DealsChart } from "./DealsChart"
 import { StatusPieChart } from "./StatusPieChart"
 import { UpcomingMilestones } from "./UpcomingMilestones"
 import { TaskList } from "./TaskList"
+import { IssuesList } from "./IssuesList"
 import {
   CheckSquare,
   AlertTriangle,
   Calendar,
   Clock,
+  CircleAlert,
 } from "lucide-react"
 
 interface DealsByStatus {
@@ -61,9 +63,24 @@ interface Task {
   }
 }
 
+interface Issue {
+  id: string
+  title: string
+  description: string | null
+  status: string
+  priority: string
+  createdAt: string
+  deal: {
+    id: string
+    name: string
+    dealNumber: string
+  }
+}
+
 export function DashboardContent() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
+  const [issues, setIssues] = useState<Issue[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchTasks = useCallback(async () => {
@@ -75,6 +92,18 @@ export function DashboardContent() {
       }
     } catch (error) {
       console.error("Failed to fetch tasks:", error)
+    }
+  }, [])
+
+  const fetchIssues = useCallback(async () => {
+    try {
+      const res = await fetch("/api/issues?status=OPEN,IN_PROGRESS&limit=10")
+      if (res.ok) {
+        const data = await res.json()
+        setIssues(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch issues:", error)
     }
   }, [])
 
@@ -93,7 +122,8 @@ export function DashboardContent() {
 
     fetchData()
     fetchTasks()
-  }, [fetchTasks])
+    fetchIssues()
+  }, [fetchTasks, fetchIssues])
 
   if (isLoading) {
     return (
@@ -140,19 +170,22 @@ export function DashboardContent() {
           iconColor="text-yellow-400"
         />
         <StatCard
-          title="Upcoming Milestones"
-          value={stats?.upcomingMilestones?.length || 0}
-          subtitle="Key dates this week"
-          icon={Calendar}
-          iconColor="text-blue-400"
+          title="Open Issues"
+          value={issues.length}
+          subtitle="Issues to resolve"
+          icon={CircleAlert}
+          iconColor="text-red-400"
         />
       </div>
 
-      {/* Main Content - Tasks and Milestones Side by Side */}
+      {/* Main Content - Tasks, Issues, and Milestones */}
       <div className="grid gap-6 lg:grid-cols-2">
         <TaskList tasks={tasks} onTaskComplete={fetchTasks} />
-        <UpcomingMilestones milestones={stats?.upcomingMilestones || []} />
+        <IssuesList issues={issues} />
       </div>
+
+      {/* Milestones */}
+      <UpcomingMilestones milestones={stats?.upcomingMilestones || []} />
 
       {/* Charts - Secondary */}
       <div className="grid gap-6 lg:grid-cols-3">

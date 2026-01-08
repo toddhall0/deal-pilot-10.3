@@ -482,24 +482,31 @@ export function OverviewTab({ deal }: OverviewTabProps) {
       </div>
 
       {/* Issues to Resolve */}
-      {openIssues.length > 0 && (
-        <Card className="bg-slate-800 border-slate-700 border-l-4 border-l-red-500">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-medium flex items-center gap-2 text-white">
-              <AlertTriangle className="h-5 w-5 text-red-400" />
-              Issues to Resolve
+      <Card className="bg-slate-800 border-slate-700 border-l-4 border-l-red-500">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-base font-medium flex items-center gap-2 text-white">
+            <AlertTriangle className="h-5 w-5 text-red-400" />
+            Open Issues
+            {openIssues.length > 0 && (
               <Badge className="bg-red-500/20 text-red-400 ml-2">
                 {openIssues.length}
               </Badge>
-            </CardTitle>
-            <Link href={`/deals/${deal.id}?tab=issues`}>
-              <Button variant="ghost" size="sm" className="text-sm text-slate-400 hover:text-white">
-                View All
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
+            )}
+          </CardTitle>
+          <Link href={`/deals/${deal.id}?tab=issues`}>
+            <Button variant="ghost" size="sm" className="text-sm text-slate-400 hover:text-white">
+              View All
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          </Link>
+        </CardHeader>
+        <CardContent>
+          {openIssues.length === 0 ? (
+            <div className="text-center py-4 text-slate-500">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-slate-600" />
+              <p>No open issues</p>
+            </div>
+          ) : (
             <div className="space-y-2">
               {openIssues.map((issue) => (
                 <div
@@ -533,9 +540,9 @@ export function OverviewTab({ deal }: OverviewTabProps) {
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
       {/* Financial Summary */}
       <Card className="bg-slate-800 border-slate-700">
