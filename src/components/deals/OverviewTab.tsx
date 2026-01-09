@@ -414,7 +414,7 @@ export function OverviewTab({ deal }: OverviewTabProps) {
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap">
                           {task.issue ? (
-                            <Link href={`/deals/${deal.id}?tab=issues`}>
+                            <Link href={`/issues/${task.issue.id}`}>
                               <Badge className="bg-red-500/20 text-red-400 text-xs truncate max-w-[90px] cursor-pointer hover:bg-red-500/30" title={task.issue.title}>
                                 {task.issue.title}
                               </Badge>
