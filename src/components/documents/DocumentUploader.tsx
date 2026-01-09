@@ -17,7 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Upload, X, FileIcon, Loader2 } from "lucide-react"
+import { Upload, X, FileIcon, Loader2, AlertCircle } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 interface DocumentUploaderProps {
   dealId: string
@@ -51,7 +52,9 @@ export function DocumentUploader({
   const [description, setDescription] = useState("")
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
+  const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { toast } = useToast()
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -80,6 +83,9 @@ export function DocumentUploader({
     if (files.length === 0) return
 
     setIsUploading(true)
+    setUploadErrors({})
+    let successCount = 0
+    let failCount = 0
 
     for (const file of files) {
       try {
@@ -97,21 +103,48 @@ export function DocumentUploader({
 
         if (response.ok) {
           setUploadProgress((prev) => ({ ...prev, [file.name]: 100 }))
+          successCount++
         } else {
-          const error = await response.json()
-          console.error(`Failed to upload ${file.name}:`, error)
+          const errorData = await response.json()
+          const errorMsg = errorData.error || "Upload failed"
+          console.error(`Failed to upload ${file.name}:`, errorData)
+          setUploadErrors((prev) => ({ ...prev, [file.name]: errorMsg }))
+          failCount++
+          toast({
+            title: "Upload failed",
+            description: `${file.name}: ${errorMsg}`,
+            variant: "destructive",
+          })
         }
       } catch (error) {
         console.error(`Failed to upload ${file.name}:`, error)
+        const errorMsg = error instanceof Error ? error.message : "Network error"
+        setUploadErrors((prev) => ({ ...prev, [file.name]: errorMsg }))
+        failCount++
+        toast({
+          title: "Upload failed",
+          description: `${file.name}: ${errorMsg}`,
+          variant: "destructive",
+        })
       }
     }
 
     setIsUploading(false)
-    setFiles([])
-    setDescription("")
-    setUploadProgress({})
-    onUploadComplete()
-    onClose()
+
+    if (successCount > 0) {
+      toast({
+        title: "Upload complete",
+        description: `${successCount} file(s) uploaded successfully${failCount > 0 ? `, ${failCount} failed` : ""}`,
+      })
+      onUploadComplete()
+    }
+
+    if (failCount === 0) {
+      setFiles([])
+      setDescription("")
+      setUploadProgress({})
+      onClose()
+    }
   }
 
   const formatFileSize = (bytes: number) => {
@@ -171,7 +204,12 @@ export function DocumentUploader({
                         {formatFileSize(file.size)}
                       </span>
                     </div>
-                    {uploadProgress[file.name] !== undefined ? (
+                    {uploadErrors[file.name] ? (
+                      <div className="flex items-center gap-1 text-red-500">
+                        <AlertCircle className="h-4 w-4" />
+                        <span className="text-xs">{uploadErrors[file.name]}</span>
+                      </div>
+                    ) : uploadProgress[file.name] !== undefined ? (
                       <span className="text-xs text-green-600">
                         {uploadProgress[file.name]}%
                       </span>

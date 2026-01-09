@@ -144,8 +144,26 @@ export async function POST(
     )
   } catch (error) {
     console.error("Error uploading document:", error)
+
+    // Provide more specific error messages
+    let errorMessage = "Failed to upload document"
+    if (error instanceof Error) {
+      const msg = error.message.toLowerCase()
+      if (msg.includes("credentials") || msg.includes("accessdenied") || msg.includes("invalidaccesskeyid")) {
+        errorMessage = "Storage service credentials are invalid or missing"
+      } else if (msg.includes("nosuchbucket")) {
+        errorMessage = "Storage bucket not found - check S3_BUCKET_NAME configuration"
+      } else if (msg.includes("networkingerror") || msg.includes("enotfound") || msg.includes("econnrefused")) {
+        errorMessage = "Unable to connect to storage service - check S3_ENDPOINT configuration"
+      } else if (msg.includes("timeout")) {
+        errorMessage = "Storage service request timed out"
+      } else {
+        errorMessage = `Storage error: ${error.message}`
+      }
+    }
+
     return NextResponse.json(
-      { error: "Failed to upload document" },
+      { error: errorMessage },
       { status: 500 }
     )
   }
