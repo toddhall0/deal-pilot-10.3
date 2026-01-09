@@ -85,7 +85,7 @@ export function AnalysisDialog({
 
       toast({
         title: "Analysis Complete",
-        description: `Contract analyzed with ${result.analysis.confidence}% confidence`,
+        description: `Contract analyzed with ${Math.round(result.analysis.confidence * 100)}% confidence`,
       })
     } catch (error) {
       toast({
@@ -95,6 +95,28 @@ export function AnalysisDialog({
       })
     } finally {
       setIsAnalyzing(false)
+    }
+  }
+
+  const handleAnalysisUpdate = async (updatedAnalysis: ContractAnalysisResult) => {
+    setAnalysis(updatedAnalysis)
+
+    // Save the updated analysis to the database
+    try {
+      await fetch(
+        `/api/deals/${dealId}/documents/${documentId}/analyze/update`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ analysis: updatedAnalysis }),
+        }
+      )
+      toast({
+        title: "Dates Calculated",
+        description: "All dependent dates have been updated based on the effective date.",
+      })
+    } catch (error) {
+      console.error("Failed to save updated analysis:", error)
     }
   }
 
@@ -117,7 +139,7 @@ export function AnalysisDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh]">
+      <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Contract Analysis</DialogTitle>
           <DialogDescription>{documentName}</DialogDescription>
@@ -151,21 +173,28 @@ export function AnalysisDialog({
                     )}
                   </Button>
                 </div>
-                <AnalysisResults analysis={analysis} analyzedAt={analyzedAt} />
+                <AnalysisResults
+                  analysis={analysis}
+                  analyzedAt={analyzedAt}
+                  dealId={dealId}
+                  documentId={documentId}
+                  onAnalysisUpdate={handleAnalysisUpdate}
+                />
               </div>
             ) : (
               <div className="text-center py-12">
                 <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Analyze This Contract</h3>
+                <h3 className="text-lg font-semibold mb-2">Analyze This Document</h3>
                 <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Use AI to extract key terms, dates, and obligations from this contract.
+                  Use AI to extract key terms, dates, obligations, and generate
+                  comprehensive checklists for feasibility and closing.
                   Analysis typically takes 30-60 seconds.
                 </p>
                 <Button onClick={handleAnalyze} disabled={isAnalyzing}>
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Analyzing Contract...
+                      Analyzing Document...
                     </>
                   ) : (
                     <>
