@@ -2,8 +2,11 @@ import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } fro
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { v4 as uuidv4 } from "uuid"
 
+// Normalize region for Cloudflare R2 compatibility (requires lowercase)
+const region = (process.env.S3_REGION || "auto").toLowerCase()
+
 const s3Client = new S3Client({
-  region: process.env.S3_REGION || "us-east-1",
+  region,
   endpoint: process.env.S3_ENDPOINT || undefined,
   credentials: {
     accessKeyId: process.env.S3_ACCESS_KEY_ID || "",
