@@ -30,6 +30,7 @@ import {
   Trash2,
   Star,
   Sparkles,
+  ExternalLink,
 } from "lucide-react"
 
 interface Document {
@@ -198,9 +199,16 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                   {getFileIcon(doc.fileType)}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-sm truncate text-white" title={doc.name}>
+                      <a
+                        href={doc.downloadUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-sm truncate text-white hover:text-blue-400 hover:underline flex items-center gap-1 group/link"
+                        title={`Click to view: ${doc.name}`}
+                      >
                         {doc.name}
-                      </h3>
+                        <ExternalLink className="h-3 w-3 opacity-0 group-hover/link:opacity-100 flex-shrink-0" />
+                      </a>
                       {doc.isPrimaryContract && (
                         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                       )}
