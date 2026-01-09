@@ -152,7 +152,7 @@ export function IssuesList({ issues }: IssuesListProps) {
                           <AlertTriangle className="h-3 w-3 text-red-400 shrink-0" />
                         )}
                         <Link
-                          href={`/deals/${issue.deal.id}?tab=issues`}
+                          href={`/issues/${issue.id}`}
                           className="font-medium text-sm text-white hover:underline"
                         >
                           {issue.title}
