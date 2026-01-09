@@ -233,7 +233,7 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="opacity-0 group-hover:opacity-100"
+                        className="text-slate-400 hover:text-white"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
@@ -245,21 +245,19 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                           Download
                         </a>
                       </DropdownMenuItem>
-                      {doc.fileType === "application/pdf" && (
-                        <AnalysisDialog
-                          dealId={dealId}
-                          documentId={doc.id}
-                          documentName={doc.name}
-                          isAnalyzed={doc.isAnalyzed}
-                          trigger={
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              {doc.isAnalyzed ? "View Analysis" : "Analyze Contract"}
-                            </DropdownMenuItem>
-                          }
-                        />
-                      )}
-                      {doc.category === "CONTRACT" && !doc.isPrimaryContract && (
+                      <AnalysisDialog
+                        dealId={dealId}
+                        documentId={doc.id}
+                        documentName={doc.name}
+                        isAnalyzed={doc.isAnalyzed}
+                        trigger={
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            {doc.isAnalyzed ? "View Analysis" : "Analyze Document"}
+                          </DropdownMenuItem>
+                        }
+                      />
+                      {!doc.isPrimaryContract && (
                         <DropdownMenuItem onClick={() => handleSetPrimary(doc.id)}>
                           <Star className="mr-2 h-4 w-4" />
                           Set as Primary Contract
