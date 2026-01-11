@@ -491,6 +491,9 @@ model Note {
   dealId      String
   deal        Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
+  issueId     String?
+  issue       Issue?    @relation(fields: [issueId], references: [id], onDelete: SetNull)
+
   authorId    String
   author      User      @relation(fields: [authorId], references: [id])
 
@@ -507,6 +510,7 @@ model Note {
   updatedAt   DateTime  @updatedAt
 
   @@index([dealId])
+  @@index([issueId])
   @@index([authorId])
 }
 
@@ -529,6 +533,7 @@ model Issue {
   resolvedById String?
 
   tasks       Task[]
+  notes       Note[]
 
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt

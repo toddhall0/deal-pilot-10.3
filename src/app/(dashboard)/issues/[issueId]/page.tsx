@@ -22,7 +22,9 @@ import {
   ExternalLink,
   User,
   CheckSquare,
+  FileText,
 } from "lucide-react"
+import { IssueNotes } from "@/components/issues/IssueNotes"
 import { formatDistanceToNow, format } from "date-fns"
 
 interface Task {
@@ -283,6 +285,9 @@ export default function IssueDetailPage({
               )}
             </CardContent>
           </Card>
+
+          {/* Notes */}
+          <IssueNotes issueId={issueId} />
         </div>
 
         {/* Sidebar */}

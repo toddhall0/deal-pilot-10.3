@@ -28,7 +28,9 @@ import {
   Pin,
   PinOff,
   FileText,
+  AlertTriangle,
 } from "lucide-react"
+import Link from "next/link"
 
 interface Note {
   id: string
@@ -39,6 +41,7 @@ interface Note {
   tags: string[]
   isPinned: boolean
   author: { id: string; name: string }
+  issue: { id: string; title: string; status: string } | null
   createdAt: string
   updatedAt: string
 }
@@ -50,6 +53,7 @@ interface NotesTabProps {
 const CATEGORIES = [
   { value: "ALL", label: "All Categories" },
   { value: "GENERAL", label: "General" },
+  { value: "ISSUE", label: "Issue Notes" },
   { value: "TITLE", label: "Title" },
   { value: "SURVEY", label: "Survey" },
   { value: "ENVIRONMENTAL", label: "Environmental" },
@@ -216,7 +220,7 @@ export function NotesTab({ dealId }: NotesTabProps) {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       {note.isPinned && (
                         <Pin className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                       )}
@@ -227,6 +231,15 @@ export function NotesTab({ dealId }: NotesTabProps) {
                         <Badge variant="secondary" className="text-xs">
                           {note.category}
                         </Badge>
+                      )}
+                      {note.issue && (
+                        <Link
+                          href={`/issues/${note.issue.id}`}
+                          className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors"
+                        >
+                          <AlertTriangle className="h-3 w-3" />
+                          {note.issue.title}
+                        </Link>
                       )}
                     </div>
 

@@ -7,21 +7,14 @@ import { z } from "zod"
 const createNoteSchema = z.object({
   title: z.string().optional(),
   content: z.string().min(1, "Content is required"),
+  plainText: z.string().optional(),
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
 })
 
-// Helper to extract plain text from HTML
-function htmlToPlainText(html: string): string {
-  return html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-}
-
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ dealId: string }> }
+  { params }: { params: Promise<{ issueId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -29,32 +22,23 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { dealId } = await params
-    const { searchParams } = new URL(request.url)
-    const category = searchParams.get("category")
-    const search = searchParams.get("search")
+    const { issueId } = await params
 
-    const where: any = { dealId }
+    // Verify issue exists
+    const issue = await prisma.issue.findUnique({
+      where: { id: issueId },
+      select: { id: true, dealId: true },
+    })
 
-    if (category && category !== "ALL") {
-      where.category = category
-    }
-
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: "insensitive" } },
-        { plainText: { contains: search, mode: "insensitive" } },
-      ]
+    if (!issue) {
+      return NextResponse.json({ error: "Issue not found" }, { status: 404 })
     }
 
     const notes = await prisma.note.findMany({
-      where,
+      where: { issueId },
       include: {
         author: {
           select: { id: true, name: true },
-        },
-        issue: {
-          select: { id: true, title: true, status: true },
         },
       },
       orderBy: [
@@ -65,7 +49,7 @@ export async function GET(
 
     return NextResponse.json(notes)
   } catch (error) {
-    console.error("Error fetching notes:", error)
+    console.error("Error fetching issue notes:", error)
     return NextResponse.json(
       { error: "Failed to fetch notes" },
       { status: 500 }
@@ -75,25 +59,37 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ dealId: string }> }
+  { params }: { params: Promise<{ issueId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { dealId } = await params
+    const { issueId } = await params
     const body = await request.json()
     const data = createNoteSchema.parse(body)
 
-    const plainText = htmlToPlainText(data.content)
+    // Get issue to get dealId
+    const issue = await prisma.issue.findUnique({
+      where: { id: issueId },
+      select: { id: true, dealId: true, title: true },
+    })
+
+    if (!issue) {
+      return NextResponse.json({ error: "Issue not found" }, { status: 404 })
+    }
 
     const note = await prisma.note.create({
       data: {
-        ...data,
-        plainText,
-        dealId,
+        title: data.title,
+        content: data.content,
+        plainText: data.plainText,
+        category: data.category || "ISSUE",
+        tags: data.tags || [],
+        dealId: issue.dealId,
+        issueId: issueId,
         authorId: session.user.id,
       },
       include: {
@@ -111,7 +107,7 @@ export async function POST(
         { status: 400 }
       )
     }
-    console.error("Error creating note:", error)
+    console.error("Error creating issue note:", error)
     return NextResponse.json(
       { error: "Failed to create note" },
       { status: 500 }
