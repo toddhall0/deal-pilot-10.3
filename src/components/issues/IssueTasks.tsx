@@ -80,16 +80,18 @@ export function IssueTasks({ issueId, dealId, tasks, onTaskCreated }: IssueTasks
 
     setIsSubmitting(true)
     try {
+      const taskData: Record<string, string> = {
+        title,
+        priority,
+        issueId,
+      }
+      if (description) taskData.description = description
+      if (dueDate) taskData.dueDate = dueDate
+
       const response = await fetch(`/api/deals/${dealId}/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description: description || null,
-          priority,
-          dueDate: dueDate || null,
-          issueId,
-        }),
+        body: JSON.stringify(taskData),
       })
 
       if (response.ok) {
