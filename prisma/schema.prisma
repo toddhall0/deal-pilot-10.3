@@ -449,6 +449,9 @@ model Document {
   taskId            String?
   task              Task?            @relation(fields: [taskId], references: [id])
 
+  issueId           String?
+  issue             Issue?           @relation(fields: [issueId], references: [id], onDelete: SetNull)
+
   name              String
   originalName      String
   description       String?
@@ -483,6 +486,7 @@ model Document {
   @@index([category])
   @@index([folderId])
   @@index([taskId])
+  @@index([issueId])
 }
 
 model Note {
@@ -534,6 +538,7 @@ model Issue {
 
   tasks       Task[]
   notes       Note[]
+  documents   Document[]
 
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt

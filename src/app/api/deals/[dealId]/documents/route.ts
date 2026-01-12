@@ -72,6 +72,7 @@ export async function POST(
     const category = (formData.get("category") as string) || "OTHER"
     const description = formData.get("description") as string
     const folderId = formData.get("folderId") as string | null
+    const issueId = formData.get("issueId") as string | null
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
@@ -113,6 +114,7 @@ export async function POST(
         fileKey,
         uploadedById: session.user.id,
         folderId: folderId || null,
+        issueId: issueId || null,
       },
       include: {
         uploadedBy: {

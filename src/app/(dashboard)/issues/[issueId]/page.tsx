@@ -21,15 +21,16 @@ import {
   XCircle,
   ExternalLink,
   User,
-  CheckSquare,
-  FileText,
 } from "lucide-react"
 import { IssueNotes } from "@/components/issues/IssueNotes"
+import { IssueTasks } from "@/components/issues/IssueTasks"
+import { IssueDocuments } from "@/components/issues/IssueDocuments"
 import { formatDistanceToNow, format } from "date-fns"
 
 interface Task {
   id: string
   title: string
+  description: string | null
   status: string
   priority: string
   dueDate: string | null
@@ -79,14 +80,6 @@ const statusConfig: Record<string, { color: string; icon: typeof AlertTriangle; 
   CLOSED: { color: "bg-slate-500/20 text-slate-400", icon: XCircle, label: "Closed" },
 }
 
-const taskStatusColors: Record<string, string> = {
-  TODO: "bg-slate-500/20 text-slate-300",
-  IN_PROGRESS: "bg-blue-500/20 text-blue-400",
-  IN_REVIEW: "bg-purple-500/20 text-purple-400",
-  BLOCKED: "bg-red-500/20 text-red-400",
-  COMPLETED: "bg-green-500/20 text-green-400",
-  CANCELLED: "bg-slate-500/20 text-slate-500",
-}
 
 export default function IssueDetailPage({
   params,
@@ -235,56 +228,16 @@ export default function IssueDetailPage({
             </CardContent>
           </Card>
 
-          {/* Assigned Tasks */}
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium text-white flex items-center gap-2">
-                <CheckSquare className="h-4 w-4 text-slate-400" />
-                Assigned Tasks ({issue._count.tasks})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {issue.tasks.length === 0 ? (
-                <p className="text-slate-500 text-center py-4">
-                  No tasks assigned to this issue
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {issue.tasks.map((task) => (
-                    <Link
-                      key={task.id}
-                      href={`/tasks/${task.id}`}
-                      className="flex items-center justify-between p-3 rounded bg-slate-800/50 hover:bg-slate-800 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Badge className={`${taskStatusColors[task.status]} text-xs`}>
-                          {task.status.replace(/_/g, " ")}
-                        </Badge>
-                        <span className="text-sm text-white">{task.title}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {task.assignee && (
-                          <span className="text-xs text-slate-400">
-                            {task.assignee.name}
-                          </span>
-                        )}
-                        {task.dueDate && (
-                          <span className={`text-xs ${
-                            new Date(task.dueDate) < new Date() ? "text-red-400" : "text-slate-400"
-                          }`}>
-                            {formatDistanceToNow(new Date(task.dueDate), { addSuffix: true })}
-                          </span>
-                        )}
-                        <Badge className={`${priorityColors[task.priority]} text-xs`}>
-                          {task.priority}
-                        </Badge>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Tasks */}
+          <IssueTasks
+            issueId={issueId}
+            dealId={issue.deal.id}
+            tasks={issue.tasks}
+            onTaskCreated={fetchIssue}
+          />
+
+          {/* Documents */}
+          <IssueDocuments issueId={issueId} dealId={issue.deal.id} />
 
           {/* Notes */}
           <IssueNotes issueId={issueId} />
