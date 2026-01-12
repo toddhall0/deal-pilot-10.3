@@ -272,7 +272,12 @@ export function IssuesTab({ dealId }: IssuesTabProps) {
                       <StatusIcon className={`h-5 w-5 mt-0.5 ${statusConfig.color.split(" ")[1]}`} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <h3 className="font-medium text-white">{issue.title}</h3>
+                          <Link
+                            href={`/issues/${issue.id}`}
+                            className="font-medium text-white hover:text-blue-400 hover:underline"
+                          >
+                            {issue.title}
+                          </Link>
                           <Badge className={priorityConfig.color}>
                             {priorityConfig.label}
                           </Badge>

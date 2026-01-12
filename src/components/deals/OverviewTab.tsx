@@ -558,13 +558,14 @@ export function OverviewTab({ deal }: OverviewTabProps) {
           ) : (
             <div className="space-y-2">
               {openIssues.map((issue) => (
-                <div
+                <Link
                   key={issue.id}
-                  className={`p-3 rounded-lg border transition-colors ${
+                  href={`/issues/${issue.id}`}
+                  className={`block p-3 rounded-lg border transition-colors ${
                     issue.priority === "CRITICAL"
-                      ? "border-red-500/50 bg-red-500/10"
+                      ? "border-red-500/50 bg-red-500/10 hover:bg-red-500/20"
                       : issue.priority === "HIGH"
-                      ? "border-orange-500/50 bg-orange-500/10"
+                      ? "border-orange-500/50 bg-orange-500/10 hover:bg-orange-500/20"
                       : "border-slate-700 hover:bg-slate-700/50"
                   }`}
                 >
@@ -586,7 +587,7 @@ export function OverviewTab({ deal }: OverviewTabProps) {
                       )}
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
