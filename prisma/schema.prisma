@@ -188,6 +188,8 @@ model Deal {
   dealNumber      String       @unique
   type            DealType
   status          DealStatus   @default(DRAFT)
+  isArchived      Boolean      @default(false)
+  archivedAt      DateTime?
 
   propertyName    String?
   propertyType    PropertyType?
@@ -224,6 +226,7 @@ model Deal {
   @@index([clientId])
   @@index([status])
   @@index([createdById])
+  @@index([isArchived])
 }
 
 model TransactionSummary {

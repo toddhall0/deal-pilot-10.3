@@ -17,6 +17,7 @@ const updateDealSchema = z.object({
     "TERMINATED",
     "ON_HOLD",
   ]).optional(),
+  isArchived: z.boolean().optional(),
   propertyName: z.string().optional(),
   propertyAddress: z.string().optional(),
   propertyCity: z.string().optional(),
@@ -110,10 +111,19 @@ export async function PATCH(
       return NextResponse.json({ error: "Deal not found" }, { status: 404 })
     }
 
+    // Handle archive timestamp
+    const archiveData = data.isArchived !== undefined
+      ? {
+          isArchived: data.isArchived,
+          archivedAt: data.isArchived ? new Date() : null,
+        }
+      : {}
+
     const updatedDeal = await prisma.deal.update({
       where: { id: dealId },
       data: {
         ...data,
+        ...archiveData,
         acreage: data.acreage !== undefined ? data.acreage : undefined,
         squareFootage: data.squareFootage !== undefined ? data.squareFootage : undefined,
       },

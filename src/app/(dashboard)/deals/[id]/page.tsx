@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TasksTab } from "@/components/deals/TasksTab"
@@ -11,6 +10,7 @@ import { TimelineTab } from "@/components/deals/TimelineTab"
 import { OverviewTab } from "@/components/deals/OverviewTab"
 import { FinancialsTab } from "@/components/deals/FinancialsTab"
 import { QuickExport } from "@/components/reports/QuickExport"
+import { DealActions } from "@/components/deals/DealActions"
 
 async function getDeal(id: string) {
   const deal = await prisma.deal.findUnique({
@@ -84,6 +84,11 @@ export default async function DealDetailPage({
           </div>
           <div className="flex items-center gap-2">
             <QuickExport dealId={deal.id} />
+            {deal.isArchived && (
+              <Badge variant="outline" className="border-amber-500 text-amber-500">
+                Archived
+              </Badge>
+            )}
             <Badge
               variant={
                 deal.status === "CLOSED"
@@ -95,6 +100,11 @@ export default async function DealDetailPage({
             >
               {deal.status.replace("_", " ")}
             </Badge>
+            <DealActions
+              dealId={deal.id}
+              dealName={deal.name}
+              isArchived={deal.isArchived}
+            />
           </div>
         </div>
       </div>

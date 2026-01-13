@@ -37,7 +37,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const { searchParams } = new URL(request.url)
+    const includeArchived = searchParams.get("includeArchived") === "true"
+
     const deals = await prisma.deal.findMany({
+      where: includeArchived ? {} : { isArchived: false },
       include: {
         client: true,
       },
