@@ -30,6 +30,9 @@ export async function GET(
             assignee: {
               select: { id: true, name: true, email: true },
             },
+            issue: {
+              select: { id: true, title: true, status: true, priority: true },
+            },
             _count: {
               select: { comments: true, documents: true },
             },
@@ -53,6 +56,9 @@ export async function GET(
         assignee: {
           select: { id: true, name: true, email: true },
         },
+        issue: {
+          select: { id: true, title: true, status: true, priority: true },
+        },
         _count: {
           select: { comments: true, documents: true },
         },
@@ -60,9 +66,50 @@ export async function GET(
       orderBy: { sortOrder: "asc" },
     })
 
+    // Get all tasks with issues for the issue-grouped section
+    const tasksWithIssues = await prisma.task.findMany({
+      where: {
+        dealId,
+        issueId: { not: null },
+      },
+      include: {
+        assignee: {
+          select: { id: true, name: true, email: true },
+        },
+        issue: {
+          select: { id: true, title: true, status: true, priority: true },
+        },
+        _count: {
+          select: { comments: true, documents: true },
+        },
+      },
+      orderBy: [
+        { issue: { priority: "desc" } },
+        { sortOrder: "asc" },
+      ],
+    })
+
+    // Group tasks by issue
+    const issueTasksMap = new Map<string, { issue: { id: string; title: string; status: string; priority: string }; tasks: typeof tasksWithIssues }>()
+    for (const task of tasksWithIssues) {
+      if (task.issue) {
+        const existing = issueTasksMap.get(task.issue.id)
+        if (existing) {
+          existing.tasks.push(task)
+        } else {
+          issueTasksMap.set(task.issue.id, {
+            issue: task.issue,
+            tasks: [task],
+          })
+        }
+      }
+    }
+    const issueTasks = Array.from(issueTasksMap.values())
+
     return NextResponse.json({
       taskLists,
       uncategorizedTasks,
+      issueTasks,
     })
   } catch (error) {
     console.error("Failed to fetch task lists:", error)

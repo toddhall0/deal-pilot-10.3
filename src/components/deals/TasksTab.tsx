@@ -35,6 +35,7 @@ import {
   MessageSquare,
   Paperclip,
   AlertTriangle,
+  AlertCircle,
   Plus,
   ChevronDown,
   ChevronRight,
@@ -54,8 +55,10 @@ interface Task {
   startDate: string | null
   dueDate: string | null
   taskListId: string | null
+  issueId: string | null
   assignee: { id: string; name: string; email: string } | null
   createdBy: { id: string; name: string; email: string }
+  issue: { id: string; title: string; status: string; priority: string } | null
   _count?: {
     comments: number
     documents: number
@@ -87,6 +90,11 @@ interface Issue {
   priority: string
 }
 
+interface IssueTaskGroup {
+  issue: Issue
+  tasks: Task[]
+}
+
 interface TasksTabProps {
   dealId: string
 }
@@ -116,6 +124,7 @@ const defaultColors = [
 export function TasksTab({ dealId }: TasksTabProps) {
   const [taskLists, setTaskLists] = useState<TaskList[]>([])
   const [uncategorizedTasks, setUncategorizedTasks] = useState<Task[]>([])
+  const [issueTasks, setIssueTasks] = useState<IssueTaskGroup[]>([])
   const [collapsedLists, setCollapsedLists] = useState<Set<string>>(new Set())
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [issues, setIssues] = useState<Issue[]>([])
@@ -155,6 +164,7 @@ export function TasksTab({ dealId }: TasksTabProps) {
       const data = await response.json()
       setTaskLists(data.taskLists || [])
       setUncategorizedTasks(data.uncategorizedTasks || [])
+      setIssueTasks(data.issueTasks || [])
     } catch (error) {
       console.error("Failed to fetch task lists:", error)
     } finally {
@@ -547,6 +557,73 @@ export function TasksTab({ dealId }: TasksTabProps) {
           </Button>
         </div>
       </div>
+
+      {/* Issue Tasks Section */}
+      {issueTasks.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium text-slate-400 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
+            Tasks by Issue ({issueTasks.reduce((sum, group) => sum + group.tasks.length, 0)})
+          </h3>
+          {issueTasks.map((group) => {
+            const issuePriorityColors: Record<string, string> = {
+              LOW: "bg-slate-500/20 text-slate-300 border-slate-600",
+              MEDIUM: "bg-blue-500/20 text-blue-400 border-blue-600",
+              HIGH: "bg-orange-500/20 text-orange-400 border-orange-600",
+              CRITICAL: "bg-red-500/20 text-red-400 border-red-600",
+            }
+            const issueStatusColors: Record<string, string> = {
+              OPEN: "bg-yellow-500/20 text-yellow-400",
+              IN_PROGRESS: "bg-blue-500/20 text-blue-400",
+              RESOLVED: "bg-green-500/20 text-green-400",
+              CLOSED: "bg-slate-500/20 text-slate-400",
+            }
+            const collapseKey = `issue-${group.issue.id}`
+            return (
+              <div
+                key={group.issue.id}
+                className={`rounded-lg border overflow-hidden ${issuePriorityColors[group.issue.priority] || "border-slate-800"}`}
+              >
+                {/* Issue Header */}
+                <div
+                  className="flex items-center justify-between px-4 py-3 bg-slate-800/50 cursor-pointer"
+                  onClick={() => toggleListCollapse(collapseKey)}
+                >
+                  <div className="flex items-center gap-3">
+                    {collapsedLists.has(collapseKey) ? (
+                      <ChevronRight className="h-4 w-4 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-slate-400" />
+                    )}
+                    <AlertCircle className="h-4 w-4 text-orange-400" />
+                    <Link
+                      href={`/issues/${group.issue.id}`}
+                      className="font-medium text-white hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {group.issue.title}
+                    </Link>
+                    <Badge className={`text-xs ${issuePriorityColors[group.issue.priority]}`}>
+                      {group.issue.priority}
+                    </Badge>
+                    <Badge className={`text-xs ${issueStatusColors[group.issue.status]}`}>
+                      {group.issue.status.replace("_", " ")}
+                    </Badge>
+                    <span className="text-sm text-slate-400">({group.tasks.length} tasks)</span>
+                  </div>
+                </div>
+
+                {/* Issue Tasks Table */}
+                {!collapsedLists.has(collapseKey) && (
+                  <div className="overflow-x-auto bg-slate-900">
+                    {renderTaskTable(group.tasks, null)}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Task Lists */}
       {taskLists.map((list) => (
