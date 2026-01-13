@@ -15,7 +15,7 @@ interface Deal {
   dealNumber: string
   type: string
   status: string
-  isArchived: boolean
+  isArchived?: boolean
   propertyCity: string | null
   propertyState: string | null
   client: {
@@ -101,7 +101,7 @@ export function DealsList() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      {deal.isArchived && (
+                      {deal.isArchived === true && (
                         <Badge variant="outline" className="border-amber-500 text-amber-500">
                           Archived
                         </Badge>

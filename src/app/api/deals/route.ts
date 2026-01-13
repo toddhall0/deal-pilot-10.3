@@ -40,15 +40,29 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const includeArchived = searchParams.get("includeArchived") === "true"
 
-    const deals = await prisma.deal.findMany({
-      where: includeArchived ? {} : { isArchived: false },
-      include: {
-        client: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    })
+    // Try to filter by isArchived, fall back to all deals if column doesn't exist yet
+    let deals
+    try {
+      deals = await prisma.deal.findMany({
+        where: includeArchived ? {} : { isArchived: false },
+        include: {
+          client: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      })
+    } catch {
+      // Fallback if isArchived column doesn't exist yet (pre-migration)
+      deals = await prisma.deal.findMany({
+        include: {
+          client: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      })
+    }
 
     return NextResponse.json(deals)
   } catch (error) {

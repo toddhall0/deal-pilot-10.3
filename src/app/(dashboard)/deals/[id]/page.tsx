@@ -84,7 +84,7 @@ export default async function DealDetailPage({
           </div>
           <div className="flex items-center gap-2">
             <QuickExport dealId={deal.id} />
-            {deal.isArchived && (
+            {deal.isArchived === true && (
               <Badge variant="outline" className="border-amber-500 text-amber-500">
                 Archived
               </Badge>
@@ -103,7 +103,7 @@ export default async function DealDetailPage({
             <DealActions
               dealId={deal.id}
               dealName={deal.name}
-              isArchived={deal.isArchived}
+              isArchived={deal.isArchived ?? false}
             />
           </div>
         </div>

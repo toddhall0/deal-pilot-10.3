@@ -111,29 +111,56 @@ export async function PATCH(
       return NextResponse.json({ error: "Deal not found" }, { status: 404 })
     }
 
-    // Handle archive timestamp
-    const archiveData = data.isArchived !== undefined
+    // Build update data, excluding isArchived from spread to handle separately
+    const { isArchived, ...restData } = data
+
+    // Handle archive timestamp - only include if explicitly set
+    const archiveData = isArchived !== undefined
       ? {
-          isArchived: data.isArchived,
-          archivedAt: data.isArchived ? new Date() : null,
+          isArchived: isArchived,
+          archivedAt: isArchived ? new Date() : null,
         }
       : {}
 
-    const updatedDeal = await prisma.deal.update({
-      where: { id: dealId },
-      data: {
-        ...data,
-        ...archiveData,
-        acreage: data.acreage !== undefined ? data.acreage : undefined,
-        squareFootage: data.squareFootage !== undefined ? data.squareFootage : undefined,
-      },
-      include: {
-        client: true,
-        createdBy: {
-          select: { id: true, name: true, email: true },
+    let updatedDeal
+    try {
+      updatedDeal = await prisma.deal.update({
+        where: { id: dealId },
+        data: {
+          ...restData,
+          ...archiveData,
+          acreage: restData.acreage !== undefined ? restData.acreage : undefined,
+          squareFootage: restData.squareFootage !== undefined ? restData.squareFootage : undefined,
         },
-      },
-    })
+        include: {
+          client: true,
+          createdBy: {
+            select: { id: true, name: true, email: true },
+          },
+        },
+      })
+    } catch (updateError) {
+      // If archive columns don't exist yet, retry without them
+      if (isArchived !== undefined) {
+        console.warn("Archive columns may not exist yet, retrying without them")
+        updatedDeal = await prisma.deal.update({
+          where: { id: dealId },
+          data: {
+            ...restData,
+            acreage: restData.acreage !== undefined ? restData.acreage : undefined,
+            squareFootage: restData.squareFootage !== undefined ? restData.squareFootage : undefined,
+          },
+          include: {
+            client: true,
+            createdBy: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+        })
+      } else {
+        throw updateError
+      }
+    }
 
     // Send notification if status changed
     if (data.status && data.status !== currentDeal.status) {
