@@ -96,7 +96,7 @@ export function DealsList() {
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="text-lg">{deal.name}</CardTitle>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-slate-400">
                         {deal.dealNumber} • {deal.client.name}
                       </p>
                     </div>
@@ -121,7 +121,7 @@ export function DealsList() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex gap-4 text-sm text-gray-600">
+                  <div className="flex gap-4 text-sm text-slate-400">
                     <span>{deal.type}</span>
                     {deal.propertyCity && deal.propertyState && (
                       <span>

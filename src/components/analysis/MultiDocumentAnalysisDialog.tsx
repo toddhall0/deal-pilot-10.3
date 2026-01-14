@@ -112,31 +112,31 @@ export function MultiDocumentAnalysisDialog({
   const getSignificanceColor = (significance: string) => {
     switch (significance) {
       case "HIGH":
-        return "bg-red-100 text-red-800"
+        return "bg-red-500/20 text-red-400"
       case "MEDIUM":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-500/20 text-yellow-400"
       case "LOW":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-500/20 text-blue-400"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-slate-500/20 text-slate-400"
     }
   }
 
   const renderAmendmentSummary = (summary: AmendmentSummary) => (
-    <Card className="border-purple-200 bg-purple-50/50 mb-6">
+    <Card className="border-purple-500/30 bg-purple-950/30 mb-6">
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-sm font-medium text-purple-800">
+        <CardTitle className="flex items-center gap-2 text-sm font-medium text-purple-300">
           <Files className="h-4 w-4" />
           Amendment Summary
         </CardTitle>
-        <CardDescription className="text-purple-700">
+        <CardDescription className="text-purple-400">
           Analysis of {summary.documentOrder.length} documents showing changes made by amendments
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Document Order */}
         <div>
-          <h4 className="text-sm font-semibold mb-2 text-purple-800">Document Order</h4>
+          <h4 className="text-sm font-semibold mb-2 text-purple-300">Document Order</h4>
           <div className="flex flex-wrap items-center gap-2">
             {summary.documentOrder.map((doc, idx) => (
               <div key={idx} className="flex items-center gap-2">
@@ -156,8 +156,8 @@ export function MultiDocumentAnalysisDialog({
         {/* Key Changes Summary */}
         {summary.keyChanges && summary.keyChanges.length > 0 && (
           <div>
-            <h4 className="text-sm font-semibold mb-2 text-purple-800">Key Changes</h4>
-            <ul className="list-disc list-inside space-y-1 text-sm text-purple-700">
+            <h4 className="text-sm font-semibold mb-2 text-purple-300">Key Changes</h4>
+            <ul className="list-disc list-inside space-y-1 text-sm text-purple-400">
               {summary.keyChanges.map((change, idx) => (
                 <li key={idx}>{change}</li>
               ))}
@@ -168,14 +168,14 @@ export function MultiDocumentAnalysisDialog({
         {/* Changes by Document */}
         {summary.changesByDocument && summary.changesByDocument.length > 0 && (
           <div>
-            <h4 className="text-sm font-semibold mb-2 text-purple-800">Detailed Changes by Amendment</h4>
+            <h4 className="text-sm font-semibold mb-2 text-purple-300">Detailed Changes by Amendment</h4>
             {summary.changesByDocument.map((docChanges, docIdx) => (
               <div key={docIdx} className="mb-4 last:mb-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <FileText className="h-4 w-4 text-purple-500" />
+                  <FileText className="h-4 w-4 text-purple-400" />
                   <span className="font-medium text-sm">{docChanges.documentName}</span>
                   {docChanges.documentDate && (
-                    <span className="text-xs text-purple-500">({docChanges.documentDate})</span>
+                    <span className="text-xs text-purple-400">({docChanges.documentDate})</span>
                   )}
                 </div>
                 {docChanges.changes.length > 0 ? (
@@ -208,7 +208,7 @@ export function MultiDocumentAnalysisDialog({
                     </TableBody>
                   </Table>
                 ) : (
-                  <p className="text-sm text-purple-500 italic">No tracked changes</p>
+                  <p className="text-sm text-purple-400 italic">No tracked changes</p>
                 )}
               </div>
             ))}
@@ -218,29 +218,29 @@ export function MultiDocumentAnalysisDialog({
         {/* Effective Terms */}
         {summary.effectiveTerms && (
           <div>
-            <h4 className="text-sm font-semibold mb-2 text-purple-800">Current Effective Terms</h4>
+            <h4 className="text-sm font-semibold mb-2 text-purple-300">Current Effective Terms</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               {summary.effectiveTerms.purchasePrice && (
                 <div>
-                  <span className="text-purple-500">Purchase Price:</span>{" "}
+                  <span className="text-purple-400">Purchase Price:</span>{" "}
                   <span className="font-semibold">{summary.effectiveTerms.purchasePrice}</span>
                 </div>
               )}
               {summary.effectiveTerms.closingDate && (
                 <div>
-                  <span className="text-purple-500">Closing Date:</span>{" "}
+                  <span className="text-purple-400">Closing Date:</span>{" "}
                   <span className="font-semibold">{summary.effectiveTerms.closingDate}</span>
                 </div>
               )}
               {summary.effectiveTerms.feasibilityExpiration && (
                 <div>
-                  <span className="text-purple-500">Feasibility Expires:</span>{" "}
+                  <span className="text-purple-400">Feasibility Expires:</span>{" "}
                   <span className="font-semibold">{summary.effectiveTerms.feasibilityExpiration}</span>
                 </div>
               )}
               {summary.effectiveTerms.otherKeyTerms && (
                 <div className="col-span-2">
-                  <span className="text-purple-500">Other:</span>{" "}
+                  <span className="text-purple-400">Other:</span>{" "}
                   <span className="font-semibold">{summary.effectiveTerms.otherKeyTerms}</span>
                 </div>
               )}
@@ -316,13 +316,13 @@ export function MultiDocumentAnalysisDialog({
                     {documents.map((doc, idx) => (
                       <div
                         key={doc.id}
-                        className="flex items-center justify-between p-3 border rounded-lg bg-slate-50"
+                        className="flex items-center justify-between p-3 border border-slate-700 rounded-lg bg-slate-800"
                       >
                         <div className="flex items-center gap-3">
                           <Badge variant="outline">{idx + 1}</Badge>
                           <div>
                             <p className="font-medium text-sm">{doc.name}</p>
-                            <p className="text-xs text-muted-foreground">{doc.category}</p>
+                            <p className="text-xs text-slate-400">{doc.category}</p>
                           </div>
                         </div>
                         {doc.isAnalyzed && (
@@ -371,9 +371,9 @@ export function MultiDocumentAnalysisDialog({
                 <Separator />
 
                 {/* Explanation */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="text-sm font-semibold text-blue-800 mb-2">What will be analyzed:</h4>
-                  <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
+                <div className="bg-blue-950/30 border border-blue-500/30 p-4 rounded-lg">
+                  <h4 className="text-sm font-semibold text-blue-300 mb-2">What will be analyzed:</h4>
+                  <ul className="text-sm text-blue-400 space-y-1 list-disc list-inside">
                     <li>All key terms from the original contract</li>
                     <li>Changes made by each amendment</li>
                     <li>Current effective terms after all amendments</li>

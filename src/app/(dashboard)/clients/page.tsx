@@ -92,7 +92,7 @@ export default function ClientsPage() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-bold">Clients</h1>
-          <p className="text-gray-500">Manage your clients and contacts</p>
+          <p className="text-slate-400">Manage your clients and contacts</p>
         </div>
         <Button onClick={() => setIsEditorOpen(true)} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
@@ -138,8 +138,8 @@ export default function ClientsPage() {
       ) : clients.length === 0 ? (
         <Card className="bg-slate-900 border-slate-800">
           <CardContent className="py-10 text-center">
-            <Users className="mx-auto h-10 w-10 text-gray-300 mb-2" />
-            <p className="text-gray-500 mb-4">No clients found</p>
+            <Users className="mx-auto h-10 w-10 text-slate-500 mb-2" />
+            <p className="text-slate-400 mb-4">No clients found</p>
             <Button onClick={() => setIsEditorOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Add your first client
@@ -171,7 +171,7 @@ export default function ClientsPage() {
                         {client.name}
                       </Link>
                       {client.address && (
-                        <p className="text-sm text-gray-500 truncate max-w-xs">
+                        <p className="text-sm text-slate-400 truncate max-w-xs">
                           {client.address}
                         </p>
                       )}
