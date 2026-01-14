@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Select,
   SelectContent,
@@ -17,20 +18,34 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { DocumentUploader } from "@/components/documents/DocumentUploader"
 import { AnalysisDialog } from "@/components/analysis"
+import { MultiDocumentAnalysisDialog } from "@/components/analysis/MultiDocumentAnalysisDialog"
 import {
   Upload,
   FileIcon,
   FileText,
   Image,
-  Table,
+  Table as TableIcon,
   MoreVertical,
   Download,
   Trash2,
   Star,
   Sparkles,
   ExternalLink,
+  LayoutGrid,
+  List,
+  ChevronUp,
+  ChevronDown,
+  Files,
 } from "lucide-react"
 
 interface Document {
@@ -44,6 +59,7 @@ interface Document {
   downloadUrl: string
   isPrimaryContract: boolean
   isAnalyzed: boolean
+  sortOrder: number
   uploadedBy: { id: string; name: string }
   createdAt: string
 }
@@ -72,6 +88,9 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isUploadOpen, setIsUploadOpen] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState("ALL")
+  const [viewMode, setViewMode] = useState<"card" | "list">("card")
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isMultiAnalysisOpen, setIsMultiAnalysisOpen] = useState(false)
 
   useEffect(() => {
     fetchDocuments()
@@ -104,6 +123,11 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
         method: "DELETE",
       })
       setDocuments(documents.filter((d) => d.id !== documentId))
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        next.delete(documentId)
+        return next
+      })
     } catch (error) {
       console.error("Failed to delete document:", error)
     }
@@ -122,17 +146,86 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
     }
   }
 
+  async function handleMove(documentId: string, direction: "up" | "down") {
+    const currentIndex = documents.findIndex((d) => d.id === documentId)
+    if (currentIndex === -1) return
+    if (direction === "up" && currentIndex === 0) return
+    if (direction === "down" && currentIndex === documents.length - 1) return
+
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1
+    const targetDoc = documents[targetIndex]
+    const currentDoc = documents[currentIndex]
+
+    // Swap sort orders
+    try {
+      await Promise.all([
+        fetch(`/api/deals/${dealId}/documents/${currentDoc.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sortOrder: targetDoc.sortOrder }),
+        }),
+        fetch(`/api/deals/${dealId}/documents/${targetDoc.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sortOrder: currentDoc.sortOrder }),
+        }),
+      ])
+
+      // Update local state
+      const newDocs = [...documents]
+      newDocs[currentIndex] = { ...targetDoc, sortOrder: currentDoc.sortOrder }
+      newDocs[targetIndex] = { ...currentDoc, sortOrder: targetDoc.sortOrder }
+      newDocs.sort((a, b) => a.sortOrder - b.sortOrder)
+      setDocuments(newDocs)
+    } catch (error) {
+      console.error("Failed to reorder documents:", error)
+    }
+  }
+
+  function handleSelectAll(checked: boolean) {
+    if (checked) {
+      setSelectedIds(new Set(documents.map((d) => d.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  function handleSelectOne(documentId: string, checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (checked) {
+        next.add(documentId)
+      } else {
+        next.delete(documentId)
+      }
+      return next
+    })
+  }
+
   function getFileIcon(fileType: string) {
     if (fileType.startsWith("image/")) {
       return <Image className="h-8 w-8 text-purple-500" />
     }
     if (fileType.includes("spreadsheet") || fileType.includes("excel")) {
-      return <Table className="h-8 w-8 text-green-500" />
+      return <TableIcon className="h-8 w-8 text-green-500" />
     }
     if (fileType.includes("pdf")) {
       return <FileText className="h-8 w-8 text-red-500" />
     }
     return <FileIcon className="h-8 w-8 text-blue-500" />
+  }
+
+  function getSmallFileIcon(fileType: string) {
+    if (fileType.startsWith("image/")) {
+      return <Image className="h-4 w-4 text-purple-500" />
+    }
+    if (fileType.includes("spreadsheet") || fileType.includes("excel")) {
+      return <TableIcon className="h-4 w-4 text-green-500" />
+    }
+    if (fileType.includes("pdf")) {
+      return <FileText className="h-4 w-4 text-red-500" />
+    }
+    return <FileIcon className="h-4 w-4 text-blue-500" />
   }
 
   function formatFileSize(bytes: number) {
@@ -150,6 +243,10 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
       year: "numeric",
     })
   }
+
+  const selectedDocuments = documents.filter((d) => selectedIds.has(d.id))
+  const canAnalyzeMultiple = selectedDocuments.length >= 2 &&
+    selectedDocuments.every((d) => d.fileType.includes("pdf") || d.fileType.includes("text"))
 
   if (isLoading) {
     return <div className="p-4">Loading documents...</div>
@@ -172,11 +269,42 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
               ))}
             </SelectContent>
           </Select>
+          <div className="flex items-center border border-slate-700 rounded-md">
+            <Button
+              variant={viewMode === "card" ? "secondary" : "ghost"}
+              size="sm"
+              className="rounded-r-none"
+              onClick={() => setViewMode("card")}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="sm"
+              className="rounded-l-none"
+              onClick={() => setViewMode("list")}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <Button onClick={() => setIsUploadOpen(true)}>
-          <Upload className="mr-2 h-4 w-4" />
-          Upload
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => setIsMultiAnalysisOpen(true)}
+              disabled={!canAnalyzeMultiple}
+              title={!canAnalyzeMultiple ? "Select 2+ PDF/text documents to analyze together" : undefined}
+            >
+              <Files className="mr-2 h-4 w-4" />
+              Analyze Selected ({selectedIds.size})
+            </Button>
+          )}
+          <Button onClick={() => setIsUploadOpen(true)}>
+            <Upload className="mr-2 h-4 w-4" />
+            Upload
+          </Button>
+        </div>
       </div>
 
       {documents.length === 0 ? (
@@ -190,12 +318,38 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
             </Button>
           </CardContent>
         </Card>
-      ) : (
+      ) : viewMode === "card" ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {documents.map((doc) => (
+          {documents.map((doc, index) => (
             <Card key={doc.id} className="relative group bg-slate-900 border-slate-800">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
+                  <div className="flex flex-col items-center gap-1">
+                    <Checkbox
+                      checked={selectedIds.has(doc.id)}
+                      onCheckedChange={(checked) => handleSelectOne(doc.id, checked as boolean)}
+                    />
+                    <div className="flex flex-col gap-0.5 mt-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5"
+                        disabled={index === 0}
+                        onClick={() => handleMove(doc.id, "up")}
+                      >
+                        <ChevronUp className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5"
+                        disabled={index === documents.length - 1}
+                        onClick={() => handleMove(doc.id, "down")}
+                      >
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
                   {getFileIcon(doc.fileType)}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -277,6 +431,138 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
             </Card>
           ))}
         </div>
+      ) : (
+        <Card className="bg-slate-900 border-slate-800">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={selectedIds.size === documents.length && documents.length > 0}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
+                <TableHead className="w-16">Order</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Size</TableHead>
+                <TableHead>Uploaded</TableHead>
+                <TableHead className="w-12"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {documents.map((doc, index) => (
+                <TableRow key={doc.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(doc.id)}
+                      onCheckedChange={(checked) => handleSelectOne(doc.id, checked as boolean)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-0.5">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        disabled={index === 0}
+                        onClick={() => handleMove(doc.id, "up")}
+                      >
+                        <ChevronUp className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        disabled={index === documents.length - 1}
+                        onClick={() => handleMove(doc.id, "down")}
+                      >
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getSmallFileIcon(doc.fileType)}
+                      <a
+                        href={doc.downloadUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-sm text-white hover:text-blue-400 hover:underline flex items-center gap-1"
+                      >
+                        {doc.name}
+                        <ExternalLink className="h-3 w-3 opacity-50" />
+                      </a>
+                      {doc.isPrimaryContract && (
+                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                      )}
+                      {doc.isAnalyzed && (
+                        <Sparkles className="h-4 w-4 text-purple-500" />
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary" className="text-xs">
+                      {doc.category}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-slate-400 text-sm">
+                    {formatFileSize(doc.fileSize)}
+                  </TableCell>
+                  <TableCell className="text-slate-400 text-sm">
+                    {formatDate(doc.createdAt)}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-slate-400 hover:text-white"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <a href={doc.downloadUrl} target="_blank" rel="noreferrer">
+                            <Download className="mr-2 h-4 w-4" />
+                            Download
+                          </a>
+                        </DropdownMenuItem>
+                        <AnalysisDialog
+                          dealId={dealId}
+                          documentId={doc.id}
+                          documentName={doc.name}
+                          isAnalyzed={doc.isAnalyzed}
+                          trigger={
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              {doc.isAnalyzed ? "View Analysis" : "Analyze Document"}
+                            </DropdownMenuItem>
+                          }
+                        />
+                        {!doc.isPrimaryContract && (
+                          <DropdownMenuItem onClick={() => handleSetPrimary(doc.id)}>
+                            <Star className="mr-2 h-4 w-4" />
+                            Set as Primary Contract
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(doc.id)}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
       )}
 
       <DocumentUploader
@@ -284,6 +570,17 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         onUploadComplete={fetchDocuments}
+      />
+
+      <MultiDocumentAnalysisDialog
+        dealId={dealId}
+        documents={selectedDocuments}
+        isOpen={isMultiAnalysisOpen}
+        onClose={() => setIsMultiAnalysisOpen(false)}
+        onAnalysisComplete={() => {
+          fetchDocuments()
+          setSelectedIds(new Set())
+        }}
       />
     </div>
   )

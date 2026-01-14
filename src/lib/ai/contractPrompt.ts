@@ -201,3 +201,98 @@ IMPORTANT INSTRUCTIONS:
 9. The keyMilestones array should include ALL significant dates for easy import into a timeline system.
 10. If the effective date is not specified, add ALL date-dependent items to missingDateDependencies.`
 }
+
+import { ContractAnalysisResult } from "@/types/analysis"
+
+export const MULTI_DOCUMENT_ANALYSIS_SYSTEM_PROMPT = `You are an expert commercial real estate attorney and contract analyst specializing in analyzing purchase agreements with their amendments.
+
+Your task is to carefully analyze a PRIMARY CONTRACT and its AMENDMENTS together, producing a comprehensive unified analysis that reflects the CURRENT STATE of the agreement after all amendments have been applied.
+
+CRITICAL REQUIREMENTS FOR AMENDMENT ANALYSIS:
+1. Identify which document is the original Purchase Agreement and which are Amendments
+2. Track what CHANGED in each amendment - note every modification, deletion, or addition
+3. The final analysis should reflect the CURRENT terms after all amendments
+4. Include an "amendmentSummary" section that details what changed in each amendment
+
+When values are modified by an amendment:
+- Use the AMENDED value in the main analysis fields
+- Document the ORIGINAL value and what it was changed to in the amendmentSummary
+
+You must be thorough and accurate. If information is not present, use null for that field.
+Always extract monetary values as numbers without currency symbols or commas.
+Always extract dates in ISO format (YYYY-MM-DD) when possible.`
+
+export function buildMultiDocumentAnalysisPrompt(
+  combinedText: string,
+  documentCount: number,
+  existingAnalysis?: ContractAnalysisResult
+): string {
+  const existingAnalysisSection = existingAnalysis
+    ? `\n\nYou have an EXISTING ANALYSIS from a previous review. Use this as your baseline and UPDATE it based on the new documents provided. Here is the existing analysis:\n\n<existing_analysis>\n${JSON.stringify(existingAnalysis, null, 2)}\n</existing_analysis>\n\nIMPORTANT: Merge the new information with the existing analysis. If the new documents modify existing terms, update them. If they add new information, incorporate it. Track all changes in the amendmentSummary.`
+    : ""
+
+  return `Please analyze the following ${documentCount} documents together. These consist of a Purchase Agreement and its Amendment(s).
+${existingAnalysisSection}
+<documents>
+${combinedText}
+</documents>
+
+Provide a UNIFIED analysis as a JSON object that reflects the CURRENT STATE of the contract after all amendments. Include all fields from the standard analysis, plus an additional "amendmentSummary" section.
+
+The JSON structure should include ALL standard contract analysis fields (buyer, seller, property details, dates, deposits, checklists, etc.) PLUS:
+
+{
+  ... all standard fields reflecting CURRENT terms after amendments ...
+
+  "amendmentSummary": {
+    "documentOrder": [
+      {
+        "order": 1,
+        "name": "Name of document",
+        "type": "PURCHASE_AGREEMENT or AMENDMENT",
+        "date": "YYYY-MM-DD",
+        "description": "Brief description of this document"
+      }
+    ],
+    "changesByDocument": [
+      {
+        "documentName": "Amendment 1",
+        "documentDate": "YYYY-MM-DD",
+        "changes": [
+          {
+            "field": "What was changed (e.g., 'purchasePrice', 'closingDate')",
+            "originalValue": "What it was before",
+            "newValue": "What it changed to",
+            "description": "Human-readable explanation of the change",
+            "significance": "HIGH, MEDIUM, or LOW"
+          }
+        ]
+      }
+    ],
+    "keyChanges": [
+      "Summary bullet point of most important changes across all amendments"
+    ],
+    "effectiveTerms": {
+      "purchasePrice": "Current price after amendments",
+      "closingDate": "Current closing date after amendments",
+      "feasibilityExpiration": "Current feasibility deadline",
+      "otherKeyTerms": "Any other significantly modified terms"
+    }
+  },
+
+  "confidence": 0.95,
+  "warnings": [
+    "Include any concerns about conflicting amendments or ambiguous changes"
+  ]
+}
+
+IMPORTANT INSTRUCTIONS:
+1. Return ONLY the JSON object, no additional text or markdown formatting.
+2. The main analysis fields should reflect the CURRENT/FINAL terms after all amendments
+3. Track every change made by amendments in the amendmentSummary
+4. If an amendment extends a deadline, update the main field AND document the change
+5. If amendments conflict, note this in warnings and use the most recent amendment's value
+6. The preFeasibilityChecklist and preClosingChecklist should reflect CURRENT obligations
+7. Order documents chronologically in documentOrder
+8. Highlight any terms that were changed multiple times across amendments`
+}

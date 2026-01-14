@@ -82,6 +82,40 @@ export interface KeyMilestone {
   category: "CONTRACT" | "FEASIBILITY" | "TITLE" | "SURVEY" | "FINANCING" | "CLOSING" | "POST_CLOSING"
 }
 
+export interface AmendmentChange {
+  field: string
+  originalValue: string
+  newValue: string
+  description: string
+  significance: "HIGH" | "MEDIUM" | "LOW"
+}
+
+export interface DocumentOrderEntry {
+  order: number
+  name: string
+  type: "PURCHASE_AGREEMENT" | "AMENDMENT"
+  date?: string
+  description?: string
+}
+
+export interface ChangesByDocument {
+  documentName: string
+  documentDate?: string
+  changes: AmendmentChange[]
+}
+
+export interface AmendmentSummary {
+  documentOrder: DocumentOrderEntry[]
+  changesByDocument: ChangesByDocument[]
+  keyChanges: string[]
+  effectiveTerms: {
+    purchasePrice?: string
+    closingDate?: string
+    feasibilityExpiration?: string
+    otherKeyTerms?: string
+  }
+}
+
 export interface ContractAnalysisResult {
   // Parties
   buyer: PartyInfo
@@ -161,6 +195,9 @@ export interface ContractAnalysisResult {
 
   // Key Milestones for timeline import
   keyMilestones?: KeyMilestone[]
+
+  // Amendment Summary (for multi-document analysis)
+  amendmentSummary?: AmendmentSummary
 
   // Metadata
   confidence: number
