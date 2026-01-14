@@ -77,7 +77,7 @@ export function DealsList() {
           <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
         </div>
       ) : deals.length === 0 ? (
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="py-10 text-center">
             <p className="text-gray-500 mb-4">
               {includeArchived ? "No deals found" : "No active deals"}
@@ -91,7 +91,7 @@ export function DealsList() {
         <div className="grid gap-4">
           {deals.map((deal) => (
             <Link key={deal.id} href={`/deals/${deal.id}`}>
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <Card className="bg-slate-900 border-slate-800 hover:shadow-md transition-shadow cursor-pointer">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <div>

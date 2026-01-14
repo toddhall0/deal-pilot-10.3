@@ -132,11 +132,11 @@ export default function ClientsPage() {
 
       {/* Clients Table */}
       {isLoading ? (
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <TableSkeleton rows={6} columns={4} />
         </Card>
       ) : clients.length === 0 ? (
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="py-10 text-center">
             <Users className="mx-auto h-10 w-10 text-gray-300 mb-2" />
             <p className="text-gray-500 mb-4">No clients found</p>
@@ -147,7 +147,7 @@ export default function ClientsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card className="bg-slate-900 border-slate-800">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
