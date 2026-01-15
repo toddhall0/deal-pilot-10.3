@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getFileBuffer } from "@/lib/storage"
+import { getFileBuffer, uploadFile } from "@/lib/storage"
 import { analyzeContract } from "@/lib/ai/contractAnalysis"
+import { generateAnalysisHtmlReport } from "@/lib/ai/analysisHtmlReport"
 import { ContractAnalysisResult } from "@/types/analysis"
 
 export async function POST(
@@ -12,17 +13,22 @@ export async function POST(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const { dealId, documentId } = await params
 
-    // Get document
+    // Get document with deal info
     const document = await prisma.document.findFirst({
       where: {
         id: documentId,
         dealId: dealId,
+      },
+      include: {
+        deal: {
+          select: { name: true },
+        },
       },
     })
 
@@ -54,6 +60,50 @@ export async function POST(
         analyzedAt: new Date(),
       },
     })
+
+    // Generate HTML Transaction Summary and save it as a document
+    try {
+      const htmlContent = generateAnalysisHtmlReport(
+        analysisResult,
+        document.name,
+        document.deal.name
+      )
+
+      const htmlBuffer = Buffer.from(htmlContent, "utf-8")
+      const reportName = `Transaction Summary - ${document.name.replace(/\.[^/.]+$/, "")}.html`
+      const fileKey = `deals/${dealId}/documents/${Date.now()}-${reportName.replace(/\s+/g, "_")}`
+
+      // Upload HTML to storage
+      await uploadFile(htmlBuffer, fileKey, "text/html")
+
+      // Get next sort order for proper ordering
+      const maxSortOrderResult = await prisma.document.aggregate({
+        where: { dealId },
+        _max: { sortOrder: true },
+      })
+      const nextSortOrder = (maxSortOrderResult._max.sortOrder ?? -1) + 1
+
+      // Create document record for the Transaction Summary
+      await prisma.document.create({
+        data: {
+          name: reportName,
+          originalName: reportName,
+          description: `Transaction Summary generated from analysis of ${document.name}`,
+          category: "TRANSACTION_SUMMARY",
+          fileKey: fileKey,
+          fileUrl: fileKey,
+          fileType: "text/html",
+          fileSize: htmlBuffer.length,
+          dealId: dealId,
+          uploadedById: session.user.id,
+          isAnalyzed: false,
+          sortOrder: nextSortOrder,
+        },
+      })
+    } catch (htmlError) {
+      // Log error but don't fail the whole analysis
+      console.error("Failed to generate Transaction Summary HTML:", htmlError)
+    }
 
     return NextResponse.json({
       success: true,

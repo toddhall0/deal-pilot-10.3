@@ -63,19 +63,28 @@ export async function POST(
     // Upload to storage
     await uploadFile(htmlBuffer, fileKey, "text/html")
 
+    // Get next sort order for proper ordering
+    const maxSortOrderResult = await prisma.document.aggregate({
+      where: { dealId },
+      _max: { sortOrder: true },
+    })
+    const nextSortOrder = (maxSortOrderResult._max.sortOrder ?? -1) + 1
+
     // Create document record
     const newDocument = await prisma.document.create({
       data: {
         name: reportName,
         originalName: reportName,
         description: `Analysis report generated from ${document.name}`,
-        category: "OTHER",
+        category: "TRANSACTION_SUMMARY",
         fileKey: fileKey,
+        fileUrl: fileKey,
         fileType: "text/html",
         fileSize: htmlBuffer.length,
         dealId: dealId,
         uploadedById: session.user.id,
         isAnalyzed: false,
+        sortOrder: nextSortOrder,
       },
     })
 

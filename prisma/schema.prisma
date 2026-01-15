@@ -82,6 +82,7 @@ enum DocumentCategory {
   CLOSING_DRAFT
   CLOSING_FINAL
   ENTITY
+  TRANSACTION_SUMMARY
   // Old categories (kept for backward compatibility with existing data)
   CONTRACT
   AMENDMENT

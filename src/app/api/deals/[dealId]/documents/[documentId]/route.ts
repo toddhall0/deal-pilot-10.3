@@ -10,7 +10,7 @@ const updateDocumentSchema = z.object({
   description: z.string().optional().nullable(),
   category: z.enum([
     // New categories
-    "PSA_AMENDMENTS", "DUE_DILIGENCE", "TITLE_SURVEY", "CLOSING_DRAFT", "CLOSING_FINAL", "ENTITY",
+    "PSA_AMENDMENTS", "DUE_DILIGENCE", "TITLE_SURVEY", "CLOSING_DRAFT", "CLOSING_FINAL", "ENTITY", "TRANSACTION_SUMMARY",
     // Old categories (kept for backward compatibility)
     "CONTRACT", "AMENDMENT", "TITLE", "SURVEY", "ENVIRONMENTAL", "FINANCIAL", "LEGAL", "CORRESPONDENCE", "CLOSING",
     "OTHER"
