@@ -63,6 +63,15 @@ export async function POST(
       dueDiligenceItems: analysisResult.dueDiligenceItems || [],
       closingDocuments: analysisResult.closingDocuments || [],
       confidence: analysisResult.confidence || 0.5,
+      // Optional arrays that might be accessed
+      warnings: analysisResult.warnings || [],
+      specialProvisions: analysisResult.specialProvisions || [],
+      preFeasibilityChecklist: analysisResult.preFeasibilityChecklist || [],
+      preClosingChecklist: analysisResult.preClosingChecklist || [],
+      keyMilestones: analysisResult.keyMilestones || [],
+      postClosingObligations: analysisResult.postClosingObligations || [],
+      missingDateDependencies: analysisResult.missingDateDependencies || [],
+      prorationItems: analysisResult.prorationItems || [],
     }
 
     // Update document with analysis
@@ -184,6 +193,15 @@ export async function GET(
       dueDiligenceItems: analysisResult.dueDiligenceItems || [],
       closingDocuments: analysisResult.closingDocuments || [],
       confidence: analysisResult.confidence || 0.5,
+      // Optional arrays that might be accessed
+      warnings: analysisResult.warnings || [],
+      specialProvisions: analysisResult.specialProvisions || [],
+      preFeasibilityChecklist: analysisResult.preFeasibilityChecklist || [],
+      preClosingChecklist: analysisResult.preClosingChecklist || [],
+      keyMilestones: analysisResult.keyMilestones || [],
+      postClosingObligations: analysisResult.postClosingObligations || [],
+      missingDateDependencies: analysisResult.missingDateDependencies || [],
+      prorationItems: analysisResult.prorationItems || [],
     }
 
     return NextResponse.json({
