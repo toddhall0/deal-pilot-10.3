@@ -51,12 +51,26 @@ export async function POST(
     // Analyze contract with Claude (handles text extraction internally)
     const analysisResult = await analyzeContract(fileBuffer, document.fileType)
 
+    // Ensure required fields have default values to prevent rendering errors
+    const sanitizedResult = {
+      ...analysisResult,
+      buyer: analysisResult.buyer || { name: "Unknown Buyer" },
+      seller: analysisResult.seller || { name: "Unknown Seller" },
+      purchasePrice: analysisResult.purchasePrice || 0,
+      priceAdjustable: analysisResult.priceAdjustable ?? false,
+      deposits: analysisResult.deposits || [],
+      contingencies: analysisResult.contingencies || [],
+      dueDiligenceItems: analysisResult.dueDiligenceItems || [],
+      closingDocuments: analysisResult.closingDocuments || [],
+      confidence: analysisResult.confidence || 0.5,
+    }
+
     // Update document with analysis
     await prisma.document.update({
       where: { id: documentId },
       data: {
         isAnalyzed: true,
-        analysisResult: JSON.parse(JSON.stringify(analysisResult)),
+        analysisResult: JSON.parse(JSON.stringify(sanitizedResult)),
         analyzedAt: new Date(),
       },
     })
@@ -64,7 +78,7 @@ export async function POST(
     // Generate HTML Transaction Summary and save it as a document
     try {
       const htmlContent = generateAnalysisHtmlReport(
-        analysisResult,
+        sanitizedResult,
         document.name,
         document.deal.name
       )
@@ -107,7 +121,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      analysis: analysisResult,
+      analysis: sanitizedResult,
     })
   } catch (error) {
     console.error("Analysis error:", error)
@@ -158,8 +172,22 @@ export async function GET(
 
     const analysisResult = document.analysisResult as unknown as ContractAnalysisResult
 
+    // Ensure required fields have default values to prevent rendering errors
+    const sanitizedResult = {
+      ...analysisResult,
+      buyer: analysisResult.buyer || { name: "Unknown Buyer" },
+      seller: analysisResult.seller || { name: "Unknown Seller" },
+      purchasePrice: analysisResult.purchasePrice || 0,
+      priceAdjustable: analysisResult.priceAdjustable ?? false,
+      deposits: analysisResult.deposits || [],
+      contingencies: analysisResult.contingencies || [],
+      dueDiligenceItems: analysisResult.dueDiligenceItems || [],
+      closingDocuments: analysisResult.closingDocuments || [],
+      confidence: analysisResult.confidence || 0.5,
+    }
+
     return NextResponse.json({
-      analysis: analysisResult,
+      analysis: sanitizedResult,
       analyzedAt: document.analyzedAt,
     })
   } catch (error) {
