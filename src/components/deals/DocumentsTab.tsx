@@ -91,6 +91,19 @@ const CATEGORIES = [
   { value: "OTHER", label: "Other" },
 ]
 
+// Old category labels for display (backward compatibility with existing documents)
+const OLD_CATEGORY_LABELS: Record<string, string> = {
+  CONTRACT: "Contract (Legacy)",
+  AMENDMENT: "Amendment (Legacy)",
+  TITLE: "Title (Legacy)",
+  SURVEY: "Survey (Legacy)",
+  ENVIRONMENTAL: "Environmental (Legacy)",
+  FINANCIAL: "Financial (Legacy)",
+  LEGAL: "Legal (Legacy)",
+  CORRESPONDENCE: "Correspondence (Legacy)",
+  CLOSING: "Closing (Legacy)",
+}
+
 const SORT_OPTIONS = [
   { value: "manual", label: "Manual Order" },
   { value: "name", label: "Name" },
@@ -321,7 +334,7 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
   }
 
   function getCategoryLabel(value: string) {
-    return CATEGORIES.find((c) => c.value === value)?.label || value
+    return CATEGORIES.find((c) => c.value === value)?.label || OLD_CATEGORY_LABELS[value] || value
   }
 
   function getMonthYear(dateString: string) {

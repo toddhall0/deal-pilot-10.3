@@ -8,7 +8,13 @@ import { z } from "zod"
 const updateDocumentSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional().nullable(),
-  category: z.enum(["PSA_AMENDMENTS", "DUE_DILIGENCE", "TITLE_SURVEY", "CLOSING_DRAFT", "CLOSING_FINAL", "ENTITY", "OTHER"]).optional(),
+  category: z.enum([
+    // New categories
+    "PSA_AMENDMENTS", "DUE_DILIGENCE", "TITLE_SURVEY", "CLOSING_DRAFT", "CLOSING_FINAL", "ENTITY",
+    // Old categories (kept for backward compatibility)
+    "CONTRACT", "AMENDMENT", "TITLE", "SURVEY", "ENVIRONMENTAL", "FINANCIAL", "LEGAL", "CORRESPONDENCE", "CLOSING",
+    "OTHER"
+  ]).optional(),
   folderId: z.string().optional().nullable(),
   sortOrder: z.number().optional(),
   isPrimaryContract: z.boolean().optional(),

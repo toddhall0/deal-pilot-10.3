@@ -75,12 +75,23 @@ enum TaskPriority {
 }
 
 enum DocumentCategory {
+  // New categories
   PSA_AMENDMENTS
   DUE_DILIGENCE
   TITLE_SURVEY
   CLOSING_DRAFT
   CLOSING_FINAL
   ENTITY
+  // Old categories (kept for backward compatibility with existing data)
+  CONTRACT
+  AMENDMENT
+  TITLE
+  SURVEY
+  ENVIRONMENTAL
+  FINANCIAL
+  LEGAL
+  CORRESPONDENCE
+  CLOSING
   OTHER
 }
 
