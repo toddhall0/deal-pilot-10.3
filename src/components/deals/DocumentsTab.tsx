@@ -19,6 +19,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
   Table,
   TableBody,
   TableCell,
@@ -46,6 +55,7 @@ import {
   ChevronUp,
   ChevronDown,
   Files,
+  Pencil,
 } from "lucide-react"
 
 interface Document {
@@ -91,6 +101,8 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
   const [viewMode, setViewMode] = useState<"card" | "list">("card")
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isMultiAnalysisOpen, setIsMultiAnalysisOpen] = useState(false)
+  const [renameDoc, setRenameDoc] = useState<Document | null>(null)
+  const [newName, setNewName] = useState("")
 
   useEffect(() => {
     fetchDocuments()
@@ -143,6 +155,30 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
       fetchDocuments()
     } catch (error) {
       console.error("Failed to set primary contract:", error)
+    }
+  }
+
+  function openRenameDialog(doc: Document) {
+    setRenameDoc(doc)
+    setNewName(doc.name)
+  }
+
+  async function handleRename() {
+    if (!renameDoc || !newName.trim()) return
+
+    try {
+      await fetch(`/api/deals/${dealId}/documents/${renameDoc.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName.trim() }),
+      })
+      setDocuments(documents.map((d) =>
+        d.id === renameDoc.id ? { ...d, name: newName.trim() } : d
+      ))
+      setRenameDoc(null)
+      setNewName("")
+    } catch (error) {
+      console.error("Failed to rename document:", error)
     }
   }
 
@@ -399,6 +435,10 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                           Download
                         </a>
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openRenameDialog(doc)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Rename
+                      </DropdownMenuItem>
                       <AnalysisDialog
                         dealId={dealId}
                         documentId={doc.id}
@@ -530,6 +570,10 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                             Download
                           </a>
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openRenameDialog(doc)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Rename
+                        </DropdownMenuItem>
                         <AnalysisDialog
                           dealId={dealId}
                           documentId={doc.id}
@@ -582,6 +626,33 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
           setSelectedIds(new Set())
         }}
       />
+
+      <Dialog open={!!renameDoc} onOpenChange={(open) => !open && setRenameDoc(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Document</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="document-name">Name</Label>
+              <Input
+                id="document-name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleRename()}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameDoc(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRename} disabled={!newName.trim()}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
