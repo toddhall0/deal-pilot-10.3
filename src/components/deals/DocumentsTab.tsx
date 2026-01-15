@@ -56,6 +56,7 @@ import {
   ChevronDown,
   Files,
   Pencil,
+  Tag,
 } from "lucide-react"
 
 interface Document {
@@ -103,6 +104,8 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
   const [isMultiAnalysisOpen, setIsMultiAnalysisOpen] = useState(false)
   const [renameDoc, setRenameDoc] = useState<Document | null>(null)
   const [newName, setNewName] = useState("")
+  const [categoryDoc, setCategoryDoc] = useState<Document | null>(null)
+  const [newCategory, setNewCategory] = useState("")
 
   useEffect(() => {
     fetchDocuments()
@@ -179,6 +182,30 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
       setNewName("")
     } catch (error) {
       console.error("Failed to rename document:", error)
+    }
+  }
+
+  function openCategoryDialog(doc: Document) {
+    setCategoryDoc(doc)
+    setNewCategory(doc.category)
+  }
+
+  async function handleChangeCategory() {
+    if (!categoryDoc || !newCategory) return
+
+    try {
+      await fetch(`/api/deals/${dealId}/documents/${categoryDoc.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: newCategory }),
+      })
+      setDocuments(documents.map((d) =>
+        d.id === categoryDoc.id ? { ...d, category: newCategory } : d
+      ))
+      setCategoryDoc(null)
+      setNewCategory("")
+    } catch (error) {
+      console.error("Failed to change document category:", error)
     }
   }
 
@@ -439,6 +466,10 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                         <Pencil className="mr-2 h-4 w-4" />
                         Rename
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openCategoryDialog(doc)}>
+                        <Tag className="mr-2 h-4 w-4" />
+                        Change Category
+                      </DropdownMenuItem>
                       <AnalysisDialog
                         dealId={dealId}
                         documentId={doc.id}
@@ -574,6 +605,10 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                           <Pencil className="mr-2 h-4 w-4" />
                           Rename
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openCategoryDialog(doc)}>
+                          <Tag className="mr-2 h-4 w-4" />
+                          Change Category
+                        </DropdownMenuItem>
                         <AnalysisDialog
                           dealId={dealId}
                           documentId={doc.id}
@@ -648,6 +683,39 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
               Cancel
             </Button>
             <Button onClick={handleRename} disabled={!newName.trim()}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!categoryDoc} onOpenChange={(open) => !open && setCategoryDoc(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Category</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="document-category">Category</Label>
+              <Select value={newCategory} onValueChange={setNewCategory}>
+                <SelectTrigger id="document-category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.filter((cat) => cat.value !== "ALL").map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCategoryDoc(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleChangeCategory} disabled={!newCategory}>
               Save
             </Button>
           </DialogFooter>
