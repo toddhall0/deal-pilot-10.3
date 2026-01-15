@@ -94,11 +94,20 @@ export async function POST(
     // Upload to S3
     await uploadFile(buffer, fileKey, file.type)
 
-    // Get deal info for notification
-    const deal = await prisma.deal.findUnique({
-      where: { id: dealId },
-      select: { dealNumber: true },
-    })
+    // Get deal info for notification and max sortOrder for new document
+    const [deal, maxSortOrderResult] = await Promise.all([
+      prisma.deal.findUnique({
+        where: { id: dealId },
+        select: { dealNumber: true },
+      }),
+      prisma.document.aggregate({
+        where: { dealId },
+        _max: { sortOrder: true },
+      }),
+    ])
+
+    // New documents go at the end of the list
+    const nextSortOrder = (maxSortOrderResult._max.sortOrder ?? -1) + 1
 
     // Create database record
     const document = await prisma.document.create({
@@ -115,6 +124,7 @@ export async function POST(
         uploadedById: session.user.id,
         folderId: folderId || null,
         issueId: issueId || null,
+        sortOrder: nextSortOrder,
       },
       include: {
         uploadedBy: {
