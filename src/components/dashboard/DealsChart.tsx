@@ -21,6 +21,22 @@ interface DealsChartProps {
 }
 
 export function DealsChart({ data }: DealsChartProps) {
+  // Guard against undefined or empty data
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return (
+      <Card className="bg-slate-800 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-base text-white">Deal Activity (Last 12 Months)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[300px] flex items-center justify-center text-slate-400">
+            No deal data available
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   // Format month labels
   const formattedData = data.map((item) => {
     const date = new Date(item.month + "-01")

@@ -30,6 +30,26 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export function StatusPieChart({ data, title = "Deals by Status" }: StatusPieChartProps) {
+  // Guard against undefined or empty data
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return (
+      <Card className="bg-slate-800 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-base text-white">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[250px] flex items-center justify-center text-slate-400">
+            No status data available
+          </div>
+          <div className="text-center mt-2">
+            <p className="text-2xl font-bold text-white">0</p>
+            <p className="text-sm text-slate-400">Total Deals</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   // Format status labels
   const formattedData = data.map((item) => ({
     ...item,
