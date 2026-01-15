@@ -24,6 +24,9 @@ interface UpcomingMilestonesProps {
 }
 
 export function UpcomingMilestones({ milestones }: UpcomingMilestonesProps) {
+  // Guard against undefined milestones
+  const safeMilestones = milestones || []
+
   const getDaysUntil = (dueDate: string) => {
     const now = new Date()
     const due = new Date(dueDate)
@@ -46,16 +49,16 @@ export function UpcomingMilestones({ milestones }: UpcomingMilestonesProps) {
           <Calendar className="h-4 w-4" />
           Upcoming Milestones
         </CardTitle>
-        <Badge variant="secondary" className="bg-slate-800 text-slate-300">{milestones.length}</Badge>
+        <Badge variant="secondary" className="bg-slate-800 text-slate-300">{safeMilestones.length}</Badge>
       </CardHeader>
       <CardContent>
-        {milestones.length === 0 ? (
+        {safeMilestones.length === 0 ? (
           <p className="text-center text-slate-400 py-4">
             No upcoming milestones this week
           </p>
         ) : (
           <div className="space-y-3">
-            {milestones.map((milestone) => {
+            {safeMilestones.map((milestone) => {
               const daysUntil = getDaysUntil(milestone.dueDate)
               const isUrgent = daysUntil <= 1
 
