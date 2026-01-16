@@ -126,8 +126,13 @@ export function DashboardContent() {
     async function fetchData() {
       try {
         const statsRes = await fetch("/api/dashboard/stats")
-        const statsData = await statsRes.json()
-        setStats(statsData)
+        if (statsRes.ok) {
+          const statsData = await statsRes.json()
+          // Only set stats if it looks like valid data (has expected properties)
+          if (statsData && typeof statsData === 'object' && !statsData.error) {
+            setStats(statsData)
+          }
+        }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error)
       } finally {
@@ -204,15 +209,15 @@ export function DashboardContent() {
       </div>
 
       {/* Milestones */}
-      <UpcomingMilestones milestones={stats?.upcomingMilestones || []} />
+      <UpcomingMilestones milestones={Array.isArray(stats?.upcomingMilestones) ? stats.upcomingMilestones : []} />
 
       {/* Charts - Secondary */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <DealsChart data={stats?.dealsByMonth || []} />
+          <DealsChart data={Array.isArray(stats?.dealsByMonth) ? stats.dealsByMonth : []} />
         </div>
         <div>
-          <StatusPieChart data={stats?.dealsByStatus || []} />
+          <StatusPieChart data={Array.isArray(stats?.dealsByStatus) ? stats.dealsByStatus : []} />
         </div>
       </div>
     </div>
