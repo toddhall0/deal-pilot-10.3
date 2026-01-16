@@ -64,7 +64,7 @@ export function GlobalSearch() {
         const response = await fetch(`/api/search?q=${encodeURIComponent(debouncedQuery)}`)
         if (response.ok) {
           const data = await response.json()
-          setResults(data.results)
+          setResults(data.results || [])
         }
       } catch (error) {
         console.error("Search error:", error)
