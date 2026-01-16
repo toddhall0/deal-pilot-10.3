@@ -149,8 +149,12 @@ export function DashboardContent() {
     )
   }
 
+  // Ensure arrays have defaults
+  const safeTasks = tasks || []
+  const safeIssues = issues || []
+
   // Count tasks due this week
-  const tasksDueThisWeek = tasks.filter((t) => {
+  const tasksDueThisWeek = safeTasks.filter((t) => {
     if (!t.dueDate) return false
     const dueDate = new Date(t.dueDate)
     const now = new Date()
@@ -185,7 +189,7 @@ export function DashboardContent() {
         />
         <StatCard
           title="Open Issues"
-          value={issues.length}
+          value={safeIssues.length}
           subtitle="Issues to resolve"
           icon={CircleAlert}
           iconColor="text-red-400"
@@ -194,8 +198,8 @@ export function DashboardContent() {
 
       {/* Main Content - Tasks, Issues, and Milestones */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <TaskList tasks={tasks} onTaskComplete={fetchTasks} />
-        <IssuesList issues={issues} />
+        <TaskList tasks={safeTasks} onTaskComplete={fetchTasks} />
+        <IssuesList issues={safeIssues} />
       </div>
 
       {/* Milestones */}
