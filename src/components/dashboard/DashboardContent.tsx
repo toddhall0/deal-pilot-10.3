@@ -208,18 +208,22 @@ export function DashboardContent() {
         <IssuesList issues={safeIssues} />
       </div>
 
-      {/* Milestones */}
-      <UpcomingMilestones milestones={Array.isArray(stats?.upcomingMilestones) ? stats.upcomingMilestones : []} />
+      {/* Milestones - only render if stats loaded */}
+      {stats && (
+        <UpcomingMilestones milestones={Array.isArray(stats.upcomingMilestones) ? stats.upcomingMilestones : []} />
+      )}
 
-      {/* Charts - Secondary */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <DealsChart data={Array.isArray(stats?.dealsByMonth) ? stats.dealsByMonth : []} />
+      {/* Charts - only render if stats loaded */}
+      {stats && (
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <DealsChart data={Array.isArray(stats.dealsByMonth) ? stats.dealsByMonth : []} />
+          </div>
+          <div>
+            <StatusPieChart data={Array.isArray(stats.dealsByStatus) ? stats.dealsByStatus : []} />
+          </div>
         </div>
-        <div>
-          <StatusPieChart data={Array.isArray(stats?.dealsByStatus) ? stats.dealsByStatus : []} />
-        </div>
-      </div>
+      )}
     </div>
   )
 }
