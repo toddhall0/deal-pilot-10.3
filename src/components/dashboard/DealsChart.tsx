@@ -37,18 +37,41 @@ export function DealsChart({ data }: DealsChartProps) {
     )
   }
 
-  // Format month labels
-  const formattedData = data.map((item) => {
-    const date = new Date(item.month + "-01")
-    return {
-      ...item,
-      monthLabel: date.toLocaleDateString("en-US", {
-        month: "short",
-        year: "2-digit",
-      }),
-      valueInMillions: item.value / 1000000,
-    }
-  })
+  // Filter out any malformed items and format valid ones
+  const formattedData = data
+    .filter((item) => item && typeof item.month === 'string' && typeof item.count === 'number')
+    .map((item) => {
+      try {
+        const date = new Date(item.month + "-01")
+        return {
+          ...item,
+          monthLabel: isNaN(date.getTime()) ? item.month : date.toLocaleDateString("en-US", {
+            month: "short",
+            year: "2-digit",
+          }),
+          valueInMillions: (item.value || 0) / 1000000,
+        }
+      } catch {
+        return null
+      }
+    })
+    .filter(Boolean)
+
+  // Return empty state if no valid data after filtering
+  if (formattedData.length === 0) {
+    return (
+      <Card className="bg-slate-800 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-base text-white">Deal Activity (Last 12 Months)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[300px] flex items-center justify-center text-slate-400">
+            No deal data available
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const formatCurrency = (value: number) => {
     if (value >= 1) {

@@ -50,14 +50,36 @@ export function StatusPieChart({ data, title = "Deals by Status" }: StatusPieCha
     )
   }
 
-  // Format status labels
-  const formattedData = data.map((item) => ({
-    ...item,
-    name: item.status.replace(/_/g, " "),
-    color: STATUS_COLORS[item.status] || "#6b7280",
-  }))
+  // Filter and format status labels - ensure data items are valid
+  const formattedData = data
+    .filter((item) => item && typeof item.status === 'string' && typeof item.count === 'number')
+    .map((item) => ({
+      ...item,
+      name: (item.status || '').replace(/_/g, " "),
+      color: STATUS_COLORS[item.status] || "#6b7280",
+    }))
 
-  const total = formattedData.reduce((sum, item) => sum + item.count, 0)
+  // Return empty state if no valid data after filtering
+  if (formattedData.length === 0) {
+    return (
+      <Card className="bg-slate-800 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-base text-white">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[250px] flex items-center justify-center text-slate-400">
+            No status data available
+          </div>
+          <div className="text-center mt-2">
+            <p className="text-2xl font-bold text-white">0</p>
+            <p className="text-sm text-slate-400">Total Deals</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const total = formattedData.reduce((sum, item) => sum + (item.count || 0), 0)
 
   return (
     <Card className="bg-slate-800 border-slate-700">
