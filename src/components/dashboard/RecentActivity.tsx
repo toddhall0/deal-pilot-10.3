@@ -28,8 +28,8 @@ interface RecentActivityProps {
 }
 
 export function RecentActivity({ activities }: RecentActivityProps) {
-  // Guard against undefined activities
-  const safeActivities = activities || []
+  // Guard against undefined or non-array activities
+  const safeActivities = Array.isArray(activities) ? activities : []
 
   const getActivityIcon = (entityType: string) => {
     switch (entityType) {

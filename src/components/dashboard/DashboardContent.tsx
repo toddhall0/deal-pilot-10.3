@@ -151,8 +151,8 @@ export function DashboardContent() {
   }
 
   // Ensure arrays have defaults
-  const safeTasks = tasks || []
-  const safeIssues = issues || []
+  const safeTasks = Array.isArray(tasks) ? tasks : []
+  const safeIssues = Array.isArray(issues) ? issues : []
 
   // Count tasks due this week
   const tasksDueThisWeek = safeTasks.filter((t) => {

@@ -24,8 +24,8 @@ interface UpcomingMilestonesProps {
 }
 
 export function UpcomingMilestones({ milestones }: UpcomingMilestonesProps) {
-  // Guard against undefined milestones
-  const safeMilestones = milestones || []
+  // Guard against undefined or non-array milestones
+  const safeMilestones = Array.isArray(milestones) ? milestones : []
 
   const getDaysUntil = (dueDate: string) => {
     const now = new Date()

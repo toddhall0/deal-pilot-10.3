@@ -48,8 +48,8 @@ const columnConfig = [
 ]
 
 export function IssuesList({ issues }: IssuesListProps) {
-  // Guard against undefined issues
-  const safeIssues = issues || []
+  // Guard against undefined or non-array issues
+  const safeIssues = Array.isArray(issues) ? issues : []
   const { getColumnWidth, ResizeHandle } = useResizableColumns(columnConfig, "dashboard-issues")
 
   const priorityColors: Record<string, string> = {

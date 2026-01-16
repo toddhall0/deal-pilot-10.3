@@ -49,8 +49,8 @@ const columnConfig = [
 ]
 
 export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
-  // Guard against undefined tasks
-  const safeTasks = tasks || []
+  // Guard against undefined or non-array tasks
+  const safeTasks = Array.isArray(tasks) ? tasks : []
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set())
 
   const priorityColors: Record<string, string> = {
