@@ -102,7 +102,8 @@ export function DashboardContent() {
       const res = await fetch("/api/tasks?status=TODO,IN_PROGRESS,IN_REVIEW,BLOCKED&limit=10")
       if (res.ok) {
         const data = await res.json()
-        setTasks(data.tasks || data)
+        const taskData = data.tasks || data
+        setTasks(Array.isArray(taskData) ? taskData : [])
       }
     } catch (error) {
       console.error("Failed to fetch tasks:", error)
@@ -114,7 +115,7 @@ export function DashboardContent() {
       const res = await fetch("/api/issues?status=OPEN,IN_PROGRESS&limit=10")
       if (res.ok) {
         const data = await res.json()
-        setIssues(data)
+        setIssues(Array.isArray(data) ? data : [])
       }
     } catch (error) {
       console.error("Failed to fetch issues:", error)
