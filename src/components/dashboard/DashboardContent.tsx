@@ -222,8 +222,8 @@ export function DashboardContent() {
         <UpcomingMilestones milestones={Array.isArray(stats.upcomingMilestones) ? stats.upcomingMilestones : []} />
       )}
 
-      {/* Charts - only render if stats loaded */}
-      {stats && (
+      {/* Charts temporarily disabled for debugging */}
+      {/* {stats && (
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <DealsChart data={Array.isArray(stats.dealsByMonth) ? stats.dealsByMonth : []} />
@@ -232,7 +232,7 @@ export function DashboardContent() {
             <StatusPieChart data={Array.isArray(stats.dealsByStatus) ? stats.dealsByStatus : []} />
           </div>
         </div>
-      )}
+      )} */}
     </div>
   )
 }
