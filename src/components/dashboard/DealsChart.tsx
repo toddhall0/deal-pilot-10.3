@@ -87,7 +87,7 @@ export function DealsChart({ data }: DealsChartProps) {
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
+          <ResponsiveContainer width="100%" height={300}>
             <BarChart data={formattedData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
               <XAxis
