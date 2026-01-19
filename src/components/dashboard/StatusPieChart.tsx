@@ -88,7 +88,7 @@ export function StatusPieChart({ data, title = "Deals by Status" }: StatusPieCha
       </CardHeader>
       <CardContent>
         <div className="h-[250px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
             <PieChart>
               <Pie
                 data={formattedData}
