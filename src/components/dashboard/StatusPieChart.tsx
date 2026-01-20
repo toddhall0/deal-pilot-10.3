@@ -1,14 +1,16 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Legend,
-  Tooltip,
-} from "recharts"
+
+// Recharts temporarily disabled for debugging
+// import {
+//   PieChart,
+//   Pie,
+//   Cell,
+//   ResponsiveContainer,
+//   Legend,
+//   Tooltip,
+// } from "recharts"
 
 interface StatusPieChartProps {
   data: {
@@ -18,68 +20,10 @@ interface StatusPieChartProps {
   title?: string
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  DRAFT: "#9ca3af",
-  ACTIVE: "#60a5fa",
-  UNDER_CONTRACT: "#a78bfa",
-  IN_DUE_DILIGENCE: "#fbbf24",
-  PENDING_CLOSING: "#f97316",
-  CLOSED: "#10b981",
-  TERMINATED: "#ef4444",
-  ON_HOLD: "#6b7280",
-}
-
 export function StatusPieChart({ data, title = "Deals by Status" }: StatusPieChartProps) {
-  // Guard against undefined or empty data
-  if (!data || !Array.isArray(data) || data.length === 0) {
-    return (
-      <Card className="bg-slate-800 border-slate-700">
-        <CardHeader>
-          <CardTitle className="text-base text-white">{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[250px] flex items-center justify-center text-slate-400">
-            No status data available
-          </div>
-          <div className="text-center mt-2">
-            <p className="text-2xl font-bold text-white">0</p>
-            <p className="text-sm text-slate-400">Total Deals</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  // Filter and format status labels - ensure data items are valid
-  const formattedData = data
-    .filter((item) => item && typeof item.status === 'string' && typeof item.count === 'number')
-    .map((item) => ({
-      ...item,
-      name: (item.status || '').replace(/_/g, " "),
-      color: STATUS_COLORS[item.status] || "#6b7280",
-    }))
-
-  // Return empty state if no valid data after filtering
-  if (formattedData.length === 0) {
-    return (
-      <Card className="bg-slate-800 border-slate-700">
-        <CardHeader>
-          <CardTitle className="text-base text-white">{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[250px] flex items-center justify-center text-slate-400">
-            No status data available
-          </div>
-          <div className="text-center mt-2">
-            <p className="text-2xl font-bold text-white">0</p>
-            <p className="text-sm text-slate-400">Total Deals</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const total = formattedData.reduce((sum, item) => sum + (item.count || 0), 0)
+  // Charts temporarily disabled - return placeholder
+  const safeData = Array.isArray(data) ? data : []
+  const total = safeData.reduce((sum, item) => sum + (item?.count || 0), 0)
 
   return (
     <Card className="bg-slate-800 border-slate-700">
@@ -87,42 +31,8 @@ export function StatusPieChart({ data, title = "Deals by Status" }: StatusPieCha
         <CardTitle className="text-base text-white">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px]">
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={formattedData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={90}
-                paddingAngle={2}
-                dataKey="count"
-                label={({ percent }) =>
-                  (percent ?? 0) > 0.05 ? `${((percent ?? 0) * 100).toFixed(0)}%` : ""
-                }
-                labelLine={false}
-              >
-                {formattedData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
-                labelStyle={{ color: "#f1f5f9" }}
-                itemStyle={{ color: "#94a3b8" }}
-                formatter={(value) => [value, "Deals"]}
-              />
-              <Legend
-                layout="horizontal"
-                verticalAlign="bottom"
-                align="center"
-                formatter={(value) => (
-                  <span className="text-xs text-slate-400">{value}</span>
-                )}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+        <div className="h-[250px] flex items-center justify-center text-slate-400">
+          Charts temporarily disabled
         </div>
         <div className="text-center mt-2">
           <p className="text-2xl font-bold text-white">{total}</p>
