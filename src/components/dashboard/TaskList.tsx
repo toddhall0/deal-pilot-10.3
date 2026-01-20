@@ -49,6 +49,8 @@ const columnConfig = [
 ]
 
 export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
+  // Guard against undefined or non-array tasks
+  const safeTasks = Array.isArray(tasks) ? tasks : []
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set())
 
   const priorityColors: Record<string, string> = {
@@ -135,7 +137,7 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
         </Link>
       </CardHeader>
       <CardContent className="px-0 pb-0">
-        {tasks.length === 0 ? (
+        {safeTasks.length === 0 ? (
           <div className="text-center py-6 text-slate-500 px-6">
             <CheckSquare className="h-8 w-8 mx-auto mb-2 text-slate-600" />
             <p>No pending tasks</p>
@@ -196,7 +198,7 @@ export function TaskList({ tasks, onTaskComplete }: TaskListProps) {
                 </tr>
               </thead>
               <tbody>
-                {tasks.map((task) => (
+                {safeTasks.map((task) => (
                   <tr
                     key={task.id}
                     className={`border-b border-slate-800 last:border-b-0 hover:bg-slate-800/50 transition-colors ${

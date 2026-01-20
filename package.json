@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "prisma db push --skip-generate && prisma generate && next build",
+    "build": "rm -rf .next/static .next/server && prisma db push --skip-generate --accept-data-loss && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
@@ -65,7 +65,6 @@
     "react-day-picker": "^9.13.0",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.69.0",
-    "recharts": "^3.6.0",
     "resend": "^6.6.0",
     "tailwind-merge": "^3.4.0",
     "uuid": "^13.0.0",

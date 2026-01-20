@@ -28,16 +28,12 @@ interface DocumentUploaderProps {
 }
 
 const CATEGORIES = [
-  { value: "CONTRACT", label: "Contract" },
-  { value: "AMENDMENT", label: "Amendment" },
-  { value: "DUE_DILIGENCE", label: "Due Diligence" },
-  { value: "TITLE", label: "Title" },
-  { value: "SURVEY", label: "Survey" },
-  { value: "ENVIRONMENTAL", label: "Environmental" },
-  { value: "FINANCIAL", label: "Financial" },
-  { value: "LEGAL", label: "Legal" },
-  { value: "CORRESPONDENCE", label: "Correspondence" },
-  { value: "CLOSING", label: "Closing" },
+  { value: "PSA_AMENDMENTS", label: "PSA and Amendments" },
+  { value: "DUE_DILIGENCE", label: "Due Diligence Documents" },
+  { value: "TITLE_SURVEY", label: "Title/Survey Documents" },
+  { value: "CLOSING_DRAFT", label: "Closing Documents (Draft)" },
+  { value: "CLOSING_FINAL", label: "Closing Documents (Final)" },
+  { value: "ENTITY", label: "Entity Documents" },
   { value: "OTHER", label: "Other" },
 ]
 

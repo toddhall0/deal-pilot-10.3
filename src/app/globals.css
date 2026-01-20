@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "../styles/mobile.css";
 
+/* Enable class-based dark mode for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --background: 222.2 84% 4.9%;

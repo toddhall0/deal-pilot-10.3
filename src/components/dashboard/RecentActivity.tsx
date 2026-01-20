@@ -28,6 +28,9 @@ interface RecentActivityProps {
 }
 
 export function RecentActivity({ activities }: RecentActivityProps) {
+  // Guard against undefined or non-array activities
+  const safeActivities = Array.isArray(activities) ? activities : []
+
   const getActivityIcon = (entityType: string) => {
     switch (entityType) {
       case "DOCUMENT":
@@ -74,11 +77,11 @@ export function RecentActivity({ activities }: RecentActivityProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {activities.length === 0 ? (
+        {safeActivities.length === 0 ? (
           <p className="text-center text-slate-400 py-4">No recent activity</p>
         ) : (
           <div className="space-y-3">
-            {activities.slice(0, 10).map((activity) => (
+            {safeActivities.slice(0, 10).map((activity) => (
               <div key={activity.id} className="flex gap-3">
                 <div className="mt-0.5">{getActivityIcon(activity.entityType)}</div>
                 <div className="flex-1 min-w-0">

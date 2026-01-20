@@ -9,6 +9,9 @@ interface ColumnConfig {
 }
 
 export function useResizableColumns(columns: ColumnConfig[], storageKey?: string) {
+  // Ensure columns is always an array
+  const safeColumns = Array.isArray(columns) ? columns : []
+
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     // Try to load from localStorage if storageKey provided
     if (storageKey && typeof window !== "undefined") {
@@ -23,7 +26,7 @@ export function useResizableColumns(columns: ColumnConfig[], storageKey?: string
     }
     // Initialize with default widths
     const widths: Record<string, number> = {}
-    columns.forEach((col) => {
+    safeColumns.forEach((col) => {
       widths[col.key] = col.initialWidth
     })
     return widths
@@ -54,7 +57,7 @@ export function useResizableColumns(columns: ColumnConfig[], storageKey?: string
     (e: MouseEvent) => {
       if (!resizing) return
 
-      const column = columns.find((c) => c.key === resizing)
+      const column = safeColumns.find((c) => c.key === resizing)
       const minWidth = column?.minWidth || 50
       const diff = e.clientX - startX
       const newWidth = Math.max(minWidth, startWidth + diff)
@@ -64,7 +67,7 @@ export function useResizableColumns(columns: ColumnConfig[], storageKey?: string
         [resizing]: newWidth,
       }))
     },
-    [resizing, startX, startWidth, columns]
+    [resizing, startX, startWidth, safeColumns]
   )
 
   const handleMouseUp = useCallback(() => {

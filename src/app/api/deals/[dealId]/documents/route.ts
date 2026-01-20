@@ -24,7 +24,7 @@ export async function GET(
     if (category) where.category = category
     if (folderId) where.folderId = folderId
 
-    const documents = await prisma.document.findMany({
+    let documents = await prisma.document.findMany({
       where,
       include: {
         uploadedBy: {
@@ -37,6 +37,27 @@ export async function GET(
         { createdAt: "desc" },
       ],
     })
+
+    // Check for duplicate sortOrders and normalize if needed
+    const sortOrders = documents.map(d => d.sortOrder)
+    const hasDuplicates = sortOrders.length !== new Set(sortOrders).size
+
+    if (hasDuplicates && documents.length > 0) {
+      // Assign sequential sortOrders based on current order
+      const updates = documents.map((doc, index) =>
+        prisma.document.update({
+          where: { id: doc.id },
+          data: { sortOrder: index },
+        })
+      )
+      await Promise.all(updates)
+
+      // Update local array with new sortOrders
+      documents = documents.map((doc, index) => ({
+        ...doc,
+        sortOrder: index,
+      }))
+    }
 
     // Generate signed URLs for each document
     const documentsWithUrls = await Promise.all(

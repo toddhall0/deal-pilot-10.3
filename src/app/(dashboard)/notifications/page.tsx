@@ -63,12 +63,12 @@ export default function NotificationsPage() {
       if (response.ok) {
         const data = await response.json()
         if (loadMore) {
-          setNotifications((prev) => [...prev, ...data.notifications])
+          setNotifications((prev) => [...prev, ...(data.notifications || [])])
         } else {
-          setNotifications(data.notifications)
+          setNotifications(data.notifications || [])
         }
-        setHasMore(data.hasMore)
-        setCursor(data.nextCursor)
+        setHasMore(data.hasMore ?? false)
+        setCursor(data.nextCursor ?? null)
       }
     } catch (error) {
       console.error("Failed to fetch notifications:", error)

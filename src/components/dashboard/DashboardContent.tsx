@@ -1,19 +1,30 @@
 "use client"
 
+// BUILD IDENTIFIER: 2026-01-20-v2 - GlobalSearch DISABLED to test cmdk
+console.log("DashboardContent BUILD: 2026-01-20-v2 (GlobalSearch DISABLED)")
+
 import { useState, useEffect, useCallback } from "react"
 import { StatCard } from "./StatCard"
-import { DealsChart } from "./DealsChart"
-import { StatusPieChart } from "./StatusPieChart"
 import { UpcomingMilestones } from "./UpcomingMilestones"
 import { TaskList } from "./TaskList"
 import { IssuesList } from "./IssuesList"
 import {
   CheckSquare,
   AlertTriangle,
-  Calendar,
   Clock,
   CircleAlert,
 } from "lucide-react"
+
+// Charts temporarily disabled - see bottom of file
+// import dynamic from "next/dynamic"
+// const DealsChart = dynamic(() => import("./DealsChart").then(mod => ({ default: mod.DealsChart })), {
+//   ssr: false,
+//   loading: () => <div className="h-[300px] bg-slate-800 rounded-lg animate-pulse" />,
+// })
+// const StatusPieChart = dynamic(() => import("./StatusPieChart").then(mod => ({ default: mod.StatusPieChart })), {
+//   ssr: false,
+//   loading: () => <div className="h-[250px] bg-slate-800 rounded-lg animate-pulse" />,
+// })
 
 interface DealsByStatus {
   status: string
@@ -102,7 +113,8 @@ export function DashboardContent() {
       const res = await fetch("/api/tasks?status=TODO,IN_PROGRESS,IN_REVIEW,BLOCKED&limit=10")
       if (res.ok) {
         const data = await res.json()
-        setTasks(data.tasks || data)
+        const taskData = data.tasks || data
+        setTasks(Array.isArray(taskData) ? taskData : [])
       }
     } catch (error) {
       console.error("Failed to fetch tasks:", error)
@@ -114,7 +126,7 @@ export function DashboardContent() {
       const res = await fetch("/api/issues?status=OPEN,IN_PROGRESS&limit=10")
       if (res.ok) {
         const data = await res.json()
-        setIssues(data)
+        setIssues(Array.isArray(data) ? data : [])
       }
     } catch (error) {
       console.error("Failed to fetch issues:", error)
@@ -125,8 +137,13 @@ export function DashboardContent() {
     async function fetchData() {
       try {
         const statsRes = await fetch("/api/dashboard/stats")
-        const statsData = await statsRes.json()
-        setStats(statsData)
+        if (statsRes.ok) {
+          const statsData = await statsRes.json()
+          // Only set stats if it looks like valid data (has expected properties)
+          if (statsData && typeof statsData === 'object' && !statsData.error) {
+            setStats(statsData)
+          }
+        }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error)
       } finally {
@@ -149,8 +166,12 @@ export function DashboardContent() {
     )
   }
 
+  // Ensure arrays have defaults
+  const safeTasks = Array.isArray(tasks) ? tasks : []
+  const safeIssues = Array.isArray(issues) ? issues : []
+
   // Count tasks due this week
-  const tasksDueThisWeek = tasks.filter((t) => {
+  const tasksDueThisWeek = safeTasks.filter((t) => {
     if (!t.dueDate) return false
     const dueDate = new Date(t.dueDate)
     const now = new Date()
@@ -185,7 +206,7 @@ export function DashboardContent() {
         />
         <StatCard
           title="Open Issues"
-          value={issues.length}
+          value={safeIssues.length}
           subtitle="Issues to resolve"
           icon={CircleAlert}
           iconColor="text-red-400"
@@ -194,22 +215,26 @@ export function DashboardContent() {
 
       {/* Main Content - Tasks, Issues, and Milestones */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <TaskList tasks={tasks} onTaskComplete={fetchTasks} />
-        <IssuesList issues={issues} />
+        <TaskList tasks={safeTasks} onTaskComplete={fetchTasks} />
+        <IssuesList issues={safeIssues} />
       </div>
 
-      {/* Milestones */}
-      <UpcomingMilestones milestones={stats?.upcomingMilestones || []} />
+      {/* Milestones - only render if stats loaded */}
+      {stats && (
+        <UpcomingMilestones milestones={Array.isArray(stats.upcomingMilestones) ? stats.upcomingMilestones : []} />
+      )}
 
-      {/* Charts - Secondary */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <DealsChart data={stats?.dealsByMonth || []} />
+      {/* Charts temporarily disabled for debugging */}
+      {/* {stats && (
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <DealsChart data={Array.isArray(stats.dealsByMonth) ? stats.dealsByMonth : []} />
+          </div>
+          <div>
+            <StatusPieChart data={Array.isArray(stats.dealsByStatus) ? stats.dealsByStatus : []} />
+          </div>
         </div>
-        <div>
-          <StatusPieChart data={stats?.dealsByStatus || []} />
-        </div>
-      </div>
+      )} */}
     </div>
   )
 }

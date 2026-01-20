@@ -1,0 +1,16 @@
+[phases.build]
+# Disable Next.js cache by setting environment variable
+# Cache buster: 2026-01-20-v1
+cmds = ["echo 'Build timestamp: 2026-01-20-v1' && NEXT_TELEMETRY_DISABLED=1 npm run build"]
+
+[phases.setup]
+# Ensure fresh node_modules
+nixPkgs = ["nodejs_22", "npm-9_x", "openssl"]
+
+[start]
+# Use standard next start
+cmd = "npm run start"
+
+[options]
+# Disable build caching
+NO_CACHE = true

@@ -48,6 +48,8 @@ const columnConfig = [
 ]
 
 export function IssuesList({ issues }: IssuesListProps) {
+  // Guard against undefined or non-array issues
+  const safeIssues = Array.isArray(issues) ? issues : []
   const { getColumnWidth, ResizeHandle } = useResizableColumns(columnConfig, "dashboard-issues")
 
   const priorityColors: Record<string, string> = {
@@ -74,9 +76,9 @@ export function IssuesList({ issues }: IssuesListProps) {
         <CardTitle className="text-base font-medium flex items-center gap-2 text-white">
           <AlertTriangle className="h-5 w-5 text-red-400" />
           Open Issues
-          {issues.length > 0 && (
+          {safeIssues.length > 0 && (
             <Badge className="bg-red-500/20 text-red-400 ml-1">
-              {issues.length}
+              {safeIssues.length}
             </Badge>
           )}
         </CardTitle>
@@ -86,7 +88,7 @@ export function IssuesList({ issues }: IssuesListProps) {
         </Button>
       </CardHeader>
       <CardContent className="px-0 pb-0">
-        {issues.length === 0 ? (
+        {safeIssues.length === 0 ? (
           <div className="text-center py-6 text-slate-500 px-6">
             <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-slate-600" />
             <p>No open issues</p>
@@ -141,7 +143,7 @@ export function IssuesList({ issues }: IssuesListProps) {
                 </tr>
               </thead>
               <tbody>
-                {issues.map((issue) => (
+                {safeIssues.map((issue) => (
                   <tr
                     key={issue.id}
                     className="border-b border-slate-800 last:border-b-0 hover:bg-slate-800/50 transition-colors"
