@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import dynamic from "next/dynamic"
 import { StatCard } from "./StatCard"
 import { UpcomingMilestones } from "./UpcomingMilestones"
 import { TaskList } from "./TaskList"
@@ -13,16 +12,16 @@ import {
   CircleAlert,
 } from "lucide-react"
 
-// Dynamic imports for chart components to avoid SSR issues with Recharts
-const DealsChart = dynamic(() => import("./DealsChart").then(mod => ({ default: mod.DealsChart })), {
-  ssr: false,
-  loading: () => <div className="h-[300px] bg-slate-800 rounded-lg animate-pulse" />,
-})
-
-const StatusPieChart = dynamic(() => import("./StatusPieChart").then(mod => ({ default: mod.StatusPieChart })), {
-  ssr: false,
-  loading: () => <div className="h-[250px] bg-slate-800 rounded-lg animate-pulse" />,
-})
+// Charts temporarily disabled - see bottom of file
+// import dynamic from "next/dynamic"
+// const DealsChart = dynamic(() => import("./DealsChart").then(mod => ({ default: mod.DealsChart })), {
+//   ssr: false,
+//   loading: () => <div className="h-[300px] bg-slate-800 rounded-lg animate-pulse" />,
+// })
+// const StatusPieChart = dynamic(() => import("./StatusPieChart").then(mod => ({ default: mod.StatusPieChart })), {
+//   ssr: false,
+//   loading: () => <div className="h-[250px] bg-slate-800 rounded-lg animate-pulse" />,
+// })
 
 interface DealsByStatus {
   status: string
