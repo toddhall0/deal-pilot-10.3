@@ -1,0 +1,11 @@
+[phases.build]
+# Disable Next.js cache by setting environment variable
+cmds = ["NEXT_TELEMETRY_DISABLED=1 npm run build"]
+
+[phases.setup]
+# Ensure fresh node_modules
+nixPkgs = ["nodejs_22", "npm-9_x", "openssl"]
+
+[options]
+# Disable build caching
+NO_CACHE = true
