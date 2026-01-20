@@ -1,5 +1,8 @@
 "use client"
 
+// BUILD IDENTIFIER: 2026-01-20-v1 - If you see this in console, fresh code is deployed
+console.log("DashboardContent BUILD: 2026-01-20-v1")
+
 import { useState, useEffect, useCallback } from "react"
 import { StatCard } from "./StatCard"
 import { UpcomingMilestones } from "./UpcomingMilestones"
