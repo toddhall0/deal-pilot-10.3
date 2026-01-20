@@ -1,7 +1,7 @@
 "use client"
 
-// BUILD IDENTIFIER: 2026-01-20-v2 - GlobalSearch DISABLED to test cmdk
-console.log("DashboardContent BUILD: 2026-01-20-v2 (GlobalSearch DISABLED)")
+// BUILD IDENTIFIER: 2026-01-20-v3 - GlobalSearch RE-ENABLED
+console.log("DashboardContent BUILD: 2026-01-20-v3")
 
 import { useState, useEffect, useCallback } from "react"
 import { StatCard } from "./StatCard"
