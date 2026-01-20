@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "rm -rf .next/static .next/server && prisma db push --skip-generate --accept-data-loss && prisma generate && next build",
-    "start": "node .next/standalone/server.js",
+    "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
     "env:check": "ts-node src/lib/env.check.ts"
