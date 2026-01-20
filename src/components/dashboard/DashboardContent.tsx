@@ -1,7 +1,7 @@
 "use client"
 
-// BUILD IDENTIFIER: 2026-01-20-v1 - If you see this in console, fresh code is deployed
-console.log("DashboardContent BUILD: 2026-01-20-v1")
+// BUILD IDENTIFIER: 2026-01-20-v2 - GlobalSearch DISABLED to test cmdk
+console.log("DashboardContent BUILD: 2026-01-20-v2 (GlobalSearch DISABLED)")
 
 import { useState, useEffect, useCallback } from "react"
 import { StatCard } from "./StatCard"
