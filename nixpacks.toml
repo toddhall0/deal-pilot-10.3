@@ -1,7 +1,7 @@
 [phases.build]
 # Disable Next.js cache by setting environment variable
-# Cache buster: 2026-01-20-v1
-cmds = ["echo 'Build timestamp: 2026-01-20-v1' && NEXT_TELEMETRY_DISABLED=1 npm run build"]
+# Cache buster: 2026-01-20-v2
+cmds = ["echo 'Build timestamp: 2026-01-20-v2' && NEXT_TELEMETRY_DISABLED=1 npm run build"]
 
 [phases.setup]
 # Ensure fresh node_modules

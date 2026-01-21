@@ -31,12 +31,18 @@ interface SearchResult {
 }
 
 export function GlobalSearch() {
+  const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<SearchResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const debouncedQuery = useDebounce(query, 300)
+
+  // Ensure component only renders on client
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Keyboard shortcut to open search
   useEffect(() => {
@@ -110,6 +116,20 @@ export function GlobalSearch() {
     },
     {} as Record<string, SearchResult[]>
   )
+
+  // Don't render CommandDialog until mounted to prevent hydration issues
+  if (!mounted) {
+    return (
+      <Button
+        variant="outline"
+        className="relative h-9 w-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2"
+        disabled
+      >
+        <Search className="h-4 w-4 xl:mr-2" />
+        <span className="hidden xl:inline-flex">Search...</span>
+      </Button>
+    )
+  }
 
   return (
     <>

@@ -15,8 +15,7 @@ import {
 } from "lucide-react"
 import { NotificationBell } from "@/components/notifications/NotificationBell"
 import { MobileNav } from "@/components/layout/MobileNav"
-// TEMPORARILY DISABLED FOR DEBUGGING - cmdk may cause .length error
-// import { GlobalSearch } from "@/components/search/GlobalSearch"
+import { GlobalSearch } from "@/components/search/GlobalSearch"
 
 export default function DashboardLayout({
   children,
@@ -100,18 +99,18 @@ export default function DashboardLayout({
             <div className="flex items-center gap-4">
               <MobileNav />
               <span className="text-xl font-bold text-blue-400 md:hidden">Deal Pilot</span>
-              {/* Global Search - TEMPORARILY DISABLED */}
-              {/* <div className="hidden md:block">
+              {/* Global Search - hidden on mobile, shown on desktop */}
+              <div className="hidden md:block">
                 <GlobalSearch />
-              </div> */}
+              </div>
             </div>
 
             {/* Right side - notifications and user menu */}
             <div className="flex items-center gap-2 md:gap-4">
-              {/* Mobile search button - TEMPORARILY DISABLED */}
-              {/* <div className="md:hidden">
+              {/* Mobile search button */}
+              <div className="md:hidden">
                 <GlobalSearch />
-              </div> */}
+              </div>
               <NotificationBell />
               {session?.user?.name && (
                 <span className="text-sm text-slate-400 hidden sm:block">{session.user.name}</span>
