@@ -15,6 +15,17 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Prevent SSR/hydration issues with react-day-picker
+  if (!mounted) {
+    return <div className={cn("p-3 h-[280px]", className)} />
+  }
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
