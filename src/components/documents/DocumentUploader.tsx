@@ -34,6 +34,7 @@ const CATEGORIES = [
   { value: "CLOSING_DRAFT", label: "Closing Documents (Draft)" },
   { value: "CLOSING_FINAL", label: "Closing Documents (Final)" },
   { value: "ENTITY", label: "Entity Documents" },
+  { value: "TRANSACTION_SUMMARY", label: "Transaction Summary" },
   { value: "OTHER", label: "Other" },
 ]
 
