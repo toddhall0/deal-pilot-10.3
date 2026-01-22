@@ -19,6 +19,9 @@ import {
   ArrowRight,
   Clock,
   AlertTriangle,
+  Download,
+  ExternalLink,
+  FileSpreadsheet,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
@@ -79,6 +82,19 @@ interface Financials {
   lineItems: LineItem[]
 }
 
+interface TransactionSummaryDocument {
+  id: string
+  name: string
+  fileType: string
+  fileSize: number
+  downloadUrl: string
+  createdAt: string
+  uploadedBy?: {
+    id: string
+    name: string | null
+  }
+}
+
 // Using a flexible type to accommodate Prisma's Decimal type
 type DecimalLike = number | { toNumber(): number } | null
 
@@ -131,6 +147,7 @@ export function OverviewTab({ deal }: OverviewTabProps) {
   const [primaryContract, setPrimaryContract] = useState<Document | null>(null)
   const [financials, setFinancials] = useState<Financials | null>(null)
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set())
+  const [transactionSummaryDocs, setTransactionSummaryDocs] = useState<TransactionSummaryDocument[]>([])
 
   const { getColumnWidth, ResizeHandle } = useResizableColumns(taskColumnConfig, `deal-overview-tasks-${deal.id}`)
 
@@ -154,6 +171,22 @@ export function OverviewTab({ deal }: OverviewTabProps) {
       }
     }
     fetchFinancials()
+  }, [deal.id])
+
+  useEffect(() => {
+    // Fetch transaction summary documents
+    async function fetchTransactionSummaryDocs() {
+      try {
+        const response = await fetch(`/api/deals/${deal.id}/documents?category=TRANSACTION_SUMMARY`)
+        if (response.ok) {
+          const data = await response.json()
+          setTransactionSummaryDocs(Array.isArray(data) ? data : [])
+        }
+      } catch (error) {
+        console.error("Failed to fetch transaction summary documents:", error)
+      }
+    }
+    fetchTransactionSummaryDocs()
   }, [deal.id])
 
   const handleAnalysisComplete = async () => {
@@ -272,6 +305,14 @@ export function OverviewTab({ deal }: OverviewTabProps) {
     const now = new Date()
     const due = new Date(dueDate)
     return Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  }
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes"
+    const k = 1024
+    const sizes = ["Bytes", "KB", "MB", "GB"]
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
 
   return (
@@ -593,6 +634,67 @@ export function OverviewTab({ deal }: OverviewTabProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Transaction Summary Documents */}
+      {transactionSummaryDocs.length > 0 && (
+        <Card className="bg-slate-800 border-slate-700 border-l-4 border-l-emerald-500">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-base font-medium flex items-center gap-2 text-white">
+              <FileSpreadsheet className="h-5 w-5 text-emerald-400" />
+              Transaction Summary Documents
+              <Badge className="bg-emerald-500/20 text-emerald-400 ml-2">
+                {transactionSummaryDocs.length}
+              </Badge>
+            </CardTitle>
+            <Link href={`/deals/${deal.id}?tab=documents`}>
+              <Button variant="ghost" size="sm" className="text-sm text-slate-400 hover:text-white">
+                All Documents
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {transactionSummaryDocs.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="flex items-center justify-between p-3 rounded-lg border border-slate-700 hover:bg-slate-700/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <FileSpreadsheet className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm text-white truncate">{doc.name}</p>
+                      <p className="text-xs text-slate-400">
+                        {formatFileSize(doc.fileSize)} • Uploaded {new Date(doc.createdAt).toLocaleDateString()}
+                        {doc.uploadedBy?.name && ` by ${doc.uploadedBy.name}`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 ml-2">
+                    <a
+                      href={doc.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-slate-400 hover:text-emerald-400 transition-colors"
+                      title="Open in new tab"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                    <a
+                      href={doc.downloadUrl}
+                      download={doc.name}
+                      className="text-slate-400 hover:text-emerald-400 transition-colors"
+                      title="Download"
+                    >
+                      <Download className="h-4 w-4" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Financial Summary */}
       <Card className="bg-slate-800 border-slate-700">
