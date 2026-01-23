@@ -22,6 +22,11 @@ import {
   Download,
   ExternalLink,
   FileSpreadsheet,
+  Eye,
+  EyeOff,
+  X,
+  Maximize2,
+  Minimize2,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
@@ -148,6 +153,8 @@ export function OverviewTab({ deal }: OverviewTabProps) {
   const [financials, setFinancials] = useState<Financials | null>(null)
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set())
   const [transactionSummaryDocs, setTransactionSummaryDocs] = useState<TransactionSummaryDocument[]>([])
+  const [viewingDocId, setViewingDocId] = useState<string | null>(null)
+  const [isViewerExpanded, setIsViewerExpanded] = useState(false)
 
   const { getColumnWidth, ResizeHandle } = useResizableColumns(taskColumnConfig, `deal-overview-tasks-${deal.id}`)
 
@@ -314,6 +321,21 @@ export function OverviewTab({ deal }: OverviewTabProps) {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
+
+  const isViewableInline = (fileType: string) => {
+    const viewableTypes = [
+      "application/pdf",
+      "image/png",
+      "image/jpeg",
+      "image/gif",
+      "image/webp",
+      "text/plain",
+      "text/html",
+    ]
+    return viewableTypes.includes(fileType)
+  }
+
+  const viewingDoc = transactionSummaryDocs.find(doc => doc.id === viewingDocId)
 
   return (
     <div className="space-y-6">
@@ -658,40 +680,123 @@ export function OverviewTab({ deal }: OverviewTabProps) {
               {transactionSummaryDocs.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-slate-700 hover:bg-slate-700/50 transition-colors"
+                  className={`rounded-lg border transition-colors ${
+                    viewingDocId === doc.id
+                      ? "border-emerald-500/50 bg-emerald-500/5"
+                      : "border-slate-700 hover:bg-slate-700/50"
+                  }`}
                 >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <FileSpreadsheet className="h-5 w-5 text-emerald-400 flex-shrink-0" />
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm text-white truncate">{doc.name}</p>
-                      <p className="text-xs text-slate-400">
-                        {formatFileSize(doc.fileSize)} • Uploaded {new Date(doc.createdAt).toLocaleDateString()}
-                        {doc.uploadedBy?.name && ` by ${doc.uploadedBy.name}`}
-                      </p>
+                  <div className="flex items-center justify-between p-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <FileSpreadsheet className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm text-white truncate">{doc.name}</p>
+                        <p className="text-xs text-slate-400">
+                          {formatFileSize(doc.fileSize)} • Uploaded {new Date(doc.createdAt).toLocaleDateString()}
+                          {doc.uploadedBy?.name && ` by ${doc.uploadedBy.name}`}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 ml-2">
-                    <a
-                      href={doc.downloadUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-slate-400 hover:text-emerald-400 transition-colors"
-                      title="Open in new tab"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                    <a
-                      href={doc.downloadUrl}
-                      download={doc.name}
-                      className="text-slate-400 hover:text-emerald-400 transition-colors"
-                      title="Download"
-                    >
-                      <Download className="h-4 w-4" />
-                    </a>
+                    <div className="flex items-center gap-2 ml-2">
+                      {isViewableInline(doc.fileType) && (
+                        <button
+                          onClick={() => {
+                            if (viewingDocId === doc.id) {
+                              setViewingDocId(null)
+                              setIsViewerExpanded(false)
+                            } else {
+                              setViewingDocId(doc.id)
+                            }
+                          }}
+                          className={`p-1.5 rounded transition-colors ${
+                            viewingDocId === doc.id
+                              ? "text-emerald-400 bg-emerald-500/20"
+                              : "text-slate-400 hover:text-emerald-400 hover:bg-slate-700"
+                          }`}
+                          title={viewingDocId === doc.id ? "Close viewer" : "View inline"}
+                        >
+                          {viewingDocId === doc.id ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      )}
+                      <a
+                        href={doc.downloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 rounded text-slate-400 hover:text-emerald-400 hover:bg-slate-700 transition-colors"
+                        title="Open in new tab"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                      <a
+                        href={doc.downloadUrl}
+                        download={doc.name}
+                        className="p-1.5 rounded text-slate-400 hover:text-emerald-400 hover:bg-slate-700 transition-colors"
+                        title="Download"
+                      >
+                        <Download className="h-4 w-4" />
+                      </a>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* Inline Document Viewer */}
+            {viewingDoc && (
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-slate-300">
+                    Viewing: {viewingDoc.name}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsViewerExpanded(!isViewerExpanded)}
+                      className="p-1.5 rounded text-slate-400 hover:text-emerald-400 hover:bg-slate-700 transition-colors"
+                      title={isViewerExpanded ? "Collapse" : "Expand"}
+                    >
+                      {isViewerExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setViewingDocId(null)
+                        setIsViewerExpanded(false)
+                      }}
+                      className="p-1.5 rounded text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors"
+                      title="Close viewer"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                <div
+                  className={`rounded-lg border border-slate-600 bg-white overflow-hidden transition-all ${
+                    isViewerExpanded ? "h-[600px]" : "h-[400px]"
+                  }`}
+                >
+                  {viewingDoc.fileType === "application/pdf" ? (
+                    <iframe
+                      src={viewingDoc.downloadUrl}
+                      className="w-full h-full"
+                      title={viewingDoc.name}
+                    />
+                  ) : viewingDoc.fileType.startsWith("image/") ? (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-900 p-4">
+                      <img
+                        src={viewingDoc.downloadUrl}
+                        alt={viewingDoc.name}
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <iframe
+                      src={viewingDoc.downloadUrl}
+                      className="w-full h-full"
+                      title={viewingDoc.name}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
