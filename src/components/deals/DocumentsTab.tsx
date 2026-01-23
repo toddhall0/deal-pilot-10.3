@@ -58,7 +58,10 @@ import {
   Pencil,
   Tag,
   ArrowUpDown,
+  RefreshCw,
+  Loader2,
 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 interface Document {
   id: string
@@ -133,6 +136,8 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
   const [newName, setNewName] = useState("")
   const [categoryDoc, setCategoryDoc] = useState<Document | null>(null)
   const [newCategory, setNewCategory] = useState("")
+  const [reanalyzingDocId, setReanalyzingDocId] = useState<string | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchDocuments()
@@ -172,6 +177,41 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
       })
     } catch (error) {
       console.error("Failed to delete document:", error)
+    }
+  }
+
+  async function handleReanalyze(documentId: string, documentName: string) {
+    setReanalyzingDocId(documentId)
+    try {
+      const response = await fetch(
+        `/api/deals/${dealId}/documents/${documentId}/analyze`,
+        { method: "POST" }
+      )
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Analysis failed")
+      }
+
+      const result = await response.json()
+
+      // Update the document's isAnalyzed status in local state
+      setDocuments(docs =>
+        docs.map(d => d.id === documentId ? { ...d, isAnalyzed: true } : d)
+      )
+
+      toast({
+        title: "Re-analysis Complete",
+        description: `${documentName} analyzed with ${Math.round(result.analysis.confidence * 100)}% confidence`,
+      })
+    } catch (error) {
+      toast({
+        title: "Re-analysis Failed",
+        description: error instanceof Error ? error.message : "Could not analyze document",
+        variant: "destructive",
+      })
+    } finally {
+      setReanalyzingDocId(null)
     }
   }
 
@@ -597,6 +637,19 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                                 </DropdownMenuItem>
                               }
                             />
+                            {doc.isAnalyzed && (
+                              <DropdownMenuItem
+                                onClick={() => handleReanalyze(doc.id, doc.name)}
+                                disabled={reanalyzingDocId === doc.id}
+                              >
+                                {reanalyzingDocId === doc.id ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                  <RefreshCw className="mr-2 h-4 w-4" />
+                                )}
+                                Re-analyze Document
+                              </DropdownMenuItem>
+                            )}
                             {!doc.isPrimaryContract && (
                               <DropdownMenuItem onClick={() => handleSetPrimary(doc.id)}>
                                 <Star className="mr-2 h-4 w-4" />
@@ -751,6 +804,19 @@ export function DocumentsTab({ dealId }: DocumentsTabProps) {
                                   </DropdownMenuItem>
                                 }
                               />
+                              {doc.isAnalyzed && (
+                                <DropdownMenuItem
+                                  onClick={() => handleReanalyze(doc.id, doc.name)}
+                                  disabled={reanalyzingDocId === doc.id}
+                                >
+                                  {reanalyzingDocId === doc.id ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <RefreshCw className="mr-2 h-4 w-4" />
+                                  )}
+                                  Re-analyze Document
+                                </DropdownMenuItem>
+                              )}
                               {!doc.isPrimaryContract && (
                                 <DropdownMenuItem onClick={() => handleSetPrimary(doc.id)}>
                                   <Star className="mr-2 h-4 w-4" />
