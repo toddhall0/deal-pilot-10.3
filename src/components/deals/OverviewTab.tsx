@@ -196,6 +196,74 @@ export function OverviewTab({ deal }: OverviewTabProps) {
     fetchTransactionSummaryDocs()
   }, [deal.id])
 
+  // Handle postMessage from transaction summary iframe for milestone imports
+  useEffect(() => {
+    const handleMessage = async (event: MessageEvent) => {
+      // Verify the message is from our iframe
+      if (event.data?.type === 'ADD_MILESTONE' || event.data?.type === 'IMPORT_MILESTONES') {
+        const { type, payload } = event.data
+
+        try {
+          if (type === 'ADD_MILESTONE') {
+            // Add single milestone
+            const response = await fetch(`/api/deals/${deal.id}/documents/${payload.documentId}/analyze/import-milestones`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                milestones: [{
+                  name: payload.name,
+                  description: payload.description || '',
+                  date: payload.date,
+                  category: payload.category
+                }]
+              })
+            })
+
+            if (response.ok) {
+              // Send success message back to iframe
+              const iframe = document.querySelector('iframe')
+              iframe?.contentWindow?.postMessage({
+                type: 'MILESTONE_ADDED',
+                message: `Added "${payload.name}" to milestones`
+              }, '*')
+            } else {
+              throw new Error('Failed to add milestone')
+            }
+          } else if (type === 'IMPORT_MILESTONES') {
+            // Import multiple milestones
+            const response = await fetch(`/api/deals/${deal.id}/documents/${payload.documentId}/analyze/import-milestones`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ milestones: payload.milestones })
+            })
+
+            if (response.ok) {
+              const data = await response.json()
+              // Send success message back to iframe
+              const iframe = document.querySelector('iframe')
+              iframe?.contentWindow?.postMessage({
+                type: 'MILESTONES_IMPORTED',
+                message: `Successfully imported ${data.count} milestones`
+              }, '*')
+            } else {
+              throw new Error('Failed to import milestones')
+            }
+          }
+        } catch (error) {
+          console.error('Error handling iframe message:', error)
+          const iframe = document.querySelector('iframe')
+          iframe?.contentWindow?.postMessage({
+            type: 'ERROR',
+            message: error instanceof Error ? error.message : 'An error occurred'
+          }, '*')
+        }
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [deal.id])
+
   const handleAnalysisComplete = async () => {
     // Refresh summary
     const response = await fetch(`/api/deals/${deal.id}/summary`)

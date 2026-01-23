@@ -89,7 +89,9 @@ export async function POST(
       const htmlContent = generateAnalysisHtmlReport(
         sanitizedResult,
         document.name,
-        document.deal.name
+        document.deal.name,
+        dealId,
+        documentId
       )
 
       const htmlBuffer = Buffer.from(htmlContent, "utf-8")

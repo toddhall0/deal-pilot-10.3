@@ -17,6 +17,12 @@ function formatDate(date: string | undefined): string {
   })
 }
 
+function formatDateForInput(date: string | undefined): string {
+  if (!date) return ""
+  const d = new Date(date)
+  return d.toISOString().split("T")[0]
+}
+
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
@@ -26,18 +32,30 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#039;")
 }
 
-function renderChecklistTable(items: ChecklistItem[], title: string): string {
+function renderChecklistTable(items: ChecklistItem[], title: string, tableId: string): string {
   if (!items || items.length === 0) return ""
 
   const rows = items
     .map(
-      (item) => `
-      <tr class="${item.isCritical ? "critical" : ""}">
-        <td>${escapeHtml(item.item)}</td>
+      (item, idx) => `
+      <tr class="${item.isCritical ? "critical" : ""}" data-row-id="${tableId}-${idx}">
+        <td>
+          <input type="text" class="editable-input" value="${escapeHtml(item.item)}" data-field="name" />
+        </td>
         <td class="center">${item.responsible}</td>
-        <td class="center">${item.deadline ? formatDate(item.deadline) : item.deadlineDays ? `${item.deadlineDays} days from ${item.deadlineFromEvent || "effective date"}` : "N/A"}</td>
+        <td class="center">
+          ${item.deadline
+            ? `<input type="date" class="date-input" value="${formatDateForInput(item.deadline)}" data-field="date" data-days="${item.deadlineDays || ''}" data-from="${item.deadlineFromEvent || 'effectiveDate'}" />`
+            : item.deadlineDays
+              ? `<input type="date" class="date-input calculated" value="" data-field="date" data-days="${item.deadlineDays}" data-from="${item.deadlineFromEvent || 'effectiveDate'}" placeholder="${item.deadlineDays} days from ${item.deadlineFromEvent || 'effective date'}" />`
+              : 'N/A'
+          }
+        </td>
         <td>${escapeHtml(item.category)}</td>
-        <td>${item.contractReference ? escapeHtml(item.contractReference) : ""}</td>
+        <td class="actions">
+          <button class="btn-add-milestone" onclick="addToMilestones('${tableId}-${idx}', '${escapeHtml(item.item)}', '${item.category}')" title="Add to Milestones">➕</button>
+          <button class="btn-delete" onclick="deleteRow('${tableId}-${idx}')" title="Delete">🗑️</button>
+        </td>
       </tr>
     `
     )
@@ -46,14 +64,14 @@ function renderChecklistTable(items: ChecklistItem[], title: string): string {
   return `
     <div class="section">
       <h2>${escapeHtml(title)}</h2>
-      <table class="checklist-table">
+      <table class="checklist-table interactive-table" id="${tableId}">
         <thead>
           <tr>
             <th>Item</th>
             <th>Responsible</th>
             <th>Deadline</th>
             <th>Category</th>
-            <th>Contract Ref.</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -67,7 +85,9 @@ function renderChecklistTable(items: ChecklistItem[], title: string): string {
 export function generateAnalysisHtmlReport(
   analysis: ContractAnalysisResult,
   documentName: string,
-  dealName?: string
+  dealName?: string,
+  dealId?: string,
+  documentId?: string
 ): string {
   const generatedAt = new Date().toLocaleString("en-US", {
     year: "numeric",
@@ -127,12 +147,14 @@ export function generateAnalysisHtmlReport(
 
   const preFeasibilitySection = renderChecklistTable(
     analysis.preFeasibilityChecklist || [],
-    "📋 Pre-Feasibility Checklist"
+    "📋 Pre-Feasibility Checklist",
+    "preFeasibility"
   )
 
   const preClosingSection = renderChecklistTable(
     analysis.preClosingChecklist || [],
-    "📋 Pre-Closing Checklist"
+    "📋 Pre-Closing Checklist",
+    "preClosing"
   )
 
   const keyMilestonesSection =
@@ -140,24 +162,40 @@ export function generateAnalysisHtmlReport(
       ? `
     <div class="section">
       <h2>📅 Key Milestones</h2>
-      <table class="data-table">
+      <table class="data-table interactive-table" id="keyMilestones">
         <thead>
           <tr>
             <th>Milestone</th>
             <th>Date</th>
             <th>Category</th>
             <th>Description</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           ${analysis.keyMilestones
             .map(
-              (m) => `
-            <tr>
-              <td>${escapeHtml(m.name)}</td>
-              <td class="center">${m.date ? formatDate(m.date) : m.daysFromEffective ? `${m.daysFromEffective} days from effective` : "TBD"}</td>
+              (m, idx) => `
+            <tr data-row-id="milestone-${idx}">
+              <td>
+                <input type="text" class="editable-input" value="${escapeHtml(m.name)}" data-field="name" />
+              </td>
+              <td class="center">
+                ${m.date
+                  ? `<input type="date" class="date-input" value="${formatDateForInput(m.date)}" data-field="date" data-days="${m.daysFromEffective || ''}" data-from="effectiveDate" />`
+                  : m.daysFromEffective
+                    ? `<input type="date" class="date-input calculated" value="" data-field="date" data-days="${m.daysFromEffective}" data-from="effectiveDate" placeholder="${m.daysFromEffective} days" />`
+                    : `<input type="date" class="date-input" value="" data-field="date" />`
+                }
+              </td>
               <td class="center">${escapeHtml(m.category)}</td>
-              <td>${m.description ? escapeHtml(m.description) : ""}</td>
+              <td>
+                <input type="text" class="editable-input description" value="${m.description ? escapeHtml(m.description) : ''}" data-field="description" placeholder="Description" />
+              </td>
+              <td class="actions">
+                <button class="btn-add-milestone" onclick="addToMilestones('milestone-${idx}', '${escapeHtml(m.name)}', '${m.category}')" title="Add to Milestones">➕</button>
+                <button class="btn-delete" onclick="deleteRow('milestone-${idx}')" title="Delete">🗑️</button>
+              </td>
             </tr>
           `
             )
@@ -173,24 +211,33 @@ export function generateAnalysisHtmlReport(
       ? `
     <div class="section">
       <h2>Post-Closing Obligations</h2>
-      <table class="data-table">
+      <table class="data-table interactive-table" id="postClosing">
         <thead>
           <tr>
             <th>Obligation</th>
             <th>Responsible</th>
             <th>Deadline</th>
             <th>Survives</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           ${analysis.postClosingObligations
             .map(
-              (o) => `
-            <tr>
-              <td>${escapeHtml(o.obligation)}</td>
+              (o, idx) => `
+            <tr data-row-id="postClosing-${idx}">
+              <td>
+                <input type="text" class="editable-input" value="${escapeHtml(o.obligation)}" data-field="name" />
+              </td>
               <td class="center">${o.responsible}</td>
-              <td>${o.deadline ? escapeHtml(o.deadline) : "N/A"}</td>
+              <td>
+                <input type="date" class="date-input" value="" data-field="date" placeholder="${o.deadline || 'N/A'}" />
+              </td>
               <td>${o.survives ? escapeHtml(o.survives) : ""}</td>
+              <td class="actions">
+                <button class="btn-add-milestone" onclick="addToMilestones('postClosing-${idx}', '${escapeHtml(o.obligation)}', 'POST_CLOSING')" title="Add to Milestones">➕</button>
+                <button class="btn-delete" onclick="deleteRow('postClosing-${idx}')" title="Delete">🗑️</button>
+              </td>
             </tr>
           `
             )
@@ -200,6 +247,136 @@ export function generateAnalysisHtmlReport(
     </div>
   `
       : ""
+
+  // Key dates section with editable inputs
+  const keyDatesRows = []
+
+  if (analysis.effectiveDate || analysis.effectiveDateTrigger) {
+    keyDatesRows.push({
+      name: "Effective Date",
+      date: analysis.effectiveDate,
+      days: null,
+      from: null,
+      category: "CONTRACT",
+      id: "effectiveDate",
+      isBase: true
+    })
+  }
+
+  if (analysis.feasibilityPeriodDays || analysis.feasibilityExpiration) {
+    keyDatesRows.push({
+      name: "Feasibility Expiration",
+      date: analysis.feasibilityExpiration,
+      days: analysis.feasibilityPeriodDays,
+      from: "effectiveDate",
+      category: "FEASIBILITY",
+      id: "feasibilityExpiration"
+    })
+  }
+
+  if (analysis.closingDate || analysis.closingDateDays) {
+    keyDatesRows.push({
+      name: "Closing Date",
+      date: analysis.closingDate,
+      days: analysis.closingDateDays,
+      from: analysis.closingDateFromEvent || "effectiveDate",
+      category: "CLOSING",
+      id: "closingDate"
+    })
+  }
+
+  if (analysis.outsideClosingDate) {
+    keyDatesRows.push({
+      name: "Outside Closing Date",
+      date: analysis.outsideClosingDate,
+      days: null,
+      from: null,
+      category: "CLOSING",
+      id: "outsideClosingDate"
+    })
+  }
+
+  if (analysis.titleCommitmentDays || analysis.titleCommitmentDate) {
+    keyDatesRows.push({
+      name: "Title Commitment Due",
+      date: analysis.titleCommitmentDate,
+      days: analysis.titleCommitmentDays,
+      from: "effectiveDate",
+      category: "TITLE",
+      id: "titleCommitmentDate"
+    })
+  }
+
+  if (analysis.surveyDays || analysis.surveyDate) {
+    keyDatesRows.push({
+      name: "Survey Due",
+      date: analysis.surveyDate,
+      days: analysis.surveyDays,
+      from: "effectiveDate",
+      category: "SURVEY",
+      id: "surveyDate"
+    })
+  }
+
+  if (analysis.titleObjectionDays || analysis.titleObjectionDate) {
+    keyDatesRows.push({
+      name: "Title Objection Deadline",
+      date: analysis.titleObjectionDate,
+      days: analysis.titleObjectionDays,
+      from: "effectiveDate",
+      category: "TITLE",
+      id: "titleObjectionDate"
+    })
+  }
+
+  const keyDatesTableRows = keyDatesRows.map((row, idx) => `
+    <tr data-row-id="keyDate-${row.id}" ${row.isBase ? 'class="base-date"' : ''}>
+      <td>
+        <input type="text" class="editable-input" value="${escapeHtml(row.name)}" data-field="name" />
+      </td>
+      <td class="center">
+        <input type="date" class="date-input ${row.isBase ? 'base-date-input' : ''}"
+          id="date-${row.id}"
+          value="${formatDateForInput(row.date)}"
+          data-field="date"
+          data-days="${row.days || ''}"
+          data-from="${row.from || ''}"
+          data-id="${row.id}"
+          ${row.isBase ? 'onchange="recalculateAllDates()"' : ''}
+        />
+        ${row.days ? `<span class="days-label">(${row.days} days)</span>` : ''}
+      </td>
+      <td class="center">${row.category}</td>
+      <td class="actions">
+        <button class="btn-add-milestone" onclick="addToMilestones('keyDate-${row.id}', document.querySelector('#date-${row.id}').parentElement.parentElement.querySelector('[data-field=name]').value, '${row.category}')" title="Add to Milestones">➕</button>
+        <button class="btn-delete" onclick="deleteRow('keyDate-${row.id}')" title="Delete">🗑️</button>
+      </td>
+    </tr>
+  `).join("")
+
+  // Deposits section
+  const depositsRows = analysis.deposits?.map((d, idx) => `
+    <tr data-row-id="deposit-${idx}">
+      <td>
+        <input type="text" class="editable-input" value="${escapeHtml(d.name)}" data-field="name" />
+      </td>
+      <td>${formatCurrency(d.amount)}</td>
+      <td>
+        <input type="date" class="date-input"
+          value="${formatDateForInput(d.dueDate)}"
+          data-field="date"
+          data-days="${d.dueDays || ''}"
+          data-from="${d.dueFromEvent || 'effectiveDate'}"
+        />
+        ${d.dueDays ? `<span class="days-label">(${d.dueDays} days)</span>` : ''}
+      </td>
+      <td>${d.refundable ? `Yes${d.refundableUntil ? ` (until ${escapeHtml(d.refundableUntil)})` : ""}` : "No"}</td>
+      <td class="actions">
+        <button class="btn-add-milestone" onclick="addToMilestones('deposit-${idx}', '${escapeHtml(d.name)} Due', 'CONTRACT')" title="Add to Milestones">➕</button>
+        <button class="btn-delete" onclick="deleteRow('deposit-${idx}')" title="Delete">🗑️</button>
+      </td>
+    </tr>
+  `).join("") || ""
 
   return `
 <!DOCTYPE html>
@@ -462,6 +639,184 @@ export function generateAnalysisHtmlReport(
       font-size: 0.875rem;
     }
 
+    /* Interactive Styles */
+    .editable-input {
+      border: 1px solid transparent;
+      background: transparent;
+      padding: 0.25rem 0.5rem;
+      font-size: inherit;
+      font-family: inherit;
+      width: 100%;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .editable-input:hover {
+      border-color: var(--border-color);
+      background: white;
+    }
+
+    .editable-input:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+      background: white;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .editable-input.description {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .date-input {
+      border: 1px solid var(--border-color);
+      background: white;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+      font-family: inherit;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .date-input:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .date-input.calculated:not([value=""]) {
+      background: #f0fdf4;
+      border-color: #86efac;
+    }
+
+    .date-input.base-date-input {
+      background: #eff6ff;
+      border-color: var(--secondary-color);
+      font-weight: 600;
+    }
+
+    .days-label {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    tr.base-date {
+      background: #eff6ff !important;
+    }
+
+    .actions {
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .btn-add-milestone, .btn-delete {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 1rem;
+      opacity: 0.6;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .btn-add-milestone:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .btn-delete:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .btn-add-milestone.added {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    tr.deleted {
+      display: none;
+    }
+
+    .import-all-btn {
+      background: var(--success-color);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .import-all-btn:hover {
+      background: #047857;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--success-color);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .effective-date-banner {
+      background: #eff6ff;
+      border: 2px solid var(--secondary-color);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .effective-date-banner label {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .effective-date-banner input {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 2px solid var(--secondary-color);
+      border-radius: 6px;
+    }
+
+    .effective-date-banner button {
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .effective-date-banner button:hover {
+      background: var(--primary-color);
+    }
+
     @media print {
       body {
         padding: 0;
@@ -479,6 +834,10 @@ export function generateAnalysisHtmlReport(
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
+
+      .actions, .effective-date-banner, .import-all-btn {
+        display: none !important;
+      }
     }
   </style>
 </head>
@@ -491,6 +850,13 @@ export function generateAnalysisHtmlReport(
       <span class="confidence-badge ${analysis.confidence >= 0.8 ? "confidence-high" : analysis.confidence >= 0.6 ? "confidence-medium" : "confidence-low"}">
         ${Math.round(analysis.confidence * 100)}% Confidence
       </span>
+    </div>
+
+    <!-- Effective Date Input Banner -->
+    <div class="effective-date-banner">
+      <label for="effectiveDateInput">📅 Set Effective Date to Calculate All Dependent Dates:</label>
+      <input type="date" id="effectiveDateInput" value="${formatDateForInput(analysis.effectiveDate)}" />
+      <button onclick="recalculateAllDates()">Calculate Dates</button>
     </div>
 
     ${missingDatesSection}
@@ -562,31 +928,21 @@ export function generateAnalysisHtmlReport(
         ${analysis.pricePerUnit ? `<div class="info-card"><div class="label">Price Per Unit</div><div class="value">${formatCurrency(analysis.pricePerUnit)}</div></div>` : ""}
       </div>
       ${
-        analysis.deposits.length > 0
+        analysis.deposits && analysis.deposits.length > 0
           ? `
       <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; font-size: 1rem;">Deposits</h3>
-      <table class="data-table">
+      <table class="data-table interactive-table" id="deposits">
         <thead>
           <tr>
             <th>Deposit</th>
             <th>Amount</th>
             <th>Due Date</th>
             <th>Refundable</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          ${analysis.deposits
-            .map(
-              (d) => `
-            <tr>
-              <td>${escapeHtml(d.name)}</td>
-              <td>${formatCurrency(d.amount)}</td>
-              <td>${d.dueDate ? formatDate(d.dueDate) : d.dueDays ? `${d.dueDays} days from ${d.dueFromEvent || "effective date"}` : "N/A"}</td>
-              <td>${d.refundable ? `Yes${d.refundableUntil ? ` (until ${escapeHtml(d.refundableUntil)})` : ""}` : "No"}</td>
-            </tr>
-          `
-            )
-            .join("")}
+          ${depositsRows}
         </tbody>
       </table>
       `
@@ -596,26 +952,26 @@ export function generateAnalysisHtmlReport(
 
     <!-- Key Dates -->
     <div class="section">
-      <h2>Key Dates</h2>
-      <div class="grid">
-        ${analysis.effectiveDate ? `<div class="info-card"><div class="label">Effective Date</div><div class="value">${formatDate(analysis.effectiveDate)}</div>${analysis.effectiveDateTrigger ? `<div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(analysis.effectiveDateTrigger)}</div>` : ""}</div>` : `<div class="info-card"><div class="label">Effective Date</div><div class="value" style="color: var(--warning-color);">Not Yet Determined</div>${analysis.effectiveDateTrigger ? `<div style="font-size: 0.75rem; color: var(--text-muted);">Trigger: ${escapeHtml(analysis.effectiveDateTrigger)}</div>` : ""}</div>`}
-        ${analysis.feasibilityPeriodDays ? `<div class="info-card"><div class="label">Feasibility Period</div><div class="value">${analysis.feasibilityPeriodDays} days</div>${analysis.feasibilityExpiration ? `<div style="font-size: 0.75rem; color: var(--text-muted);">Expires: ${formatDate(analysis.feasibilityExpiration)}</div>` : ""}</div>` : ""}
-        ${analysis.closingDate ? `<div class="info-card"><div class="label">Closing Date</div><div class="value">${formatDate(analysis.closingDate)}</div></div>` : analysis.closingDateDays ? `<div class="info-card"><div class="label">Closing Date</div><div class="value">${analysis.closingDateDays} days from ${analysis.closingDateFromEvent || "effective date"}</div></div>` : ""}
-        ${analysis.outsideClosingDate ? `<div class="info-card"><div class="label">Outside Closing Date</div><div class="value">${formatDate(analysis.outsideClosingDate)}</div></div>` : ""}
-      </div>
-      ${
-        analysis.titleCommitmentDays || analysis.surveyDays
-          ? `
-      <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; font-size: 1rem;">Title & Survey Timeline</h3>
-      <div class="grid">
-        ${analysis.titleCommitmentDays ? `<div class="info-card"><div class="label">Title Commitment</div><div class="value">${analysis.titleCommitmentDays} days</div>${analysis.titleCommitmentDate ? `<div style="font-size: 0.75rem; color: var(--text-muted);">Due: ${formatDate(analysis.titleCommitmentDate)}</div>` : ""}</div>` : ""}
-        ${analysis.surveyDays ? `<div class="info-card"><div class="label">Survey</div><div class="value">${analysis.surveyDays} days</div>${analysis.surveyDate ? `<div style="font-size: 0.75rem; color: var(--text-muted);">Due: ${formatDate(analysis.surveyDate)}</div>` : ""}</div>` : ""}
-        ${analysis.titleObjectionDays ? `<div class="info-card"><div class="label">Title Objection Period</div><div class="value">${analysis.titleObjectionDays} days</div></div>` : ""}
-        ${analysis.titleCureDays ? `<div class="info-card"><div class="label">Title Cure Period</div><div class="value">${analysis.titleCureDays} days</div></div>` : ""}
-      </div>
-      `
-          : ""
-      }
+      <h2>Key Dates & Deadlines</h2>
+      <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.875rem;">
+        💡 Enter the Effective Date above to auto-calculate all dependent dates. Click ➕ to add any date to your milestones.
+      </p>
+      <table class="data-table interactive-table" id="keyDates">
+        <thead>
+          <tr>
+            <th>Date Name</th>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${keyDatesTableRows}
+        </tbody>
+      </table>
+      <button class="import-all-btn" onclick="importAllKeyDates()">
+        📅 Import All Key Dates to Milestones
+      </button>
     </div>
 
     ${preFeasibilitySection}
@@ -681,6 +1037,170 @@ export function generateAnalysisHtmlReport(
       <p>Deal Pilot - Contract Analysis Report</p>
     </div>
   </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Store deal info for API calls
+    const dealId = "${dealId || ''}";
+    const documentId = "${documentId || ''}";
+
+    // Show toast notification
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Delete a row
+    function deleteRow(rowId) {
+      const row = document.querySelector(\`[data-row-id="\${rowId}"]\`);
+      if (row && confirm('Delete this item?')) {
+        row.classList.add('deleted');
+        showToast('Item deleted');
+      }
+    }
+
+    // Add single item to milestones
+    function addToMilestones(rowId, defaultName, category) {
+      const row = document.querySelector(\`[data-row-id="\${rowId}"]\`);
+      if (!row) return;
+
+      const nameInput = row.querySelector('[data-field="name"]');
+      const dateInput = row.querySelector('[data-field="date"]');
+      const descInput = row.querySelector('[data-field="description"]');
+      const btn = row.querySelector('.btn-add-milestone');
+
+      const name = nameInput ? nameInput.value : defaultName;
+      const date = dateInput ? dateInput.value : '';
+      const description = descInput ? descInput.value : '';
+
+      if (!date) {
+        alert('Please enter a date before adding to milestones');
+        return;
+      }
+
+      // Send message to parent window
+      window.parent.postMessage({
+        type: 'ADD_MILESTONE',
+        payload: {
+          name: name,
+          date: date,
+          description: description,
+          category: category,
+          dealId: dealId,
+          documentId: documentId
+        }
+      }, '*');
+
+      // Visual feedback
+      if (btn) {
+        btn.classList.add('added');
+        btn.textContent = '✓';
+      }
+      showToast(\`Added "\${name}" to milestones\`);
+    }
+
+    // Import all key dates
+    function importAllKeyDates() {
+      const rows = document.querySelectorAll('#keyDates tbody tr:not(.deleted)');
+      const milestones = [];
+
+      rows.forEach(row => {
+        const nameInput = row.querySelector('[data-field="name"]');
+        const dateInput = row.querySelector('[data-field="date"]');
+        const category = row.cells[2]?.textContent?.trim() || 'CONTRACT';
+
+        if (nameInput && dateInput && dateInput.value) {
+          milestones.push({
+            name: nameInput.value,
+            date: dateInput.value,
+            description: '',
+            category: category
+          });
+        }
+      });
+
+      if (milestones.length === 0) {
+        alert('No dates to import. Please enter dates first.');
+        return;
+      }
+
+      window.parent.postMessage({
+        type: 'IMPORT_MILESTONES',
+        payload: {
+          milestones: milestones,
+          dealId: dealId,
+          documentId: documentId
+        }
+      }, '*');
+
+      showToast(\`Importing \${milestones.length} milestones...\`);
+    }
+
+    // Recalculate all dependent dates from effective date
+    function recalculateAllDates() {
+      const effectiveDateInput = document.getElementById('effectiveDateInput');
+      const effectiveDate = effectiveDateInput.value;
+
+      if (!effectiveDate) {
+        alert('Please enter an effective date');
+        return;
+      }
+
+      const baseDate = new Date(effectiveDate);
+
+      // Update the effectiveDate field in the key dates table
+      const effectiveDateField = document.getElementById('date-effectiveDate');
+      if (effectiveDateField) {
+        effectiveDateField.value = effectiveDate;
+      }
+
+      // Find all date inputs with data-days attribute and calculate
+      document.querySelectorAll('.date-input[data-days]').forEach(input => {
+        const days = parseInt(input.dataset.days);
+        const fromField = input.dataset.from;
+
+        if (!days || isNaN(days)) return;
+
+        // Get base date (either effective date or another field)
+        let calcFromDate = baseDate;
+        if (fromField && fromField !== 'effectiveDate') {
+          const fromInput = document.getElementById(\`date-\${fromField}\`);
+          if (fromInput && fromInput.value) {
+            calcFromDate = new Date(fromInput.value);
+          }
+        }
+
+        // Calculate new date
+        const newDate = new Date(calcFromDate);
+        newDate.setDate(newDate.getDate() + days);
+
+        // Format as YYYY-MM-DD
+        input.value = newDate.toISOString().split('T')[0];
+        input.classList.add('calculated');
+      });
+
+      showToast('All dates recalculated');
+    }
+
+    // Listen for responses from parent
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'MILESTONE_ADDED') {
+        showToast(event.data.message || 'Milestone added successfully');
+      } else if (event.data.type === 'MILESTONES_IMPORTED') {
+        showToast(event.data.message || 'Milestones imported successfully');
+      } else if (event.data.type === 'ERROR') {
+        alert(event.data.message || 'An error occurred');
+      }
+    });
+
+    // Auto-calculate dates on load if effective date exists
+    if (document.getElementById('effectiveDateInput').value) {
+      recalculateAllDates();
+    }
+  </script>
 </body>
 </html>
 `
