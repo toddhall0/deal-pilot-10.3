@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ImportMilestonesDialog } from "./ImportMilestonesDialog"
 import {
   Building2,
   DollarSign,
@@ -55,7 +56,7 @@ export function AnalysisResults({
   const [effectiveDateInput, setEffectiveDateInput] = useState("")
   const [isCalculating, setIsCalculating] = useState(false)
   const [isSavingHtml, setIsSavingHtml] = useState(false)
-  const [isImportingMilestones, setIsImportingMilestones] = useState(false)
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -125,23 +126,21 @@ export function AnalysisResults({
     }
   }
 
-  const handleImportMilestones = async () => {
-    setIsImportingMilestones(true)
-    try {
-      const response = await fetch(
-        `/api/deals/${dealId}/documents/${documentId}/analyze/import-milestones`,
-        { method: "POST" }
-      )
-      if (response.ok) {
-        const data = await response.json()
-        alert(`Successfully imported ${data.count} milestones!`)
-      }
-    } catch (error) {
-      console.error("Error importing milestones:", error)
-    } finally {
-      setIsImportingMilestones(false)
-    }
+  const handleImportComplete = (count: number) => {
+    alert(`Successfully imported ${count} milestone${count !== 1 ? "s" : ""}!`)
   }
+
+  // Check if there are any dates to import
+  const hasImportableDates = !!(
+    analysis.keyMilestones?.some(m => m.date) ||
+    analysis.effectiveDate ||
+    analysis.feasibilityExpiration ||
+    analysis.closingDate ||
+    analysis.outsideClosingDate ||
+    analysis.titleCommitmentDate ||
+    analysis.surveyDate ||
+    analysis.deposits?.some(d => d.dueDate)
+  )
 
   const renderChecklistTable = (items: ChecklistItem[] | undefined, title: string) => {
     if (!items || items.length === 0) return null
@@ -240,11 +239,11 @@ export function AnalysisResults({
           <Button
             variant="outline"
             size="sm"
-            onClick={handleImportMilestones}
-            disabled={isImportingMilestones || !analysis.keyMilestones?.length}
+            onClick={() => setIsImportDialogOpen(true)}
+            disabled={!hasImportableDates}
           >
             <CalendarPlus className="mr-2 h-4 w-4" />
-            {isImportingMilestones ? "Importing..." : "Import to Milestones"}
+            Import to Milestones
           </Button>
         </div>
       </div>
@@ -782,6 +781,16 @@ export function AnalysisResults({
           </CardContent>
         </Card>
       )}
+
+      {/* Import Milestones Dialog */}
+      <ImportMilestonesDialog
+        isOpen={isImportDialogOpen}
+        onClose={() => setIsImportDialogOpen(false)}
+        analysis={analysis}
+        dealId={dealId}
+        documentId={documentId}
+        onImportComplete={handleImportComplete}
+      />
     </div>
   )
 }

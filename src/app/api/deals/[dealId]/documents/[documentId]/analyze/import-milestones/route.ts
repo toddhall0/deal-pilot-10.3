@@ -4,6 +4,17 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ContractAnalysisResult, KeyMilestone } from "@/types/analysis"
 
+interface CustomMilestone {
+  name: string
+  description?: string
+  date: string
+  category: string
+}
+
+interface ImportRequestBody {
+  milestones?: CustomMilestone[]
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ dealId: string; documentId: string }> }
@@ -16,7 +27,89 @@ export async function POST(
 
     const { dealId, documentId } = await params
 
-    // Get the document with its analysis
+    // Check if custom milestones are provided in the request body
+    let customMilestones: CustomMilestone[] | null = null
+    try {
+      const body: ImportRequestBody = await request.json()
+      if (body.milestones && Array.isArray(body.milestones)) {
+        customMilestones = body.milestones
+      }
+    } catch {
+      // No body or invalid JSON - will use analysis milestones instead
+    }
+
+    // Get or create timeline for this deal
+    let timeline = await prisma.timeline.findUnique({
+      where: { dealId },
+    })
+
+    if (!timeline) {
+      timeline = await prisma.timeline.create({
+        data: { dealId },
+      })
+    }
+
+    // Get current max sort order
+    const maxSortOrder = await prisma.milestone.aggregate({
+      where: { timelineId: timeline.id, parentId: null },
+      _max: { sortOrder: true },
+    })
+
+    let sortOrder = (maxSortOrder._max.sortOrder || 0) + 1
+    const createdMilestones: string[] = []
+
+    // If custom milestones provided, use those
+    if (customMilestones && customMilestones.length > 0) {
+      for (const milestone of customMilestones) {
+        if (!milestone.name || !milestone.date) continue
+
+        // Check if milestone with same name already exists
+        const existing = await prisma.milestone.findFirst({
+          where: {
+            timelineId: timeline.id,
+            name: milestone.name,
+          },
+        })
+
+        if (existing) {
+          // Update existing milestone
+          await prisma.milestone.update({
+            where: { id: existing.id },
+            data: {
+              dueDate: new Date(milestone.date),
+              description: milestone.description || existing.description,
+              sourceType: "ANALYSIS",
+              sourceReference: documentId,
+            },
+          })
+          createdMilestones.push(existing.id)
+        } else {
+          // Create new milestone
+          const newMilestone = await prisma.milestone.create({
+            data: {
+              name: milestone.name,
+              description: milestone.description || `${milestone.category} milestone from document import`,
+              dueDate: new Date(milestone.date),
+              timelineId: timeline.id,
+              sortOrder: sortOrder++,
+              reminderDays: [7, 3, 1],
+              sourceType: "ANALYSIS",
+              sourceReference: documentId,
+            },
+          })
+          createdMilestones.push(newMilestone.id)
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        count: createdMilestones.length,
+        milestoneIds: createdMilestones,
+        message: `Successfully imported ${createdMilestones.length} milestones`,
+      })
+    }
+
+    // Fall back to original behavior: read from document analysis
     const document = await prisma.document.findFirst({
       where: {
         id: documentId,
@@ -43,26 +136,6 @@ export async function POST(
         { status: 400 }
       )
     }
-
-    // Get or create timeline for this deal
-    let timeline = await prisma.timeline.findUnique({
-      where: { dealId },
-    })
-
-    if (!timeline) {
-      timeline = await prisma.timeline.create({
-        data: { dealId },
-      })
-    }
-
-    // Get current max sort order
-    const maxSortOrder = await prisma.milestone.aggregate({
-      where: { timelineId: timeline.id, parentId: null },
-      _max: { sortOrder: true },
-    })
-
-    let sortOrder = (maxSortOrder._max.sortOrder || 0) + 1
-    const createdMilestones: string[] = []
 
     // Create milestones that have dates
     for (const milestone of analysis.keyMilestones) {
