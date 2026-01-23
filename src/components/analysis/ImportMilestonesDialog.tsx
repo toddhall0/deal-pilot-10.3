@@ -271,13 +271,13 @@ export function ImportMilestonesDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col bg-slate-900 border-slate-700">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-white">
             <CalendarPlus className="h-5 w-5" />
             Import Milestones to Timeline
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-slate-400">
             Review and modify the extracted dates before importing them as milestones.
             You can edit names, descriptions, dates, and categories.
           </DialogDescription>
@@ -285,23 +285,24 @@ export function ImportMilestonesDialog({
 
         <div className="flex-1 overflow-auto">
           {milestones.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-slate-400">
               No dates were extracted from the document. You can add milestones manually.
             </div>
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
+                <TableRow className="border-slate-700 hover:bg-slate-800">
+                  <TableHead className="w-12 text-slate-300">
                     <Checkbox
                       checked={allSelected}
                       onCheckedChange={handleSelectAll}
+                      className="border-slate-600"
                     />
                   </TableHead>
-                  <TableHead>Milestone Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="w-36">Date</TableHead>
-                  <TableHead className="w-36">Category</TableHead>
+                  <TableHead className="text-slate-300">Milestone Name</TableHead>
+                  <TableHead className="text-slate-300">Description</TableHead>
+                  <TableHead className="w-36 text-slate-300">Date</TableHead>
+                  <TableHead className="w-36 text-slate-300">Category</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -309,7 +310,7 @@ export function ImportMilestonesDialog({
                 {milestones.map((milestone) => (
                   <TableRow
                     key={milestone.id}
-                    className={!milestone.selected ? "opacity-50" : ""}
+                    className={`border-slate-700 hover:bg-slate-800 ${!milestone.selected ? "opacity-50" : ""}`}
                   >
                     <TableCell>
                       <Checkbox
@@ -317,6 +318,7 @@ export function ImportMilestonesDialog({
                         onCheckedChange={(checked) =>
                           handleUpdateMilestone(milestone.id, "selected", checked as boolean)
                         }
+                        className="border-slate-600"
                       />
                     </TableCell>
                     <TableCell>
@@ -326,7 +328,7 @@ export function ImportMilestonesDialog({
                           handleUpdateMilestone(milestone.id, "name", e.target.value)
                         }
                         placeholder="Milestone name"
-                        className="h-8"
+                        className="h-8 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                       />
                     </TableCell>
                     <TableCell>
@@ -336,7 +338,7 @@ export function ImportMilestonesDialog({
                           handleUpdateMilestone(milestone.id, "description", e.target.value)
                         }
                         placeholder="Description (optional)"
-                        className="h-8"
+                        className="h-8 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                       />
                     </TableCell>
                     <TableCell>
@@ -346,7 +348,7 @@ export function ImportMilestonesDialog({
                         onChange={(e) =>
                           handleUpdateMilestone(milestone.id, "date", e.target.value)
                         }
-                        className="h-8"
+                        className="h-8 bg-slate-800 border-slate-600 text-white [color-scheme:dark]"
                       />
                     </TableCell>
                     <TableCell>
@@ -356,12 +358,12 @@ export function ImportMilestonesDialog({
                           handleUpdateMilestone(milestone.id, "category", value)
                         }
                       >
-                        <SelectTrigger className="h-8">
+                        <SelectTrigger className="h-8 bg-slate-800 border-slate-600 text-white">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-slate-800 border-slate-600">
                           {MILESTONE_CATEGORIES.map((cat) => (
-                            <SelectItem key={cat.value} value={cat.value}>
+                            <SelectItem key={cat.value} value={cat.value} className="text-white hover:bg-slate-700">
                               {cat.label}
                             </SelectItem>
                           ))}
@@ -372,7 +374,7 @@ export function ImportMilestonesDialog({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-500/20"
                         onClick={() => handleRemoveMilestone(milestone.id)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -385,25 +387,25 @@ export function ImportMilestonesDialog({
           )}
 
           <div className="mt-4">
-            <Button variant="outline" size="sm" onClick={handleAddMilestone}>
+            <Button variant="outline" size="sm" onClick={handleAddMilestone} className="border-slate-600 text-slate-300 hover:bg-slate-800">
               <Plus className="mr-2 h-4 w-4" />
               Add Milestone
             </Button>
           </div>
 
           {error && (
-            <div className="mt-4 p-3 rounded-md bg-red-50 text-red-700 text-sm">
+            <div className="mt-4 p-3 rounded-md bg-red-500/20 text-red-400 text-sm border border-red-500/30">
               {error}
             </div>
           )}
         </div>
 
-        <DialogFooter className="flex items-center justify-between border-t pt-4">
-          <div className="text-sm text-muted-foreground">
+        <DialogFooter className="flex items-center justify-between border-t border-slate-700 pt-4">
+          <div className="text-sm text-slate-400">
             {selectedCount} of {milestones.length} milestones selected
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose} disabled={isImporting}>
+            <Button variant="outline" onClick={onClose} disabled={isImporting} className="border-slate-600 text-slate-300 hover:bg-slate-800">
               Cancel
             </Button>
             <Button onClick={handleImport} disabled={isImporting || selectedCount === 0}>
