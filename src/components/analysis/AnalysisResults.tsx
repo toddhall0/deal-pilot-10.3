@@ -79,21 +79,21 @@ export function AnalysisResults({
   }
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return "bg-green-100 text-green-800"
-    if (confidence >= 0.6) return "bg-yellow-100 text-yellow-800"
-    return "bg-red-100 text-red-800"
+    if (confidence >= 0.8) return "bg-green-500/20 text-green-400"
+    if (confidence >= 0.6) return "bg-yellow-500/20 text-yellow-400"
+    return "bg-red-500/20 text-red-400"
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "HIGH":
-        return "bg-red-100 text-red-800"
+        return "bg-red-500/20 text-red-400"
       case "MEDIUM":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-500/20 text-yellow-400"
       case "LOW":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-500/20 text-blue-400"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-slate-500/20 text-slate-400"
     }
   }
 
@@ -170,9 +170,9 @@ export function AnalysisResults({
     if (!items || items.length === 0) return null
 
     return (
-      <Card>
+      <Card className="bg-slate-800 border-slate-700">
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium text-white">
             <ClipboardList className="h-4 w-4" />
             {title}
           </CardTitle>
@@ -180,47 +180,47 @@ export function AnalysisResults({
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Item</TableHead>
-                <TableHead className="w-24">Responsible</TableHead>
-                <TableHead className="w-40">Deadline</TableHead>
-                <TableHead className="w-28">Category</TableHead>
+              <TableRow className="border-slate-700">
+                <TableHead className="text-slate-300">Item</TableHead>
+                <TableHead className="w-24 text-slate-300">Responsible</TableHead>
+                <TableHead className="w-40 text-slate-300">Deadline</TableHead>
+                <TableHead className="w-28 text-slate-300">Category</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {items.map((item, idx) => (
-                <TableRow key={idx} className={item.isCritical ? "bg-red-50" : ""}>
-                  <TableCell>
+                <TableRow key={idx} className={`border-slate-700 ${item.isCritical ? "bg-red-500/10" : ""}`}>
+                  <TableCell className="text-white">
                     <div className="flex items-center gap-2">
                       {item.isCritical && (
-                        <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                        <AlertTriangle className="h-4 w-4 text-red-400 flex-shrink-0" />
                       )}
                       <span>{item.item}</span>
                     </div>
                     {item.contractReference && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-slate-400">
                         Ref: {item.contractReference}
                       </span>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={item.responsible === "BUYER" ? "default" : "secondary"}>
+                    <Badge className={item.responsible === "BUYER" ? "bg-blue-500/20 text-blue-400" : "bg-slate-600 text-slate-200"}>
                       {item.responsible}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-slate-300">
                     {item.deadline ? (
                       formatDate(item.deadline)
                     ) : item.deadlineDays ? (
-                      <span className="text-muted-foreground">
+                      <span className="text-slate-400">
                         {item.deadlineDays} days from {item.deadlineFromEvent || "effective date"}
                       </span>
                     ) : (
-                      "N/A"
+                      <span className="text-slate-500">N/A</span>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{item.category}</Badge>
+                    <Badge variant="outline" className="border-slate-600 text-slate-300">{item.category}</Badge>
                   </TableCell>
                 </TableRow>
               ))}
@@ -240,9 +240,9 @@ export function AnalysisResults({
       {/* Header with confidence and actions */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h3 className="text-lg font-semibold">Contract Analysis</h3>
+          <h3 className="text-lg font-semibold text-white">Contract Analysis</h3>
           {analyzedAt && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-slate-400">
               Analyzed on {formatDate(analyzedAt)}
             </p>
           )}
@@ -287,52 +287,56 @@ export function AnalysisResults({
 
       {/* Missing Date Dependencies - Prominently displayed */}
       {hasMissingDates && (
-        <Card className="border-yellow-200 bg-yellow-50">
+        <Card className="border-amber-500/30 bg-amber-500/10">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-yellow-800">
-              <Clock className="h-4 w-4" />
-              Missing Date Dependencies
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-white">
+              <Clock className="h-4 w-4 text-amber-400" />
+              Missing Trigger Dates
             </CardTitle>
-            <CardDescription className="text-yellow-700">
-              Some dates could not be calculated. Provide the missing trigger date to calculate all dependent deadlines.
+            <CardDescription className="text-amber-300/70">
+              Enter the trigger dates below to auto-calculate dependent deadlines.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {needsEffectiveDate && (
-              <div className="flex items-end gap-4 p-4 bg-white rounded-lg">
+            {/* Trigger Date Input Section */}
+            <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
+              <div className="flex items-end gap-4">
                 <div className="flex-1">
-                  <Label htmlFor="effectiveDate">Effective Date</Label>
+                  <Label htmlFor="effectiveDate" className="text-slate-300">Effective Date (Primary Trigger)</Label>
                   <Input
                     id="effectiveDate"
                     type="date"
                     value={effectiveDateInput}
                     onChange={(e) => setEffectiveDateInput(e.target.value)}
-                    className="mt-1"
+                    className="mt-1 bg-slate-700 border-slate-600 text-white [color-scheme:dark]"
                   />
                 </div>
                 <Button
                   onClick={handleCalculateDates}
                   disabled={!effectiveDateInput || isCalculating}
+                  className="bg-amber-500 hover:bg-amber-600 text-black"
                 >
                   {isCalculating ? "Calculating..." : "Calculate All Dates"}
                 </Button>
               </div>
-            )}
+            </div>
+
+            {/* Dependencies Table */}
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Field</TableHead>
-                  <TableHead>Depends On</TableHead>
-                  <TableHead>Days</TableHead>
-                  <TableHead>Priority</TableHead>
+                <TableRow className="border-slate-700">
+                  <TableHead className="text-slate-300">Field</TableHead>
+                  <TableHead className="text-slate-300">Depends On</TableHead>
+                  <TableHead className="text-slate-300">Days</TableHead>
+                  <TableHead className="text-slate-300">Priority</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {analysis.missingDateDependencies?.map((dep, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className="font-medium">{dep.field}</TableCell>
-                    <TableCell>{dep.dependsOn}</TableCell>
-                    <TableCell>{dep.daysFromTrigger}</TableCell>
+                  <TableRow key={idx} className="border-slate-700">
+                    <TableCell className="font-medium text-white">{dep.field}</TableCell>
+                    <TableCell className="text-slate-300">{dep.dependsOn}</TableCell>
+                    <TableCell className="text-slate-300">+{dep.daysFromTrigger}</TableCell>
                     <TableCell>
                       <Badge className={getPriorityColor(dep.priority)}>
                         {dep.priority}
@@ -348,15 +352,15 @@ export function AnalysisResults({
 
       {/* Warnings */}
       {analysis.warnings && analysis.warnings.length > 0 && (
-        <Card className="border-yellow-200 bg-yellow-50">
+        <Card className="border-amber-500/30 bg-amber-500/10">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-yellow-800">
-              <AlertTriangle className="h-4 w-4" />
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-white">
+              <AlertTriangle className="h-4 w-4 text-amber-400" />
               Warnings
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside space-y-1 text-sm text-yellow-700">
+            <ul className="list-disc list-inside space-y-1 text-sm text-amber-300/80">
               {analysis.warnings.map((warning, idx) => (
                 <li key={idx}>{warning}</li>
               ))}
@@ -397,32 +401,32 @@ export function AnalysisResults({
       </Accordion>
 
       {/* Parties */}
-      <Card>
+      <Card className="bg-slate-800 border-slate-700">
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Users className="h-4 w-4" />
+          <CardTitle className="flex items-center gap-2 text-sm font-medium text-white">
+            <Users className="h-4 w-4 text-purple-400" />
             Parties
           </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div>
-            <p className="text-xs text-muted-foreground uppercase">Buyer</p>
-            <p className="font-medium">{analysis.buyer.name}</p>
+            <p className="text-xs text-slate-400 uppercase">Buyer</p>
+            <p className="font-medium text-white">{analysis.buyer.name}</p>
             {analysis.buyer.entityType && (
-              <p className="text-sm text-muted-foreground">{analysis.buyer.entityType}</p>
+              <p className="text-sm text-slate-400">{analysis.buyer.entityType}</p>
             )}
             {analysis.buyer.state && (
-              <p className="text-sm text-muted-foreground">{analysis.buyer.state}</p>
+              <p className="text-sm text-slate-400">{analysis.buyer.state}</p>
             )}
           </div>
           <div>
-            <p className="text-xs text-muted-foreground uppercase">Seller</p>
-            <p className="font-medium">{analysis.seller.name}</p>
+            <p className="text-xs text-slate-400 uppercase">Seller</p>
+            <p className="font-medium text-white">{analysis.seller.name}</p>
             {analysis.seller.entityType && (
-              <p className="text-sm text-muted-foreground">{analysis.seller.entityType}</p>
+              <p className="text-sm text-slate-400">{analysis.seller.entityType}</p>
             )}
             {analysis.seller.state && (
-              <p className="text-sm text-muted-foreground">{analysis.seller.state}</p>
+              <p className="text-sm text-slate-400">{analysis.seller.state}</p>
             )}
           </div>
         </CardContent>
@@ -430,34 +434,34 @@ export function AnalysisResults({
 
       {/* Property */}
       {analysis.propertyAddress && (
-        <Card>
+        <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium">
-              <MapPin className="h-4 w-4" />
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-white">
+              <MapPin className="h-4 w-4 text-blue-400" />
               Property
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="font-medium">{analysis.propertyAddress}</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-medium text-white">{analysis.propertyAddress}</p>
+            <p className="text-sm text-slate-400">
               {[analysis.propertyCity, analysis.propertyState, analysis.propertyCounty]
                 .filter(Boolean)
                 .join(", ")}
             </p>
             <div className="mt-2 flex flex-wrap gap-4 text-sm">
               {analysis.acreage && (
-                <span className="text-muted-foreground">{analysis.acreage} acres</span>
+                <span className="text-slate-400">{analysis.acreage} acres</span>
               )}
               {analysis.squareFootage && (
-                <span className="text-muted-foreground">
+                <span className="text-slate-400">
                   {analysis.squareFootage.toLocaleString()} SF
                 </span>
               )}
               {analysis.lotCount && (
-                <span className="text-muted-foreground">{analysis.lotCount} lots</span>
+                <span className="text-slate-400">{analysis.lotCount} lots</span>
               )}
               {analysis.unitCount && (
-                <span className="text-muted-foreground">{analysis.unitCount} units</span>
+                <span className="text-slate-400">{analysis.unitCount} units</span>
               )}
             </div>
           </CardContent>
@@ -465,18 +469,18 @@ export function AnalysisResults({
       )}
 
       {/* Financial */}
-      <Card>
+      <Card className="bg-slate-800 border-slate-700">
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <DollarSign className="h-4 w-4" />
+          <CardTitle className="flex items-center gap-2 text-sm font-medium text-white">
+            <DollarSign className="h-4 w-4 text-green-400" />
             Financial Terms
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-xs text-muted-foreground uppercase">Purchase Price</p>
-            <p className="text-2xl font-bold">{formatCurrency(analysis.purchasePrice)}</p>
-            <div className="mt-1 flex flex-wrap gap-3 text-sm text-muted-foreground">
+            <p className="text-xs text-slate-400 uppercase">Purchase Price</p>
+            <p className="text-2xl font-bold text-green-400">{formatCurrency(analysis.purchasePrice)}</p>
+            <div className="mt-1 flex flex-wrap gap-3 text-sm text-slate-400">
               {analysis.pricePerAcre && (
                 <span>{formatCurrency(analysis.pricePerAcre)}/acre</span>
               )}
@@ -488,7 +492,7 @@ export function AnalysisResults({
               )}
             </div>
             {analysis.priceAdjustable && (
-              <Badge variant="outline" className="mt-2">
+              <Badge variant="outline" className="mt-2 border-amber-500/50 text-amber-400">
                 Price Adjustable: {analysis.priceAdjustmentBasis || "Yes"}
               </Badge>
             )}
@@ -496,33 +500,33 @@ export function AnalysisResults({
 
           {analysis.deposits.length > 0 && (
             <>
-              <Separator />
+              <Separator className="bg-slate-700" />
               <div>
-                <p className="text-xs text-muted-foreground uppercase mb-2">Deposits</p>
+                <p className="text-xs text-slate-400 uppercase mb-2">Deposits</p>
                 <div className="space-y-2">
                   {analysis.deposits.map((deposit, idx) => (
                     <div key={idx} className="flex justify-between items-center">
                       <div>
-                        <p className="font-medium">{deposit.name}</p>
+                        <p className="font-medium text-white">{deposit.name}</p>
                         {deposit.dueDate && (
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-slate-400">
                             Due: {formatDate(deposit.dueDate)}
                           </p>
                         )}
                         {deposit.dueDays && !deposit.dueDate && (
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-slate-400">
                             Due: {deposit.dueDays} days from {deposit.dueFromEvent || "effective date"}
                           </p>
                         )}
                         {deposit.refundable !== undefined && (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-slate-500">
                             {deposit.refundable
                               ? `Refundable${deposit.refundableUntil ? ` until ${deposit.refundableUntil}` : ""}`
                               : "Non-refundable"}
                           </p>
                         )}
                       </div>
-                      <p className="font-semibold">{formatCurrency(deposit.amount)}</p>
+                      <p className="font-semibold text-white">{formatCurrency(deposit.amount)}</p>
                     </div>
                   ))}
                 </div>
@@ -533,32 +537,32 @@ export function AnalysisResults({
       </Card>
 
       {/* Key Dates */}
-      <Card>
+      <Card className="bg-slate-800 border-slate-700">
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Calendar className="h-4 w-4" />
+          <CardTitle className="flex items-center gap-2 text-sm font-medium text-white">
+            <Calendar className="h-4 w-4 text-blue-400" />
             Key Dates
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <p className="text-xs text-muted-foreground uppercase">Effective Date</p>
-              <p className={`font-medium ${!analysis.effectiveDate ? "text-yellow-600" : ""}`}>
+              <p className="text-xs text-slate-400 uppercase">Effective Date</p>
+              <p className={`font-medium ${!analysis.effectiveDate ? "text-amber-400" : "text-white"}`}>
                 {analysis.effectiveDate ? formatDate(analysis.effectiveDate) : "Not yet determined"}
               </p>
               {analysis.effectiveDateTrigger && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-slate-500">
                   Trigger: {analysis.effectiveDateTrigger}
                 </p>
               )}
             </div>
             {analysis.feasibilityPeriodDays && (
               <div>
-                <p className="text-xs text-muted-foreground uppercase">Feasibility Period</p>
-                <p className="font-medium">{analysis.feasibilityPeriodDays} days</p>
+                <p className="text-xs text-slate-400 uppercase">Feasibility Period</p>
+                <p className="font-medium text-white">{analysis.feasibilityPeriodDays} days</p>
                 {analysis.feasibilityExpiration && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-slate-400">
                     Expires: {formatDate(analysis.feasibilityExpiration)}
                   </p>
                 )}
@@ -566,11 +570,11 @@ export function AnalysisResults({
             )}
             {(analysis.closingDate || analysis.closingDateDays) && (
               <div>
-                <p className="text-xs text-muted-foreground uppercase">Closing Date</p>
+                <p className="text-xs text-slate-400 uppercase">Closing Date</p>
                 {analysis.closingDate ? (
-                  <p className="font-medium">{formatDate(analysis.closingDate)}</p>
+                  <p className="font-medium text-white">{formatDate(analysis.closingDate)}</p>
                 ) : (
-                  <p className="font-medium">
+                  <p className="font-medium text-white">
                     {analysis.closingDateDays} days from {analysis.closingDateFromEvent || "effective date"}
                   </p>
                 )}
@@ -578,8 +582,8 @@ export function AnalysisResults({
             )}
             {analysis.outsideClosingDate && (
               <div>
-                <p className="text-xs text-muted-foreground uppercase">Outside Closing Date</p>
-                <p className="font-medium">{formatDate(analysis.outsideClosingDate)}</p>
+                <p className="text-xs text-slate-400 uppercase">Outside Closing Date</p>
+                <p className="font-medium text-white">{formatDate(analysis.outsideClosingDate)}</p>
               </div>
             )}
           </div>
@@ -587,14 +591,14 @@ export function AnalysisResults({
           {/* Title & Survey Timeline */}
           {(analysis.titleCommitmentDays || analysis.surveyDays) && (
             <>
-              <Separator className="my-4" />
+              <Separator className="my-4 bg-slate-700" />
               <div className="grid gap-4 md:grid-cols-2">
                 {analysis.titleCommitmentDays && (
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase">Title Commitment</p>
-                    <p className="font-medium">{analysis.titleCommitmentDays} days</p>
+                    <p className="text-xs text-slate-400 uppercase">Title Commitment</p>
+                    <p className="font-medium text-white">{analysis.titleCommitmentDays} days</p>
                     {analysis.titleCommitmentDate && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-slate-400">
                         Due: {formatDate(analysis.titleCommitmentDate)}
                       </p>
                     )}
@@ -602,10 +606,10 @@ export function AnalysisResults({
                 )}
                 {analysis.surveyDays && (
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase">Survey</p>
-                    <p className="font-medium">{analysis.surveyDays} days</p>
+                    <p className="text-xs text-slate-400 uppercase">Survey</p>
+                    <p className="font-medium text-white">{analysis.surveyDays} days</p>
                     {analysis.surveyDate && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-slate-400">
                         Due: {formatDate(analysis.surveyDate)}
                       </p>
                     )}
@@ -613,14 +617,14 @@ export function AnalysisResults({
                 )}
                 {analysis.titleObjectionDays && (
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase">Title Objection Period</p>
-                    <p className="font-medium">{analysis.titleObjectionDays} days</p>
+                    <p className="text-xs text-slate-400 uppercase">Title Objection Period</p>
+                    <p className="font-medium text-white">{analysis.titleObjectionDays} days</p>
                   </div>
                 )}
                 {analysis.titleCureDays && (
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase">Title Cure Period</p>
-                    <p className="font-medium">{analysis.titleCureDays} days</p>
+                    <p className="text-xs text-slate-400 uppercase">Title Cure Period</p>
+                    <p className="font-medium text-white">{analysis.titleCureDays} days</p>
                   </div>
                 )}
               </div>
@@ -631,35 +635,35 @@ export function AnalysisResults({
 
       {/* Key Milestones */}
       {analysis.keyMilestones && analysis.keyMilestones.length > 0 && (
-        <Card>
+        <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium">
-              <CalendarPlus className="h-4 w-4" />
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-white">
+              <CalendarPlus className="h-4 w-4 text-blue-400" />
               Key Milestones ({analysis.keyMilestones.length})
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-slate-400">
               These milestones can be imported into your deal timeline
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Milestone</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Category</TableHead>
+                <TableRow className="border-slate-700">
+                  <TableHead className="text-slate-300">Milestone</TableHead>
+                  <TableHead className="text-slate-300">Date</TableHead>
+                  <TableHead className="text-slate-300">Category</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {analysis.keyMilestones.map((milestone, idx) => (
-                  <TableRow key={idx}>
+                  <TableRow key={idx} className="border-slate-700">
                     <TableCell>
-                      <div className="font-medium">{milestone.name}</div>
+                      <div className="font-medium text-white">{milestone.name}</div>
                       {milestone.description && (
-                        <div className="text-xs text-muted-foreground">{milestone.description}</div>
+                        <div className="text-xs text-slate-400">{milestone.description}</div>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-slate-300">
                       {milestone.date
                         ? formatDate(milestone.date)
                         : milestone.daysFromEffective
@@ -667,7 +671,7 @@ export function AnalysisResults({
                           : "TBD"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{milestone.category}</Badge>
+                      <Badge variant="outline" className="border-slate-600 text-slate-300">{milestone.category}</Badge>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -679,30 +683,30 @@ export function AnalysisResults({
 
       {/* Contingencies */}
       {analysis.contingencies.length > 0 && (
-        <Card>
+        <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium">
-              <FileText className="h-4 w-4" />
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-white">
+              <FileText className="h-4 w-4 text-amber-400" />
               Contingencies
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {analysis.contingencies.map((contingency, idx) => (
-                <div key={idx} className="border-l-2 border-primary pl-3">
-                  <p className="font-medium">{contingency.name}</p>
-                  <p className="text-sm text-muted-foreground">{contingency.description}</p>
+                <div key={idx} className="border-l-2 border-blue-500 pl-3">
+                  <p className="font-medium text-white">{contingency.name}</p>
+                  <p className="text-sm text-slate-400">{contingency.description}</p>
                   {contingency.deadline ? (
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-sm text-slate-400 mt-1">
                       Deadline: {formatDate(contingency.deadline)}
                     </p>
                   ) : contingency.deadlineDays ? (
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-sm text-slate-400 mt-1">
                       Deadline: {contingency.deadlineDays} days from {contingency.deadlineFromEvent || "effective date"}
                     </p>
                   ) : null}
                   {contingency.consequence && (
-                    <p className="text-sm text-yellow-600 mt-1">
+                    <p className="text-sm text-amber-400 mt-1">
                       Consequence: {contingency.consequence}
                     </p>
                   )}
@@ -715,10 +719,10 @@ export function AnalysisResults({
 
       {/* Due Diligence Items */}
       {analysis.dueDiligenceItems.length > 0 && (
-        <Card>
+        <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium">
-              <CheckCircle className="h-4 w-4" />
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-white">
+              <CheckCircle className="h-4 w-4 text-green-400" />
               Due Diligence Requirements
             </CardTitle>
           </CardHeader>
@@ -726,13 +730,13 @@ export function AnalysisResults({
             <div className="space-y-2">
               {analysis.dueDiligenceItems.map((item, idx) => (
                 <div key={idx} className="flex items-start gap-3">
-                  <Badge variant={item.responsible === "BUYER" ? "default" : "secondary"}>
+                  <Badge className={item.responsible === "BUYER" ? "bg-blue-500/20 text-blue-400" : "bg-slate-600 text-slate-200"}>
                     {item.responsible}
                   </Badge>
                   <div>
-                    <p className="font-medium">{item.name}</p>
+                    <p className="font-medium text-white">{item.name}</p>
                     {item.description && (
-                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                      <p className="text-sm text-slate-400">{item.description}</p>
                     )}
                   </div>
                 </div>
@@ -744,12 +748,12 @@ export function AnalysisResults({
 
       {/* Special Provisions */}
       {analysis.specialProvisions && analysis.specialProvisions.length > 0 && (
-        <Card>
+        <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Special Provisions</CardTitle>
+            <CardTitle className="text-sm font-medium text-white">Special Provisions</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside space-y-1 text-sm">
+            <ul className="list-disc list-inside space-y-1 text-sm text-slate-300">
               {analysis.specialProvisions.map((provision, idx) => (
                 <li key={idx}>{provision}</li>
               ))}
@@ -760,24 +764,24 @@ export function AnalysisResults({
 
       {/* Title Company & Escrow */}
       {(analysis.titleCompany || analysis.escrowAgent) && (
-        <Card>
+        <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium">
-              <Building2 className="h-4 w-4" />
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-white">
+              <Building2 className="h-4 w-4 text-blue-400" />
               Title & Escrow
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             {analysis.titleCompany && (
               <div>
-                <p className="text-xs text-muted-foreground uppercase">Title Company</p>
-                <p className="font-medium">{analysis.titleCompany}</p>
+                <p className="text-xs text-slate-400 uppercase">Title Company</p>
+                <p className="font-medium text-white">{analysis.titleCompany}</p>
               </div>
             )}
             {analysis.escrowAgent && (
               <div>
-                <p className="text-xs text-muted-foreground uppercase">Escrow Agent</p>
-                <p className="font-medium">{analysis.escrowAgent}</p>
+                <p className="text-xs text-slate-400 uppercase">Escrow Agent</p>
+                <p className="font-medium text-white">{analysis.escrowAgent}</p>
               </div>
             )}
           </CardContent>
@@ -786,31 +790,31 @@ export function AnalysisResults({
 
       {/* Post-Closing Obligations */}
       {analysis.postClosingObligations && analysis.postClosingObligations.length > 0 && (
-        <Card>
+        <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Post-Closing Obligations</CardTitle>
+            <CardTitle className="text-sm font-medium text-white">Post-Closing Obligations</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Obligation</TableHead>
-                  <TableHead>Responsible</TableHead>
-                  <TableHead>Deadline</TableHead>
-                  <TableHead>Survives</TableHead>
+                <TableRow className="border-slate-700">
+                  <TableHead className="text-slate-300">Obligation</TableHead>
+                  <TableHead className="text-slate-300">Responsible</TableHead>
+                  <TableHead className="text-slate-300">Deadline</TableHead>
+                  <TableHead className="text-slate-300">Survives</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {analysis.postClosingObligations.map((obligation, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{obligation.obligation}</TableCell>
+                  <TableRow key={idx} className="border-slate-700">
+                    <TableCell className="text-white">{obligation.obligation}</TableCell>
                     <TableCell>
-                      <Badge variant={obligation.responsible === "BUYER" ? "default" : "secondary"}>
+                      <Badge className={obligation.responsible === "BUYER" ? "bg-blue-500/20 text-blue-400" : "bg-slate-600 text-slate-200"}>
                         {obligation.responsible}
                       </Badge>
                     </TableCell>
-                    <TableCell>{obligation.deadline || "N/A"}</TableCell>
-                    <TableCell>{obligation.survives || "N/A"}</TableCell>
+                    <TableCell className="text-slate-300">{obligation.deadline || "N/A"}</TableCell>
+                    <TableCell className="text-slate-300">{obligation.survives || "N/A"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
