@@ -22,6 +22,8 @@ import {
   CalendarPlus,
   ClipboardList,
   Clock,
+  FileInput,
+  Loader2,
 } from "lucide-react"
 import {
   Accordion,
@@ -57,6 +59,7 @@ export function AnalysisResults({
   const [isCalculating, setIsCalculating] = useState(false)
   const [isSavingHtml, setIsSavingHtml] = useState(false)
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
+  const [isImportingToDeal, setIsImportingToDeal] = useState(false)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -128,6 +131,27 @@ export function AnalysisResults({
 
   const handleImportComplete = (count: number) => {
     alert(`Successfully imported ${count} milestone${count !== 1 ? "s" : ""}!`)
+  }
+
+  const handleImportToDeal = async () => {
+    setIsImportingToDeal(true)
+    try {
+      const response = await fetch(`/api/deals/${dealId}/summary`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ result: analysis }),
+      })
+
+      if (response.ok) {
+        alert("Analysis imported to deal successfully! View the Transaction Summary tab to see the details.")
+      } else {
+        throw new Error("Failed to import")
+      }
+    } catch (error) {
+      alert("Failed to import analysis to deal")
+    } finally {
+      setIsImportingToDeal(false)
+    }
   }
 
   // Check if there are any dates to import
@@ -244,6 +268,19 @@ export function AnalysisResults({
           >
             <CalendarPlus className="mr-2 h-4 w-4" />
             Import to Milestones
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleImportToDeal}
+            disabled={isImportingToDeal}
+          >
+            {isImportingToDeal ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FileInput className="mr-2 h-4 w-4" />
+            )}
+            Import to Deal
           </Button>
         </div>
       </div>

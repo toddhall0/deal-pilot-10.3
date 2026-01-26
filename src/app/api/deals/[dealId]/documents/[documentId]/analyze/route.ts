@@ -130,6 +130,74 @@ export async function POST(
       console.error("Failed to generate Transaction Summary HTML:", htmlError)
     }
 
+    // Save analysis to deal's Transaction Summary
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      type JsonValue = Record<string, any> | any[] | undefined
+      function toJson<T>(value: T | null | undefined): JsonValue {
+        if (value === null || value === undefined) return undefined
+        return JSON.parse(JSON.stringify(value))
+      }
+
+      const summaryData = {
+        dealId,
+        contractDate: sanitizedResult.contractDate ? new Date(sanitizedResult.contractDate) : null,
+        effectiveDate: sanitizedResult.effectiveDate ? new Date(sanitizedResult.effectiveDate) : null,
+        buyerName: sanitizedResult.buyer?.name || null,
+        buyerEntity: sanitizedResult.buyer?.entityType || null,
+        buyerAddress: sanitizedResult.buyer?.address || null,
+        sellerName: sanitizedResult.seller?.name || null,
+        sellerEntity: sanitizedResult.seller?.entityType || null,
+        sellerAddress: sanitizedResult.seller?.address || null,
+        purchasePrice: sanitizedResult.purchasePrice || null,
+        pricePerUnit: sanitizedResult.pricePerAcre || sanitizedResult.pricePerSquareFoot || sanitizedResult.pricePerUnit || null,
+        priceAdjustable: sanitizedResult.priceAdjustable || false,
+        priceAdjustmentBasis: sanitizedResult.priceAdjustmentBasis || null,
+        initialDeposit: sanitizedResult.deposits?.[0]?.amount || null,
+        initialDepositDue: sanitizedResult.deposits?.[0]?.dueDate ? new Date(sanitizedResult.deposits[0].dueDate) : null,
+        additionalDeposits: toJson(sanitizedResult.deposits?.slice(1)),
+        feasibilityPeriodDays: sanitizedResult.feasibilityPeriodDays || null,
+        feasibilityExpiration: sanitizedResult.feasibilityExpiration ? new Date(sanitizedResult.feasibilityExpiration) : null,
+        closingDate: sanitizedResult.closingDate ? new Date(sanitizedResult.closingDate) : null,
+        outsideClosingDate: sanitizedResult.outsideClosingDate ? new Date(sanitizedResult.outsideClosingDate) : null,
+        titleCompany: sanitizedResult.titleCompany || null,
+        escrowAgent: sanitizedResult.escrowAgent || null,
+        contingencies: toJson(sanitizedResult.contingencies),
+        dueDiligenceItems: toJson(sanitizedResult.dueDiligenceItems),
+        closingDocuments: toJson(sanitizedResult.closingDocuments),
+        specialProvisions: toJson(sanitizedResult.specialProvisions),
+        prorationItems: toJson(sanitizedResult.prorationItems),
+        rawAnalysis: toJson(sanitizedResult),
+      }
+
+      await prisma.transactionSummary.upsert({
+        where: { dealId },
+        create: summaryData,
+        update: {
+          ...summaryData,
+          version: { increment: 1 },
+          analyzedAt: new Date(),
+        },
+      })
+
+      // Also update deal with property info if available
+      await prisma.deal.update({
+        where: { id: dealId },
+        data: {
+          propertyAddress: sanitizedResult.propertyAddress || undefined,
+          propertyCity: sanitizedResult.propertyCity || undefined,
+          propertyState: sanitizedResult.propertyState || undefined,
+          propertyCounty: sanitizedResult.propertyCounty || undefined,
+          acreage: sanitizedResult.acreage || undefined,
+          squareFootage: sanitizedResult.squareFootage || undefined,
+          lotCount: sanitizedResult.lotCount || undefined,
+          unitCount: sanitizedResult.unitCount || undefined,
+        },
+      })
+    } catch (summaryError) {
+      console.error("Failed to save Transaction Summary:", summaryError)
+    }
+
     return NextResponse.json({
       success: true,
       analysis: sanitizedResult,
