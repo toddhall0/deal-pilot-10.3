@@ -90,6 +90,16 @@ interface RawAnalysis {
   surveyDate?: string
   titleObjectionDate?: string
   keyMilestones?: KeyMilestone[]
+  missingDateDependencies?: MissingDateDependency[]
+  effectiveDateTrigger?: string
+}
+
+interface MissingDateDependency {
+  field: string
+  dependsOn: string
+  daysFromTrigger: number
+  description: string
+  priority: "HIGH" | "MEDIUM" | "LOW"
 }
 
 interface KeyMilestone {
@@ -113,6 +123,151 @@ interface EditableDates {
 
 interface TransactionSummaryTabProps {
   dealId: string
+}
+
+// Helper function to group dependencies by trigger date
+function groupDependenciesByTrigger(dependencies: MissingDateDependency[]) {
+  const groups: Record<string, MissingDateDependency[]> = {}
+  dependencies.forEach((dep) => {
+    if (!groups[dep.dependsOn]) {
+      groups[dep.dependsOn] = []
+    }
+    groups[dep.dependsOn].push(dep)
+  })
+  return groups
+}
+
+// Helper to get trigger date field name
+function getTriggerFieldKey(triggerName: string): keyof EditableDates | null {
+  const mapping: Record<string, keyof EditableDates> = {
+    "Effective Date": "effectiveDate",
+    "Contract Date": "effectiveDate",
+    "Feasibility Expiration": "feasibilityExpiration",
+    "Closing Date": "closingDate",
+    "Title Commitment Date": "titleCommitmentDate",
+    "Survey Date": "surveyDate",
+  }
+  return mapping[triggerName] || null
+}
+
+interface MissingTriggerDatesCardProps {
+  dependencies: MissingDateDependency[]
+  editableDates: EditableDates
+  onDateChange: (field: keyof EditableDates, value: string) => void
+  onCalculate: (forceRecalculate?: boolean) => void
+  summary: TransactionSummary
+}
+
+function MissingTriggerDatesCard({
+  dependencies,
+  editableDates,
+  onDateChange,
+  onCalculate,
+  summary,
+}: MissingTriggerDatesCardProps) {
+  const groupedDeps = groupDependenciesByTrigger(dependencies)
+
+  // Filter to only show groups where the trigger date is missing
+  const missingTriggers = Object.entries(groupedDeps).filter(([trigger]) => {
+    const fieldKey = getTriggerFieldKey(trigger)
+    return fieldKey && !editableDates[fieldKey]
+  })
+
+  if (missingTriggers.length === 0) {
+    return null
+  }
+
+  return (
+    <Card className="bg-amber-500/10 border-amber-500/30">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-medium flex items-center gap-2 text-white">
+          <AlertTriangle className="h-5 w-5 text-amber-400" />
+          Missing Trigger Dates
+        </CardTitle>
+        <CardDescription className="text-amber-300/70">
+          The following dates are needed to calculate dependent deadlines. Enter the trigger dates to auto-calculate.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {missingTriggers.map(([trigger, deps]) => {
+          const fieldKey = getTriggerFieldKey(trigger)
+          const highPriorityCount = deps.filter(d => d.priority === "HIGH").length
+
+          return (
+            <div key={trigger} className="p-4 rounded-lg border border-amber-500/30 bg-slate-800/50">
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-medium text-white">{trigger}</h4>
+                    {highPriorityCount > 0 && (
+                      <Badge className="bg-red-500/20 text-red-400 text-xs">
+                        {highPriorityCount} HIGH priority
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-amber-300/70">
+                    Required to calculate {deps.length} dependent date{deps.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                {fieldKey && (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="date"
+                      value={editableDates[fieldKey]}
+                      onChange={(e) => onDateChange(fieldKey, e.target.value)}
+                      className="w-44 h-9 bg-slate-700 border-amber-500/50 text-white [color-scheme:dark]"
+                      placeholder="Enter date"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Dependent dates list */}
+              <div className="space-y-2 mt-3">
+                <p className="text-xs text-slate-400 uppercase tracking-wide">Will Calculate:</p>
+                <div className="grid gap-2">
+                  {deps.map((dep, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between text-sm py-1.5 px-3 rounded bg-slate-800/70"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${
+                          dep.priority === "HIGH"
+                            ? "bg-red-400"
+                            : dep.priority === "MEDIUM"
+                            ? "bg-amber-400"
+                            : "bg-slate-400"
+                        }`} />
+                        <span className="text-white">{dep.field}</span>
+                        <span className="text-slate-500">
+                          (+{dep.daysFromTrigger} days)
+                        </span>
+                      </div>
+                      <span className="text-slate-400 text-xs max-w-[200px] truncate">
+                        {dep.description}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Calculate button */}
+        <div className="flex justify-end pt-2">
+          <Button
+            onClick={() => onCalculate(true)}
+            className="bg-amber-500 hover:bg-amber-600 text-black"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Calculate All Dependent Dates
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export function TransactionSummaryTab({ dealId }: TransactionSummaryTabProps) {
@@ -199,54 +354,124 @@ export function TransactionSummaryTab({ dealId }: TransactionSummaryTabProps) {
     setHasChanges(true)
   }
 
-  const recalculateDependentDates = () => {
-    if (!editableDates.effectiveDate || !summary) return
+  const recalculateDependentDates = (forceRecalculate: boolean = false) => {
+    if (!summary) return
 
-    const effectiveDate = new Date(editableDates.effectiveDate)
     const newDates = { ...editableDates }
+    let calculatedCount = 0
 
-    // Calculate feasibility expiration
-    if (summary.feasibilityPeriodDays && !editableDates.feasibilityExpiration) {
-      const feasibility = new Date(effectiveDate)
-      feasibility.setDate(feasibility.getDate() + summary.feasibilityPeriodDays)
-      newDates.feasibilityExpiration = feasibility.toISOString().split("T")[0]
+    // Helper function to calculate a date from a trigger
+    const calculateFromTrigger = (
+      triggerDate: string | undefined,
+      days: number,
+      targetField: keyof EditableDates
+    ) => {
+      if (!triggerDate) return false
+      // Only calculate if forceRecalculate is true or the target is empty
+      if (!forceRecalculate && newDates[targetField]) return false
+
+      const trigger = new Date(triggerDate)
+      trigger.setDate(trigger.getDate() + days)
+      newDates[targetField] = trigger.toISOString().split("T")[0]
+      calculatedCount++
+      return true
     }
 
-    // Calculate closing date from days
-    if (summary.rawAnalysis?.closingDateDays && !editableDates.closingDate) {
-      const closing = new Date(effectiveDate)
-      closing.setDate(closing.getDate() + summary.rawAnalysis.closingDateDays)
-      newDates.closingDate = closing.toISOString().split("T")[0]
+    // Calculate from effective date if available
+    if (editableDates.effectiveDate) {
+      // Feasibility expiration
+      if (summary.feasibilityPeriodDays) {
+        calculateFromTrigger(
+          editableDates.effectiveDate,
+          summary.feasibilityPeriodDays,
+          "feasibilityExpiration"
+        )
+      }
+
+      // Closing date from days
+      if (summary.rawAnalysis?.closingDateDays) {
+        calculateFromTrigger(
+          editableDates.effectiveDate,
+          summary.rawAnalysis.closingDateDays,
+          "closingDate"
+        )
+      }
+
+      // Title commitment date
+      if (summary.rawAnalysis?.titleCommitmentDays) {
+        calculateFromTrigger(
+          editableDates.effectiveDate,
+          summary.rawAnalysis.titleCommitmentDays,
+          "titleCommitmentDate"
+        )
+      }
+
+      // Survey date
+      if (summary.rawAnalysis?.surveyDays) {
+        calculateFromTrigger(
+          editableDates.effectiveDate,
+          summary.rawAnalysis.surveyDays,
+          "surveyDate"
+        )
+      }
+
+      // Title objection date
+      if (summary.rawAnalysis?.titleObjectionDays) {
+        calculateFromTrigger(
+          editableDates.effectiveDate,
+          summary.rawAnalysis.titleObjectionDays,
+          "titleObjectionDate"
+        )
+      }
     }
 
-    // Calculate title commitment date
-    if (summary.rawAnalysis?.titleCommitmentDays && !editableDates.titleCommitmentDate) {
-      const titleCommitment = new Date(effectiveDate)
-      titleCommitment.setDate(titleCommitment.getDate() + summary.rawAnalysis.titleCommitmentDays)
-      newDates.titleCommitmentDate = titleCommitment.toISOString().split("T")[0]
+    // Process missing date dependencies from the analysis
+    const missingDeps = summary.rawAnalysis?.missingDateDependencies || []
+    for (const dep of missingDeps) {
+      // Get the trigger date field
+      const triggerField = getTriggerFieldKey(dep.dependsOn)
+      if (!triggerField) continue
+
+      const triggerValue = newDates[triggerField]
+      if (!triggerValue) continue
+
+      // Map the dependency field to EditableDates key
+      const fieldMapping: Record<string, keyof EditableDates> = {
+        "Feasibility Expiration": "feasibilityExpiration",
+        "Closing Date": "closingDate",
+        "Title Commitment Date": "titleCommitmentDate",
+        "Survey Date": "surveyDate",
+        "Title Objection Deadline": "titleObjectionDate",
+        "Initial Deposit Due": "initialDepositDue",
+        "Outside Closing Date": "outsideClosingDate",
+        "feasibilityExpiration": "feasibilityExpiration",
+        "closingDate": "closingDate",
+        "titleCommitmentDate": "titleCommitmentDate",
+        "surveyDate": "surveyDate",
+        "titleObjectionDate": "titleObjectionDate",
+      }
+
+      const targetField = fieldMapping[dep.field]
+      if (targetField) {
+        calculateFromTrigger(triggerValue, dep.daysFromTrigger, targetField)
+      }
     }
 
-    // Calculate survey date
-    if (summary.rawAnalysis?.surveyDays && !editableDates.surveyDate) {
-      const survey = new Date(effectiveDate)
-      survey.setDate(survey.getDate() + summary.rawAnalysis.surveyDays)
-      newDates.surveyDate = survey.toISOString().split("T")[0]
+    if (calculatedCount > 0) {
+      setEditableDates(newDates)
+      setHasChanges(true)
+
+      toast({
+        title: "Dates Calculated",
+        description: `${calculatedCount} dependent date${calculatedCount !== 1 ? 's have' : ' has'} been calculated.`,
+      })
+    } else {
+      toast({
+        title: "No Dates Calculated",
+        description: "Enter a trigger date (like Effective Date) to calculate dependent dates.",
+        variant: "destructive",
+      })
     }
-
-    // Calculate title objection date
-    if (summary.rawAnalysis?.titleObjectionDays && !editableDates.titleObjectionDate) {
-      const titleObjection = new Date(effectiveDate)
-      titleObjection.setDate(titleObjection.getDate() + summary.rawAnalysis.titleObjectionDays)
-      newDates.titleObjectionDate = titleObjection.toISOString().split("T")[0]
-    }
-
-    setEditableDates(newDates)
-    setHasChanges(true)
-
-    toast({
-      title: "Dates Calculated",
-      description: "Dependent dates have been calculated from the effective date.",
-    })
   }
 
   const handleSave = async () => {
@@ -547,6 +772,18 @@ export function TransactionSummaryTab({ dealId }: TransactionSummaryTabProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Missing Trigger Dates Warning */}
+      {summary.rawAnalysis?.missingDateDependencies &&
+       summary.rawAnalysis.missingDateDependencies.length > 0 && (
+        <MissingTriggerDatesCard
+          dependencies={summary.rawAnalysis.missingDateDependencies}
+          editableDates={editableDates}
+          onDateChange={handleDateChange}
+          onCalculate={recalculateDependentDates}
+          summary={summary}
+        />
+      )}
 
       {/* Key Dates & Deadlines */}
       <Card className="bg-slate-800 border-slate-700">
