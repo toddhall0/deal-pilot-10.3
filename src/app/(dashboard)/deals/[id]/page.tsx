@@ -9,6 +9,7 @@ import { IssuesTab } from "@/components/deals/IssuesTab"
 import { TimelineTab } from "@/components/deals/TimelineTab"
 import { OverviewTab } from "@/components/deals/OverviewTab"
 import { FinancialsTab } from "@/components/deals/FinancialsTab"
+import { TransactionSummaryTab } from "@/components/deals/TransactionSummaryTab"
 import { QuickExport } from "@/components/reports/QuickExport"
 import { DealActions } from "@/components/deals/DealActions"
 
@@ -113,6 +114,7 @@ export default async function DealDetailPage({
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="summary">Transaction Summary</TabsTrigger>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
@@ -123,6 +125,10 @@ export default async function DealDetailPage({
 
         <TabsContent value="overview" className="mt-6">
           <OverviewTab deal={deal} />
+        </TabsContent>
+
+        <TabsContent value="summary" className="mt-6">
+          <TransactionSummaryTab dealId={deal.id} />
         </TabsContent>
 
         <TabsContent value="timeline" className="mt-6">
